@@ -1,6 +1,6 @@
 # [剑指 Offer II 43. 往完全二叉树添加节点](https://leetcode.cn/problems/NaqhDT)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`树`](/leetcode/outline/tag/tree.md) [`广度优先搜索`](/leetcode/outline/tag/breadth-first-search.md) [`设计`](/leetcode/outline/tag/design.md) [`二叉树`](/leetcode/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/NaqhDT)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`树`](/leetcode-js/outline/tag/tree.md) [`广度优先搜索`](/leetcode-js/outline/tag/breadth-first-search.md) [`设计`](/leetcode-js/outline/tag/design.md) [`二叉树`](/leetcode-js/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/NaqhDT)
 
 ## 题目
 

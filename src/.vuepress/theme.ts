@@ -90,10 +90,9 @@ export default hopeTheme(
 			// You should generate and use your own comment service
 			comment: {
 				provider: 'Giscus',
-				repo: '2xiao/leetcode-js',
-				repoId: 'R_kgDOKUwcng',
-				category: 'General',
-				categoryId: 'DIC_kwDOKUwcns4CbI2r'
+				repo: '2xiao/2xiao.github.io',
+				repoId: 'R_kgDONCFDgw',
+				category: 'General'
 			},
 
 			blog: {

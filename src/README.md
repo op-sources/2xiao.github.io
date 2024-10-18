@@ -12,14 +12,14 @@ heroFullScreen: true
 tagline: LeetCode 算法 + 框架源码 + 前端八股文 = Offer
 actions:
   - text: 🧭 LeetCode 通关指南
-    link: ./leetcode/
+    link: ./leetcode-js/
     type: primary
 
   - text: 🍭 React 源码
-    link: ./react/
+    link: ./my-react/
 
   - text: 🤡 Vue 源码
-    link: ./vue/
+    link: ./my-vue/
 
   - text: 🔥 前端面试题
     link: ./interview/

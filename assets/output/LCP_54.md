@@ -1,6 +1,6 @@
 # [LCP 54. 夺回据点](https://leetcode.cn/problems/s5kipK)
 
-🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`图`](/leetcode/outline/tag/graph.md) [`数组`](/leetcode/outline/tag/array.md) [`双连通分量`](/leetcode/outline/tag/biconnected-component.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/s5kipK)
+🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`图`](/leetcode-js/outline/tag/graph.md) [`数组`](/leetcode-js/outline/tag/array.md) [`双连通分量`](/leetcode-js/outline/tag/biconnected-component.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/s5kipK)
 
 ## 题目
 

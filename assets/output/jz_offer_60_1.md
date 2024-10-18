@@ -1,6 +1,6 @@
 # [剑指 Offer 60. n个骰子的点数](https://leetcode.cn/problems/nge-tou-zi-de-dian-shu-lcof)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数学`](/leetcode/outline/tag/math.md) [`动态规划`](/leetcode/outline/tag/dynamic-programming.md) [`概率与统计`](/leetcode/outline/tag/probability-and-statistics.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/nge-tou-zi-de-dian-shu-lcof)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数学`](/leetcode-js/outline/tag/math.md) [`动态规划`](/leetcode-js/outline/tag/dynamic-programming.md) [`概率与统计`](/leetcode-js/outline/tag/probability-and-statistics.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/nge-tou-zi-de-dian-shu-lcof)
 
 ## 题目
 

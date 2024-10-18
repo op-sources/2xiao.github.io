@@ -1,6 +1,6 @@
 # [剑指 Offer II 76. 数组中的第 k 大的数字](https://leetcode.cn/problems/xx4gT2)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) [`排序`](/leetcode/outline/tag/sorting.md) [`堆（优先队列）`](/leetcode/outline/tag/heap-priority-queue.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/xx4gT2)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数组`](/leetcode-js/outline/tag/array.md) [`分治`](/leetcode-js/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode-js/outline/tag/quickselect.md) [`排序`](/leetcode-js/outline/tag/sorting.md) [`堆（优先队列）`](/leetcode-js/outline/tag/heap-priority-queue.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/xx4gT2)
 
 ## 题目
 

@@ -75,14 +75,13 @@ def gen_tag_list():
         tag_cn = idx.split('|')[2]
 
         content = Path(const.tag_list_readme).read_text(encoding='utf-8')
-
         old_title = "# 1.5 题解标签"
         delim = "[`" + tag_cn + "`](" + const.tag_absolute_path + tag_en + ".md)"
         if old_title in content:
             _, content = content.split(old_title)
         if delim in content:
             before, after = content.split(delim)
-        content = "# " + tag_cn + '\n\n::: details 全部标签' + before + '<span class="blue">' + tag_cn + '</span>' + after + ':::'
+            content = "# " + tag_cn + '\n\n::: details 全部标签' + before + '<span class="blue">' + tag_cn + '</span>' + after + ':::'
         
         slice_path = os.path.join(const.tag_list_path, tag_en + ".md")
         with open(slice_path, 'w', encoding='utf-8') as f:

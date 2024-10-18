@@ -1,6 +1,6 @@
 # [剑指 Offer II 112. 最长递增路径](https://leetcode.cn/problems/fpTFWP)
 
-🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`深度优先搜索`](/leetcode/outline/tag/depth-first-search.md) [`广度优先搜索`](/leetcode/outline/tag/breadth-first-search.md) [`图`](/leetcode/outline/tag/graph.md) [`拓扑排序`](/leetcode/outline/tag/topological-sort.md) [`记忆化搜索`](/leetcode/outline/tag/memoization.md) [`数组`](/leetcode/outline/tag/array.md) [`动态规划`](/leetcode/outline/tag/dynamic-programming.md) [`矩阵`](/leetcode/outline/tag/matrix.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/fpTFWP)
+🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`深度优先搜索`](/leetcode-js/outline/tag/depth-first-search.md) [`广度优先搜索`](/leetcode-js/outline/tag/breadth-first-search.md) [`图`](/leetcode-js/outline/tag/graph.md) [`拓扑排序`](/leetcode-js/outline/tag/topological-sort.md) [`记忆化搜索`](/leetcode-js/outline/tag/memoization.md) [`数组`](/leetcode-js/outline/tag/array.md) [`动态规划`](/leetcode-js/outline/tag/dynamic-programming.md) [`矩阵`](/leetcode-js/outline/tag/matrix.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/fpTFWP)
 
 ## 题目
 

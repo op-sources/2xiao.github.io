@@ -1,6 +1,6 @@
 # [剑指 Offer II 35. 最小时间差](https://leetcode.cn/problems/569nqc)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`字符串`](/leetcode/outline/tag/string.md) [`排序`](/leetcode/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/569nqc)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数组`](/leetcode-js/outline/tag/array.md) [`数学`](/leetcode-js/outline/tag/math.md) [`字符串`](/leetcode-js/outline/tag/string.md) [`排序`](/leetcode-js/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/569nqc)
 
 ## 题目
 

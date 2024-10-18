@@ -1,6 +1,6 @@
 # [剑指 Offer II 47. 二叉树剪枝](https://leetcode.cn/problems/pOCWxh)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`树`](/leetcode/outline/tag/tree.md) [`深度优先搜索`](/leetcode/outline/tag/depth-first-search.md) [`二叉树`](/leetcode/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/pOCWxh)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`树`](/leetcode-js/outline/tag/tree.md) [`深度优先搜索`](/leetcode-js/outline/tag/depth-first-search.md) [`二叉树`](/leetcode-js/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/pOCWxh)
 
 ## 题目
 

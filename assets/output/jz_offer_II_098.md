@@ -1,6 +1,6 @@
 # [剑指 Offer II 98. 路径的数目](https://leetcode.cn/problems/2AoeFn)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数学`](/leetcode/outline/tag/math.md) [`动态规划`](/leetcode/outline/tag/dynamic-programming.md) [`组合数学`](/leetcode/outline/tag/combinatorics.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/2AoeFn)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`数学`](/leetcode-js/outline/tag/math.md) [`动态规划`](/leetcode-js/outline/tag/dynamic-programming.md) [`组合数学`](/leetcode-js/outline/tag/combinatorics.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/2AoeFn)
 
 ## 题目
 

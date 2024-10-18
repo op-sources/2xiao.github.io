@@ -1,6 +1,6 @@
 # [剑指 Offer II 42. 最近请求次数](https://leetcode.cn/problems/H8086Q)
 
-🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) [`数据流`](/leetcode/outline/tag/data-stream.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/H8086Q)
+🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`设计`](/leetcode-js/outline/tag/design.md) [`队列`](/leetcode-js/outline/tag/queue.md) [`数据流`](/leetcode-js/outline/tag/data-stream.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/H8086Q)
 
 ## 题目
 

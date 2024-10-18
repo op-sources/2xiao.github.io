@@ -1,6 +1,6 @@
 # [LCP 26. 导航装置](https://leetcode.cn/problems/hSRGyL)
 
-🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`树`](/leetcode/outline/tag/tree.md) [`动态规划`](/leetcode/outline/tag/dynamic-programming.md) [`二叉树`](/leetcode/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/hSRGyL)
+🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`树`](/leetcode-js/outline/tag/tree.md) [`动态规划`](/leetcode-js/outline/tag/dynamic-programming.md) [`二叉树`](/leetcode-js/outline/tag/binary-tree.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/hSRGyL)
 
 ## 题目
 

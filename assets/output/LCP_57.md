@@ -1,6 +1,6 @@
 # [LCP 57. 打地鼠](https://leetcode.cn/problems/ZbAuEH)
 
-🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`数组`](/leetcode/outline/tag/array.md) [`动态规划`](/leetcode/outline/tag/dynamic-programming.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`排序`](/leetcode/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/ZbAuEH)
+🔴 <font color=#ff334b>Hard</font>&emsp; 🔖&ensp; [`数组`](/leetcode-js/outline/tag/array.md) [`动态规划`](/leetcode-js/outline/tag/dynamic-programming.md) [`矩阵`](/leetcode-js/outline/tag/matrix.md) [`排序`](/leetcode-js/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/ZbAuEH)
 
 ## 题目
 

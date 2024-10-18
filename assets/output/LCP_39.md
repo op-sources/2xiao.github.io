@@ -1,6 +1,6 @@
 # [LCP 39. 无人机方阵](https://leetcode.cn/problems/0jQkd0)
 
-🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`计数`](/leetcode/outline/tag/counting.md) [`矩阵`](/leetcode/outline/tag/matrix.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/0jQkd0)
+🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`数组`](/leetcode-js/outline/tag/array.md) [`哈希表`](/leetcode-js/outline/tag/hash-table.md) [`计数`](/leetcode-js/outline/tag/counting.md) [`矩阵`](/leetcode-js/outline/tag/matrix.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/0jQkd0)
 
 ## 题目
 

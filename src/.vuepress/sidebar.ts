@@ -1,7 +1,7 @@
 import { sidebar } from 'vuepress-theme-hope';
 
 export default sidebar({
-	'/leetcode/': [
+	'/leetcode-js/': [
 		'',
 		{
 			text: '第一章 序章',
@@ -681,8 +681,8 @@ export default sidebar({
 			collapsible: true
 		}
 	],
-	'/react/': 'structure',
-	'/vue/': [
+	'/my-react/': 'structure',
+	'/my-vue/': [
 		'',
 		{
 			text: '整体架构',

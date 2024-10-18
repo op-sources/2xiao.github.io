@@ -1,6 +1,6 @@
 # [LCP 46. 志愿者调配](https://leetcode.cn/problems/05ZEDJ)
 
-🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`图`](/leetcode/outline/tag/graph.md) [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/05ZEDJ)
+🟠 <font color=#ffb800>Medium</font>&emsp; 🔖&ensp; [`图`](/leetcode-js/outline/tag/graph.md) [`数组`](/leetcode-js/outline/tag/array.md) [`数学`](/leetcode-js/outline/tag/math.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/05ZEDJ)
 
 ## 题目
 

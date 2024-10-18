@@ -1,6 +1,6 @@
 # [LCP 40. 心算挑战](https://leetcode.cn/problems/uOAnQW)
 
-🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`贪心`](/leetcode/outline/tag/greedy.md) [`数组`](/leetcode/outline/tag/array.md) [`排序`](/leetcode/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/uOAnQW)
+🟢 <font color=#15bd66>Easy</font>&emsp; 🔖&ensp; [`贪心`](/leetcode-js/outline/tag/greedy.md) [`数组`](/leetcode-js/outline/tag/array.md) [`排序`](/leetcode-js/outline/tag/sorting.md)&emsp; 🔗&ensp;[`LeetCode`](https://leetcode.cn/problems/uOAnQW)
 
 ## 题目
 
