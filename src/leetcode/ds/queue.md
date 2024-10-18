@@ -246,7 +246,7 @@ console.log(queue.toString()); // output: 2,3
 
 :::: md-demo 相关题目
 
-#### 📌 [622. 设计循环队列 - LeetCode](https://2xiao.github.io/leetcode-js/leetcode/problem/0622.html)
+#### 📌 [622. 设计循环队列 - LeetCode](https://2xiao.github.io/leetcode/problem/0622.html)
 
 #### 💻 **题目大意**
 
@@ -721,22 +721,22 @@ console.log(priorityQueue.count()); // output: 3
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 622 | [设计循环队列](https://leetcode.com/problems/design-circular-queue) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0622) |  [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) `1+` | <font color=#ffb800>Medium</font> |
-| 346 | [数据流中的移动平均值](https://leetcode.com/problems/moving-average-from-data-stream) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0346) |  [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) `1+` | <font color=#15bd66>Easy</font> |
-| 225 | [用队列实现栈](https://leetcode.com/problems/implement-stack-using-queues) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0225) |  [`栈`](/leetcode/outline/tag/stack.md) [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) | <font color=#15bd66>Easy</font> |
+| 622 | [设计循环队列](https://leetcode.com/problems/design-circular-queue) | [[✓]](/leetcode/problem/0622.md) |  [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) `1+` | <font color=#ffb800>Medium</font> |
+| 346 | [数据流中的移动平均值](https://leetcode.com/problems/moving-average-from-data-stream) | [[✓]](/leetcode/problem/0346.md) |  [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) `1+` | <font color=#15bd66>Easy</font> |
+| 225 | [用队列实现栈](https://leetcode.com/problems/implement-stack-using-queues) | [[✓]](/leetcode/problem/0225.md) |  [`栈`](/leetcode/outline/tag/stack.md) [`设计`](/leetcode/outline/tag/design.md) [`队列`](/leetcode/outline/tag/queue.md) | <font color=#15bd66>Easy</font> |
 
 #### 优先队列
 
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 703 | [数据流中的第 K 大元素](https://leetcode.com/problems/kth-largest-element-in-a-stream) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0703) |  [`树`](/leetcode/outline/tag/tree.md) [`设计`](/leetcode/outline/tag/design.md) [`二叉搜索树`](/leetcode/outline/tag/binary-search-tree.md) `3+` | <font color=#15bd66>Easy</font> |
-| 347 | [前 K 个高频元素](https://leetcode.com/problems/top-k-frequent-elements) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0347) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) `5+` | <font color=#ffb800>Medium</font> |
-| 451 | [根据字符出现频率排序](https://leetcode.com/problems/sort-characters-by-frequency) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0451) |  [`哈希表`](/leetcode/outline/tag/hash-table.md) [`字符串`](/leetcode/outline/tag/string.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `3+` | <font color=#ffb800>Medium</font> |
-| 973 | [最接近原点的 K 个点](https://leetcode.com/problems/k-closest-points-to-origin) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0973) |  [`几何`](/leetcode/outline/tag/geometry.md) [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) `4+` | <font color=#ffb800>Medium</font> |
+| 703 | [数据流中的第 K 大元素](https://leetcode.com/problems/kth-largest-element-in-a-stream) | [[✓]](/leetcode/problem/0703.md) |  [`树`](/leetcode/outline/tag/tree.md) [`设计`](/leetcode/outline/tag/design.md) [`二叉搜索树`](/leetcode/outline/tag/binary-search-tree.md) `3+` | <font color=#15bd66>Easy</font> |
+| 347 | [前 K 个高频元素](https://leetcode.com/problems/top-k-frequent-elements) | [[✓]](/leetcode/problem/0347.md) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) `5+` | <font color=#ffb800>Medium</font> |
+| 451 | [根据字符出现频率排序](https://leetcode.com/problems/sort-characters-by-frequency) | [[✓]](/leetcode/problem/0451.md) |  [`哈希表`](/leetcode/outline/tag/hash-table.md) [`字符串`](/leetcode/outline/tag/string.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `3+` | <font color=#ffb800>Medium</font> |
+| 973 | [最接近原点的 K 个点](https://leetcode.com/problems/k-closest-points-to-origin) | [[✓]](/leetcode/problem/0973.md) |  [`几何`](/leetcode/outline/tag/geometry.md) [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) `4+` | <font color=#ffb800>Medium</font> |
 | 1296 | [划分数组为连续数字的集合](https://leetcode.com/problems/divide-array-in-sets-of-k-consecutive-numbers) |  |  [`贪心`](/leetcode/outline/tag/greedy.md) [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) `1+` | <font color=#ffb800>Medium</font> |
-| 239 | [滑动窗口最大值](https://leetcode.com/problems/sliding-window-maximum) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0239) |  [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) [`滑动窗口`](/leetcode/outline/tag/sliding-window.md) `2+` | <font color=#ff334b>Hard</font> |
-| 295 | [数据流的中位数](https://leetcode.com/problems/find-median-from-data-stream) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0295) |  [`设计`](/leetcode/outline/tag/design.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`数据流`](/leetcode/outline/tag/data-stream.md) `2+` | <font color=#ff334b>Hard</font> |
-| 23 | [合并 K 个升序链表](https://leetcode.com/problems/merge-k-sorted-lists) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0023) |  [`链表`](/leetcode/outline/tag/linked-list.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`堆（优先队列）`](/leetcode/outline/tag/heap-priority-queue.md) `1+` | <font color=#ff334b>Hard</font> |
+| 239 | [滑动窗口最大值](https://leetcode.com/problems/sliding-window-maximum) | [[✓]](/leetcode/problem/0239.md) |  [`队列`](/leetcode/outline/tag/queue.md) [`数组`](/leetcode/outline/tag/array.md) [`滑动窗口`](/leetcode/outline/tag/sliding-window.md) `2+` | <font color=#ff334b>Hard</font> |
+| 295 | [数据流的中位数](https://leetcode.com/problems/find-median-from-data-stream) | [[✓]](/leetcode/problem/0295.md) |  [`设计`](/leetcode/outline/tag/design.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`数据流`](/leetcode/outline/tag/data-stream.md) `2+` | <font color=#ff334b>Hard</font> |
+| 23 | [合并 K 个升序链表](https://leetcode.com/problems/merge-k-sorted-lists) | [[✓]](/leetcode/problem/0023.md) |  [`链表`](/leetcode/outline/tag/linked-list.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`堆（优先队列）`](/leetcode/outline/tag/heap-priority-queue.md) `1+` | <font color=#ff334b>Hard</font> |
 | 218 | [天际线问题](https://leetcode.com/problems/the-skyline-problem) |  |  [`树状数组`](/leetcode/outline/tag/binary-indexed-tree.md) [`线段树`](/leetcode/outline/tag/segment-tree.md) [`数组`](/leetcode/outline/tag/array.md) `4+` | <font color=#ff334b>Hard</font> |
 

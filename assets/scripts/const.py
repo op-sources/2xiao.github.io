@@ -11,7 +11,7 @@ tag_list_readme = '../../src/leetcode/outline/tag/README.md'
 tag_absolute_path = '/leetcode/outline/tag/'
 categories_path = '../origins/categories_list.md'
 origin_path = '../origins/'
-problem_online_path = 'https://2xiao.github.io/leetcode-js/leetcode/problem/'
+problem_online_path = '/leetcode/problem/'
 
 tag_list_css = '\n\n<style>\n.blue {\n    background-color: #096dd9;\n    padding: 0.25rem 0.5rem;\n    margin: 0;\n    font-size: 0.85em;\n    border-radius: 3px;\n    color: white;\n    font-weight: 500;\n}\ntable th:first-of-type { width: 10%; }\ntable th:nth-of-type(2) { width: 35%; }\ntable th:nth-of-type(3) { width: 10%; }\ntable th:nth-of-type(4) { width: 35%; }\ntable th:nth-of-type(5) { width: 10%; }\n</style>\n'
 

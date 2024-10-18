@@ -97,10 +97,9 @@ def gen_frame_items(row, df, problem_path, problem_salt: str = False):
     problem_file_name = df.loc[row, "fileName"]
     problem_link = "[{}]({})".format(df.loc[row, "titleCN"], getLink(problem_id, df.loc[row, "slug"]))
 
-    problem_solution_path = os.path.join(
-        problem_path, problem_file_name + ".md")
+    problem_solution_path = os.path.join(problem_path, problem_file_name + ".md")
     if os.path.exists(problem_solution_path):
-        problem_solution_link = "[[✓]](" + const.problem_online_path + problem_file_name + ")"
+        problem_solution_link = "[[✓]](" + const.problem_online_path + problem_file_name + ".md)"
     else:
         problem_solution_link = ""
 

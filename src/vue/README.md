@@ -28,7 +28,7 @@ headerDepth: 0
 
 ### 关于书中的代码
 
-教程地址：[https://2xiao.github.io/leetcode-js/vue](https://2xiao.github.io/leetcode-js/vue)
+教程地址：[https://2xiao.github.io/vue](https://2xiao.github.io/vue)
 
 源代码地址：[https://github.com/2xiao/my-vue](https://github.com/2xiao/my-vue)
 

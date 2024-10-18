@@ -159,21 +159,21 @@
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 189 | [轮转数组](https://leetcode.com/problems/rotate-array) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0189) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) | <font color=#ffb800>Medium</font> |
-| 66 | [加一](https://leetcode.com/problems/plus-one) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0066) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) | <font color=#15bd66>Easy</font> |
-| 724 | [寻找数组的中心下标](https://leetcode.com/problems/find-pivot-index) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0724) |  [`数组`](/leetcode/outline/tag/array.md) [`前缀和`](/leetcode/outline/tag/prefix-sum.md) | <font color=#15bd66>Easy</font> |
-| 485 | [最大连续 1 的个数](https://leetcode.com/problems/max-consecutive-ones) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0485) |  [`数组`](/leetcode/outline/tag/array.md) | <font color=#15bd66>Easy</font> |
-| 238 | [除自身以外数组的乘积](https://leetcode.com/problems/product-of-array-except-self) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0238) |  [`数组`](/leetcode/outline/tag/array.md) [`前缀和`](/leetcode/outline/tag/prefix-sum.md) | <font color=#ffb800>Medium</font> |
+| 189 | [轮转数组](https://leetcode.com/problems/rotate-array) | [[✓]](/leetcode/problem/0189.md) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) | <font color=#ffb800>Medium</font> |
+| 66 | [加一](https://leetcode.com/problems/plus-one) | [[✓]](/leetcode/problem/0066.md) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) | <font color=#15bd66>Easy</font> |
+| 724 | [寻找数组的中心下标](https://leetcode.com/problems/find-pivot-index) | [[✓]](/leetcode/problem/0724.md) |  [`数组`](/leetcode/outline/tag/array.md) [`前缀和`](/leetcode/outline/tag/prefix-sum.md) | <font color=#15bd66>Easy</font> |
+| 485 | [最大连续 1 的个数](https://leetcode.com/problems/max-consecutive-ones) | [[✓]](/leetcode/problem/0485.md) |  [`数组`](/leetcode/outline/tag/array.md) | <font color=#15bd66>Easy</font> |
+| 238 | [除自身以外数组的乘积](https://leetcode.com/problems/product-of-array-except-self) | [[✓]](/leetcode/problem/0238.md) |  [`数组`](/leetcode/outline/tag/array.md) [`前缀和`](/leetcode/outline/tag/prefix-sum.md) | <font color=#ffb800>Medium</font> |
 
 #### 二维数组
 
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 498 | [对角线遍历](https://leetcode.com/problems/diagonal-traverse) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0498) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
-| 48 | [旋转图像](https://leetcode.com/problems/rotate-image) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0048) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`矩阵`](/leetcode/outline/tag/matrix.md) | <font color=#ffb800>Medium</font> |
-| 73 | [矩阵置零](https://leetcode.com/problems/set-matrix-zeroes) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0073) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`矩阵`](/leetcode/outline/tag/matrix.md) | <font color=#ffb800>Medium</font> |
-| 54 | [螺旋矩阵](https://leetcode.com/problems/spiral-matrix) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0054) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
-| 59 | [螺旋矩阵 II](https://leetcode.com/problems/spiral-matrix-ii) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0059) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
-| 289 | [生命游戏](https://leetcode.com/problems/game-of-life) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0289) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
+| 498 | [对角线遍历](https://leetcode.com/problems/diagonal-traverse) | [[✓]](/leetcode/problem/0498.md) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
+| 48 | [旋转图像](https://leetcode.com/problems/rotate-image) | [[✓]](/leetcode/problem/0048.md) |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`矩阵`](/leetcode/outline/tag/matrix.md) | <font color=#ffb800>Medium</font> |
+| 73 | [矩阵置零](https://leetcode.com/problems/set-matrix-zeroes) | [[✓]](/leetcode/problem/0073.md) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`矩阵`](/leetcode/outline/tag/matrix.md) | <font color=#ffb800>Medium</font> |
+| 54 | [螺旋矩阵](https://leetcode.com/problems/spiral-matrix) | [[✓]](/leetcode/problem/0054.md) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
+| 59 | [螺旋矩阵 II](https://leetcode.com/problems/spiral-matrix-ii) | [[✓]](/leetcode/problem/0059.md) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
+| 289 | [生命游戏](https://leetcode.com/problems/game-of-life) | [[✓]](/leetcode/problem/0289.md) |  [`数组`](/leetcode/outline/tag/array.md) [`矩阵`](/leetcode/outline/tag/matrix.md) [`模拟`](/leetcode/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
 

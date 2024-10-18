@@ -8,13 +8,13 @@
 ## 2. 拉取代码
 
 ```
-git clone git@github.com:2xiao/leetcode-js.git
+git clone git@github.com:2xiao/2xiao.github.io.git
 ```
 
 ## 3. 安装依赖
 
 ```
-cd leetcode-js
+cd 2xiao.github.io
 
 npm i
 ```
@@ -35,12 +35,16 @@ npm run dev
 pip3 install pandas
 ```
 
+运行爬虫
+
+```
+npm run spider
+```
+
 运行脚本
 
 ```
-cd ./assets/scripts
-
-python3 ./entrance.py
+npm run lc
 ```
 
 ## 6. 线上部署

@@ -92,7 +92,7 @@ export default hopeTheme(
 				provider: 'Giscus',
 				repo: '2xiao/leetcode-js',
 				repoId: 'R_kgDOKUwcng',
-				category: 'Announcements',
+				category: 'General',
 				categoryId: 'DIC_kwDOKUwcns4CbI2r'
 			},
 

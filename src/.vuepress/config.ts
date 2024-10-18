@@ -3,7 +3,7 @@ import { path } from '@vuepress/utils';
 import theme from './theme.js';
 
 export default defineUserConfig({
-	base: '/leetcode-js/',
+	base: '/',
 	lang: 'zh-CN',
 	title: 'LeetCode-JS',
 	description: '写给前端工程师的算法通关指南.',

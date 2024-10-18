@@ -56,7 +56,7 @@ headerDepth: 0
 
 ### 关于书中的代码
 
-电子书地址：[https://2xiao.github.io/leetcode-js/leetcode](https://2xiao.github.io/leetcode-js/leetcode)
+电子书地址：[https://2xiao.github.io/leetcode](https://2xiao.github.io/leetcode)
 
 Github 地址：[https://github.com/2xiao/leetcode-js](https://github.com/2xiao/leetcode-js)
 

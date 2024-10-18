@@ -35,7 +35,7 @@ headerDepth: 0
 
 ### 关于书中的代码
 
-教程地址：[https://2xiao.github.io/leetcode-js/react](https://2xiao.github.io/leetcode-js/react)
+教程地址：[https://2xiao.github.io/react](https://2xiao.github.io/react)
 
 源代码地址：[https://github.com/2xiao/my-react](https://github.com/2xiao/my-react)
 

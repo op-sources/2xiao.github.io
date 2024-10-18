@@ -305,6 +305,7 @@
 | 3278 | [寻找数据科学家职位的候选人 II](https://leetcode.com/problems/find-candidates-for-data-scientist-position-ii) |  |  [`数据库`](/leetcode/outline/tag/database.md) | <font color=#ffb800>Medium</font> |
 | 3293 | [计算产品最终价格](https://leetcode.com/problems/calculate-product-final-price) |  |  [`数据库`](/leetcode/outline/tag/database.md) | <font color=#ffb800>Medium</font> |
 | 3308 | [Find Top Performing Driver](https://leetcode.com/problems/find-top-performing-driver) |  |  [`数据库`](/leetcode/outline/tag/database.md) | <font color=#ffb800>Medium</font> |
+| 3322 | [英超积分榜排名 III](https://leetcode.com/problems/premier-league-table-ranking-iii) |  |  [`数据库`](/leetcode/outline/tag/database.md) | <font color=#ffb800>Medium</font> |
 
 <style>
 .blue {

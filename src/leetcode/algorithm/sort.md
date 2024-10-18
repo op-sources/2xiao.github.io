@@ -344,21 +344,21 @@ function swap(arr, i, j) {
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
 | 剑指 Offer 45 | [把数组排成最小的数](https://leetcode.cn/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof) |  |  [`贪心`](/leetcode/outline/tag/greedy.md) [`字符串`](/leetcode/outline/tag/string.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
-| 283 | [移动零](https://leetcode.com/problems/move-zeroes) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0283) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) | <font color=#15bd66>Easy</font> |
+| 283 | [移动零](https://leetcode.com/problems/move-zeroes) | [[✓]](/leetcode/problem/0283.md) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) | <font color=#15bd66>Easy</font> |
 
 * 选择排序
 
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 215 | [数组中的第K个最大元素](https://leetcode.com/problems/kth-largest-element-in-an-array) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0215) |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) `2+` | <font color=#ffb800>Medium</font> |
+| 215 | [数组中的第K个最大元素](https://leetcode.com/problems/kth-largest-element-in-an-array) | [[✓]](/leetcode/problem/0215.md) |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) `2+` | <font color=#ffb800>Medium</font> |
 
 * 插入排序
 
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 75 | [颜色分类](https://leetcode.com/problems/sort-colors) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0075) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
+| 75 | [颜色分类](https://leetcode.com/problems/sort-colors) | [[✓]](/leetcode/problem/0075.md) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
 
 * 希尔排序
 
@@ -366,7 +366,7 @@ function swap(arr, i, j) {
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
 | 912 | [排序数组](https://leetcode.com/problems/sort-an-array) |  |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `5+` | <font color=#ffb800>Medium</font> |
-| 506 | [相对名次](https://leetcode.com/problems/relative-ranks) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0506) |  [`数组`](/leetcode/outline/tag/array.md) [`排序`](/leetcode/outline/tag/sorting.md) [`堆（优先队列）`](/leetcode/outline/tag/heap-priority-queue.md) | <font color=#15bd66>Easy</font> |
+| 506 | [相对名次](https://leetcode.com/problems/relative-ranks) | [[✓]](/leetcode/problem/0506.md) |  [`数组`](/leetcode/outline/tag/array.md) [`排序`](/leetcode/outline/tag/sorting.md) [`堆（优先队列）`](/leetcode/outline/tag/heap-priority-queue.md) | <font color=#15bd66>Easy</font> |
 
 * 归并排序
 
@@ -374,7 +374,7 @@ function swap(arr, i, j) {
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
 | 912 | [排序数组](https://leetcode.com/problems/sort-an-array) |  |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `5+` | <font color=#ffb800>Medium</font> |
-| 88 | [合并两个有序数组](https://leetcode.com/problems/merge-sorted-array) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0088) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#15bd66>Easy</font> |
+| 88 | [合并两个有序数组](https://leetcode.com/problems/merge-sorted-array) | [[✓]](/leetcode/problem/0088.md) |  [`数组`](/leetcode/outline/tag/array.md) [`双指针`](/leetcode/outline/tag/two-pointers.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#15bd66>Easy</font> |
 | 剑指 Offer 51 | [数组中的逆序对](https://leetcode.cn/problems/shu-zu-zhong-de-ni-xu-dui-lcof) |  |  [`树状数组`](/leetcode/outline/tag/binary-indexed-tree.md) [`线段树`](/leetcode/outline/tag/segment-tree.md) [`数组`](/leetcode/outline/tag/array.md) `4+` | <font color=#ff334b>Hard</font> |
 | 315 | [计算右侧小于当前元素的个数](https://leetcode.com/problems/count-of-smaller-numbers-after-self) |  |  [`树状数组`](/leetcode/outline/tag/binary-indexed-tree.md) [`线段树`](/leetcode/outline/tag/segment-tree.md) [`数组`](/leetcode/outline/tag/array.md) `4+` | <font color=#ff334b>Hard</font> |
 
@@ -384,7 +384,7 @@ function swap(arr, i, j) {
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
 | 912 | [排序数组](https://leetcode.com/problems/sort-an-array) |  |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `5+` | <font color=#ffb800>Medium</font> |
-| 169 | [多数元素](https://leetcode.com/problems/majority-element) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0169) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) `2+` | <font color=#15bd66>Easy</font> |
+| 169 | [多数元素](https://leetcode.com/problems/majority-element) | [[✓]](/leetcode/problem/0169.md) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) `2+` | <font color=#15bd66>Easy</font> |
 
 * 堆排序
 
@@ -392,7 +392,7 @@ function swap(arr, i, j) {
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
 | 912 | [排序数组](https://leetcode.com/problems/sort-an-array) |  |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`桶排序`](/leetcode/outline/tag/bucket-sort.md) `5+` | <font color=#ffb800>Medium</font> |
-| 215 | [数组中的第K个最大元素](https://leetcode.com/problems/kth-largest-element-in-an-array) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0215) |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) `2+` | <font color=#ffb800>Medium</font> |
+| 215 | [数组中的第K个最大元素](https://leetcode.com/problems/kth-largest-element-in-an-array) | [[✓]](/leetcode/problem/0215.md) |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) `2+` | <font color=#ffb800>Medium</font> |
 | 剑指 Offer 40 | [最小的k个数](https://leetcode.cn/problems/zui-xiao-de-kge-shu-lcof) |  |  [`数组`](/leetcode/outline/tag/array.md) [`分治`](/leetcode/outline/tag/divide-and-conquer.md) [`快速选择`](/leetcode/outline/tag/quickselect.md) `2+` | <font color=#15bd66>Easy</font> |
 
 * 计数排序
@@ -425,9 +425,9 @@ function swap(arr, i, j) {
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
 | :------: | :------ | :------: | :------ | :------ |
-| 217 | [存在重复元素](https://leetcode.com/problems/contains-duplicate) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0217) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#15bd66>Easy</font> |
-| 136 | [只出现一次的数字](https://leetcode.com/problems/single-number) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0136) |  [`位运算`](/leetcode/outline/tag/bit-manipulation.md) [`数组`](/leetcode/outline/tag/array.md) | <font color=#15bd66>Easy</font> |
-| 56 | [合并区间](https://leetcode.com/problems/merge-intervals) | [[✓]](https://2xiao.github.io/leetcode-js/leetcode/problem/0056) |  [`数组`](/leetcode/outline/tag/array.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
+| 217 | [存在重复元素](https://leetcode.com/problems/contains-duplicate) | [[✓]](/leetcode/problem/0217.md) |  [`数组`](/leetcode/outline/tag/array.md) [`哈希表`](/leetcode/outline/tag/hash-table.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#15bd66>Easy</font> |
+| 136 | [只出现一次的数字](https://leetcode.com/problems/single-number) | [[✓]](/leetcode/problem/0136.md) |  [`位运算`](/leetcode/outline/tag/bit-manipulation.md) [`数组`](/leetcode/outline/tag/array.md) | <font color=#15bd66>Easy</font> |
+| 56 | [合并区间](https://leetcode.com/problems/merge-intervals) | [[✓]](/leetcode/problem/0056.md) |  [`数组`](/leetcode/outline/tag/array.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
 | 179 | [最大数](https://leetcode.com/problems/largest-number) |  |  [`贪心`](/leetcode/outline/tag/greedy.md) [`数组`](/leetcode/outline/tag/array.md) [`字符串`](/leetcode/outline/tag/string.md) `1+` | <font color=#ffb800>Medium</font> |
 | 384 | [打乱数组](https://leetcode.com/problems/shuffle-an-array) |  |  [`数组`](/leetcode/outline/tag/array.md) [`数学`](/leetcode/outline/tag/math.md) [`随机化`](/leetcode/outline/tag/randomized.md) | <font color=#ffb800>Medium</font> |
 | 剑指 Offer 45 | [把数组排成最小的数](https://leetcode.cn/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof) |  |  [`贪心`](/leetcode/outline/tag/greedy.md) [`字符串`](/leetcode/outline/tag/string.md) [`排序`](/leetcode/outline/tag/sorting.md) | <font color=#ffb800>Medium</font> |
