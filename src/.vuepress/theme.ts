@@ -92,7 +92,8 @@ export default hopeTheme(
 				provider: 'Giscus',
 				repo: '2xiao/2xiao.github.io',
 				repoId: 'R_kgDONCFDgw',
-				category: 'General'
+				category: 'General',
+				categoryId: 'DIC_kwDONCFDg84Cjd4k'
 			},
 
 			blog: {

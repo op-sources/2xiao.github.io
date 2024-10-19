@@ -480,6 +480,7 @@ export default sidebar({
           collapsible: true,
           children: [
             "1522",
+            "1545",
             "1590"
           ],
         },

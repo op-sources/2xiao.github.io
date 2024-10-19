@@ -4,20 +4,20 @@ export default navbar([
 	{
 		text: 'LeetCode 通关指南',
 		icon: 'code',
-		prefix: '/leetcode/',
-		link: '/leetcode/'
+		prefix: '/leetcode-js/',
+		link: '/leetcode-js/'
 	},
 	{
 		text: 'React 源码',
 		icon: 'react',
-		prefix: '/react/',
-		link: '/react/'
+		prefix: '/my-react/',
+		link: '/my-react/'
 	},
 	{
 		text: 'Vue 源码',
 		icon: 'vue',
-		prefix: '/vue/',
-		link: '/vue/'
+		prefix: '/my-vue/',
+		link: '/my-vue/'
 	},
 	{
 		text: '前端面试题',

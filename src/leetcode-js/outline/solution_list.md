@@ -1,6 +1,6 @@
 # 1.3 LeetCode 题解
 
-已完成 445 道
+已完成 446 道
 
 <!-- prettier-ignore -->
 | 题号 | 标题 | 题解 | 标签 | 难度 |
@@ -339,6 +339,7 @@
 | 1475 | [商品折扣后的最终价格](https://leetcode.com/problems/final-prices-with-a-special-discount-in-a-shop) | [[✓]](/leetcode-js/problem/1475.md) |  [`栈`](/leetcode-js/outline/tag/stack.md) [`数组`](/leetcode-js/outline/tag/array.md) [`单调栈`](/leetcode-js/outline/tag/monotonic-stack.md) | <font color=#15bd66>Easy</font> |
 | 1497 | [检查数组对是否可以被 k 整除](https://leetcode.com/problems/check-if-array-pairs-are-divisible-by-k) | [[✓]](/leetcode-js/problem/1497.md) |  [`数组`](/leetcode-js/outline/tag/array.md) [`哈希表`](/leetcode-js/outline/tag/hash-table.md) [`计数`](/leetcode-js/outline/tag/counting.md) | <font color=#ffb800>Medium</font> |
 | 1522 | [N 叉树的直径](https://leetcode.com/problems/diameter-of-n-ary-tree) | [[✓]](/leetcode-js/problem/1522.md) |  [`树`](/leetcode-js/outline/tag/tree.md) [`深度优先搜索`](/leetcode-js/outline/tag/depth-first-search.md) | <font color=#ffb800>Medium</font> |
+| 1545 | [找出第 N 个二进制字符串中的第 K 位](https://leetcode.com/problems/find-kth-bit-in-nth-binary-string) | [[✓]](/leetcode-js/problem/1545.md) |  [`递归`](/leetcode-js/outline/tag/recursion.md) [`字符串`](/leetcode-js/outline/tag/string.md) [`模拟`](/leetcode-js/outline/tag/simulation.md) | <font color=#ffb800>Medium</font> |
 | 1590 | [使数组和能被 P 整除](https://leetcode.com/problems/make-sum-divisible-by-p) | [[✓]](/leetcode-js/problem/1590.md) |  [`数组`](/leetcode-js/outline/tag/array.md) [`哈希表`](/leetcode-js/outline/tag/hash-table.md) [`前缀和`](/leetcode-js/outline/tag/prefix-sum.md) | <font color=#ffb800>Medium</font> |
 | 1813 | [句子相似性 III](https://leetcode.com/problems/sentence-similarity-iii) | [[✓]](/leetcode-js/problem/1813.md) |  [`数组`](/leetcode-js/outline/tag/array.md) [`双指针`](/leetcode-js/outline/tag/two-pointers.md) [`字符串`](/leetcode-js/outline/tag/string.md) | <font color=#ffb800>Medium</font> |
 | 1942 | [最小未被占据椅子的编号](https://leetcode.com/problems/the-number-of-the-smallest-unoccupied-chair) | [[✓]](/leetcode-js/problem/1942.md) |  [`数组`](/leetcode-js/outline/tag/array.md) [`哈希表`](/leetcode-js/outline/tag/hash-table.md) [`堆（优先队列）`](/leetcode-js/outline/tag/heap-priority-queue.md) | <font color=#ffb800>Medium</font> |
