@@ -12,7 +12,7 @@ heroFullScreen: true
 tagline: LeetCode 算法 + 框架源码 + 前端八股文 = Offer
 actions:
   - text: 🧭 LeetCode 通关指南
-    link: ./leetcode-js/
+    link: https://2xiao.github.io/leetcode-js/
     type: primary
 
   - text: 🍭 React 源码
