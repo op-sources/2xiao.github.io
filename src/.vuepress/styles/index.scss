@@ -52,3 +52,14 @@ html[data-theme=dark] #app {
 .external-link-icon {
     display: none;
 }
+
+.vp-highlight-image {
+    width: 18rem;
+    border-radius: 0.3rem;
+    background-color: transparent;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+}
+
+// .vp-feature-image {
+//     height: 18rem;
+// }

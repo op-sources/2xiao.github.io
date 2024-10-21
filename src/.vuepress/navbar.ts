@@ -4,7 +4,8 @@ export default navbar([
 	{
 		text: 'LeetCode 通关指南',
 		icon: 'code',
-		link: 'https://2xiao.github.io/leetcode-js/'
+		link: 'https://2xiao.github.io/leetcode-js/',
+		target: '_self'
 	},
 	{
 		text: 'React 源码',

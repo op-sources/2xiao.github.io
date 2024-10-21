@@ -16,7 +16,7 @@ GitHub 地址：[https://github.com/2xiao/2xiao.github.io](https://github.com/2x
 电子书地址：[https://2xiao.github.io/](https://2xiao.github.io/)
 
 <p align="center">
-  <img src="./assets/image/leetcode-js-logo.png" alt="logo" height="400"/>
+  <img src="./src/image/leetcode-js-logo.png" alt="logo" height="400"/>
 </p>
 
 ### 版权声明
