@@ -12,7 +12,7 @@ heroText: LeetCode-JS
 tagline: LeetCode 算法 + 框架源码 + 前端八股文 = Offer
 actions:
   - text: 🧭 LeetCode 通关指南
-    link: ./leetcode-js/
+    link: https://2xiao.github.io/leetcode-js/
     type: primary
 
   - text: 🍭 React 源码
@@ -33,32 +33,32 @@ highlights:
       - title: LeetCode 题解
         icon: code
         details: 手把手带你完成 1000 道算法题，给出详细的解题思路、复杂度分析和代码
-        link: ./leetcode-js/problem/
+        link: https://2xiao.github.io/leetcode-js/problem/
 
       - title: 剑指 Offer
         icon: hot
         details: 《剑指 Offer（第 2 版）》真题详解
-        link: ./leetcode-js/offer/
+        link: https://2xiao.github.io/leetcode-js/offer/
 
       - title: 剑指 Offer II
         icon: ability
         details: 《剑指 Offer（专项突破）》真题详解
-        link: ./leetcode-js/offer2/
+        link: https://2xiao.github.io/leetcode-js/offer2/
 
       - title: 程序员面试金典
         icon: keyboard
         details: 《程序员面试金典（第 6 版）》真题详解
-        link: ./leetcode-js/interview/
+        link: https://2xiao.github.io/leetcode-js/interview/
 
       - title: 算法笔记
         icon: note
         details: 把所有常见算法技巧都总结成框架模板，致力于把算法讲清楚
-        link: ./leetcode-js/book/intro
+        link: https://2xiao.github.io/leetcode-js/book/intro
 
       - title: 专项训练
         icon: strong
         details: 面试前必刷的高频题，迅速练出肌肉记忆，掌握算法
-        link: ./leetcode-js/plan/
+        link: https://2xiao.github.io/leetcode-js/plan/
 
   - header: 手写 React 源码
     description: 深入理解 React 源码，带你从零实现 React v18 的核心功能，构建自己的 React 库。
@@ -174,5 +174,5 @@ highlights:
 
       - title: JavaScript 专项练习
         icon: enum
-        link: ./leetcode-js/plan/js_list.html
+        link: https://2xiao.github.io/leetcode-js/plan/js_list.html
 ---
