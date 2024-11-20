@@ -125,54 +125,63 @@ highlights:
         link: ./my-vue/21.md
 
   - header: 前端面试题
-    description: 常见的前端面试题梳理，提炼分析面试难点，助你快速搞定前端八股文
+    description: 常见的前端面试题梳理，提炼分析面试难点，助你系统备战，收割 Offer
     bgImage: https://theme-hope-assets.vuejs.press/bg/2-light.svg
     bgImageDark: https://theme-hope-assets.vuejs.press/bg/2-dark.svg
     features:
       - title: JavaScript 相关
         icon: javascript
-        link: ./interview/js.md
-      - title: CSS 相关
-        icon: css
-        link: ./interview/css.md
+        link: ./interview/js/
 
       - title: HTML 相关
         icon: html
-        link: ./interview/html.md
+        link: ./interview/html/
+
+      - title: CSS 相关
+        icon: css
+        link: ./interview/css/
 
       - title: HTTP 相关
         icon: http
-        link: ./interview/http.md
+        link: ./interview/http/
+
+      - title: NodeJS 相关
+        icon: nodeJS
+        link: ./interview/nodejs/
 
       - title: React 相关
         icon: react
-        link: ./interview/react.md
+        link: ./interview/react/
+
+      - title: Vue 相关
+        icon: vue
+        link: ./interview/vue/
 
       - title: Webpack 相关
         icon: box
-        link: ./interview/webpack.md
+        link: ./interview/webpack/
 
-      - title: Web 性能
-        icon: timer
-        link: ./interview/performance.md
+      - title: 版本管理
+        icon: git
+        link: ./interview/git/
 
-      - title: Web 监控
+      - title: 前端监控
         icon: router
-        link: ./interview/moniter.md
+        link: ./interview/engineering/
 
-      - title: Web 安全
-        icon: token
-        link: ./interview/security.md
+      - title: 数据结构与算法
+        icon: code
+        link: https://2xiao.github.io/leetcode-js/
 
-      - title: 自测 100 题
-        icon: strong
-        link: ./interview/qa100.md
+      - title: 系统设计
+        icon: structure
+        link: ./interview/system_design/
 
-      - title: Promise 专项练习
-        icon: wrap
-        link: ./interview/promise.md
+      - title: 行为面试
+        icon: people
+        link: ./interview/behavior/
 
-      - title: JavaScript 专项练习
-        icon: enum
-        link: https://2xiao.github.io/leetcode-js/plan/js_list.html
+      - title: 最新技术趋势
+        icon: rank
+        link: ./interview/trend/
 ---
