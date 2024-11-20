@@ -1,242 +1,199 @@
-# 说说 JavaScript 中的事件模型
-
-![](https://static.vue-js.com/32a182f0-74cf-11eb-85f6-6fac77c0c9b3.png)
+# 说说你对事件模型的理解
 
 ## 一、事件与事件流
 
-`javascript`中的事件，可以理解就是在`HTML`文档或者浏览器中发生的一种交互操作，使得网页具备互动性， 常见的有加载事件、鼠标事件、自定义事件等
+在 **JavaScript** 中，**事件** 是用户与网页交互的方式，例如鼠标点击、键盘输入、页面加载等行为。为了处理这些事件，浏览器定义了**事件流**机制，用来确定事件在页面中传播的顺序。
 
-由于`DOM`是一个树结构，如果在父子节点绑定事件时候，当触发子节点的时候，就存在一个顺序问题，这就涉及到了事件流的概念
+**事件流的三个阶段**：
 
-事件流都会经历三个阶段：
+1. **捕获阶段**：事件从顶层对象（如 `document`）开始，沿着 DOM 树向目标元素传播。
+2. **目标阶段**：事件到达目标元素并触发绑定在该元素上的事件处理器。
+3. **冒泡阶段**：事件从目标元素开始，沿 DOM 树向上传播至顶层对象。
 
-- 事件捕获阶段(capture phase)
-- 处于目标阶段(target phase)
-- 事件冒泡阶段(bubbling phase)
+![事件流](../../image/interview-js-36.png)
 
-![](https://static.vue-js.com/3e9a6450-74cf-11eb-85f6-6fac77c0c9b3.png)
-
-事件冒泡是一种从下往上的传播方式，由最具体的元素（触发节点）然后逐渐向上传播到最不具体的那个节点，也就是`DOM`中最高层的父节点
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<title>Event Bubbling</title>
-	</head>
-	<body>
-		<button id="clickMe">Click Me</button>
-	</body>
-</html>
-```
-
-然后，我们给`button`和它的父元素，加入点击事件
-
-```js
-var button = document.getElementById('clickMe');
-
-button.onclick = function () {
-	console.log('1.Button');
-};
-document.body.onclick = function () {
-	console.log('2.body');
-};
-document.onclick = function () {
-	console.log('3.document');
-};
-window.onclick = function () {
-	console.log('4.window');
-};
-```
-
-点击按钮，输出如下
-
-```js
-1.button
-2.body
-3.document
-4.window
-```
-
-点击事件首先在`button`元素上发生，然后逐级向上传播
-
-事件捕获与事件冒泡相反，事件最开始由不太具体的节点最早接受事件, 而最具体的节点（触发节点）最后接受事件
+---
 
 ## 二、事件模型
 
-事件模型可以分为三种：
+### 1. DOM0 级事件模型（原始事件模型）
 
-- 原始事件模型（DOM0 级）
-- 标准事件模型（DOM2 级）
-- IE 事件模型（基本不用）
+DOM0 级事件模型通过将事件处理函数直接绑定到元素的事件属性实现。
 
-### 原始事件模型
+#### 特性：
 
-事件绑定监听函数比较简单, 有两种方式：
+- 绑定简单，语法直观：
+  ```html
+  <button onclick="alert('Hello!')">Click Me</button>
+  ```
+- 只支持 **冒泡阶段**。
+- **单一绑定**：同一事件只能绑定一个处理函数，后绑定的会覆盖先绑定的：
+  ```javascript
+  var btn = document.getElementById('btn');
+  btn.onclick = function () {
+  	console.log('First Handler');
+  };
+  btn.onclick = function () {
+  	console.log('Second Handler'); // 覆盖前面的
+  };
+  ```
+- 移除事件处理器：
+  ```javascript
+  btn.onclick = null;
+  ```
 
-- HTML 代码中直接绑定
+---
 
-```js
-<input type="button" onclick="fun()">
-```
+### 2. DOM2 级事件模型（标准事件模型）
 
-- 通过`JS`代码绑定
+DOM2 事件模型通过 `addEventListener` 方法为元素绑定事件，支持事件捕获和冒泡阶段。
 
-```js
-var btn = document.getElementById('.btn');
-btn.onclick = fun;
-```
+#### API 使用：
 
-#### 特性
+- **绑定事件**：
+  ```javascript
+  element.addEventListener(eventType, handler, useCapture);
+  ```
+  - `eventType`: 事件类型（如 `click`，不带 "on" 前缀）。
+  - `handler`: 事件处理函数。
+  - `useCapture`: `true` 表示在捕获阶段触发，`false` 表示在冒泡阶段触发（默认）。
+- **移除事件**：
+  ```javascript
+  element.removeEventListener(eventType, handler, useCapture);
+  ```
 
-- 绑定速度快
+#### 特性：
 
-`DOM0`级事件具有很好的跨浏览器优势，会以最快的速度绑定，但由于绑定速度太快，可能页面还未完全加载出来，以至于事件可能无法正常运行
+- 支持 **捕获** 和 **冒泡**：
+  ```javascript
+  div.addEventListener('click', handler, true); // 捕获阶段
+  div.addEventListener('click', handler, false); // 冒泡阶段
+  ```
+- 允许同一元素的同一事件绑定多个处理器，不会互相覆盖：
+  ```javascript
+  btn.addEventListener('click', handler1, false);
+  btn.addEventListener('click', handler2, false);
+  ```
 
-- 只支持冒泡，不支持捕获
+#### 示例：
 
-- 同一个类型的事件只能绑定一次
-
-```js
-<input type="button" id="btn" onclick="fun1()">
-
-var btn = document.getElementById('.btn');
-btn.onclick = fun2;
-```
-
-如上，当希望为同一个元素绑定多个同类型事件的时候（上面的这个`btn`元素绑定 2 个点击事件），是不被允许的，后绑定的事件会覆盖之前的事件
-
-删除 `DOM0` 级事件处理程序只要将对应事件属性置为`null`即可
-
-```js
-btn.onclick = null;
-```
-
-### 标准事件模型
-
-在该事件模型中，一次事件共有三个过程:
-
-- 事件捕获阶段：事件从`document`一直向下传播到目标元素, 依次检查经过的节点是否绑定了事件监听函数，如果有则执行
-- 事件处理阶段：事件到达目标元素, 触发目标元素的监听函数
-- 事件冒泡阶段：事件从目标元素冒泡到`document`, 依次检查经过的节点是否绑定了事件监听函数，如果有则执行
-
-事件绑定监听函数的方式如下:
-
-```
-addEventListener(eventType, handler, useCapture)
-```
-
-事件移除监听函数的方式如下:
-
-```
-removeEventListener(eventType, handler, useCapture)
-```
-
-参数如下：
-
-- `eventType`指定事件类型(不要加 on)
-- `handler`是事件处理函数
-- `useCapture`是一个`boolean`用于指定是否在捕获阶段进行处理，一般设置为`false`与 IE 浏览器保持一致
-
-举个例子：
-
-```js
-var btn = document.getElementById('.btn');
-btn.addEventListener(‘click’, showMessage, false);
-btn.removeEventListener(‘click’, showMessage, false);
-```
-
-#### 特性
-
-- 可以在一个`DOM`元素上绑定多个事件处理器，各自并不会冲突
-
-```js
-btn.addEventListener(‘click’, showMessage1, false);
-btn.addEventListener(‘click’, showMessage2, false);
-btn.addEventListener(‘click’, showMessage3, false);
-```
-
-- 执行时机
-
-当第三个参数(`useCapture`)设置为`true`就在捕获过程中执行，反之在冒泡过程中执行处理函数
-
-下面举个例子：
-
-```js
-<div id="div">
-	<p id="p">
-		<span id="span">Click Me!</span>
-	</p>
+```html
+<div id="parent">
+	<button id="child">Click Me</button>
 </div>
 ```
 
-设置点击事件
+```javascript
+var parent = document.getElementById('parent');
+var child = document.getElementById('child');
 
-```js
-var div = document.getElementById('div');
-var p = document.getElementById('p');
+parent.addEventListener('click', () => console.log('Parent Capturing'), true);
+parent.addEventListener('click', () => console.log('Parent Bubbling'), false);
 
-function onClickFn(event) {
-	var tagName = event.currentTarget.tagName;
-	var phase = event.eventPhase;
-	console.log(tagName, phase);
-}
+child.addEventListener('click', () => console.log('Child Capturing'), true);
+child.addEventListener('click', () => console.log('Child Bubbling'), false);
 
-div.addEventListener('click', onClickFn, false);
-p.addEventListener('click', onClickFn, false);
+// 点击按钮的输出顺序：
+/*
+Parent Capturing
+Child Capturing
+Child Bubbling
+Parent Bubbling
+*/
 ```
 
-上述使用了`eventPhase`，返回一个代表当前执行阶段的整数值。1 为捕获阶段、2 为事件对象触发阶段、3 为冒泡阶段
+---
 
-点击`Click Me!`，输出如下
+### 3. IE 事件模型（已过时）
 
-```js
-P 3
-DIV 3
+IE 事件模型使用 `attachEvent` 方法绑定事件，但只支持冒泡阶段，不支持捕获。
+
+#### API 使用：
+
+- 绑定事件：
+  ```javascript
+  element.attachEvent('on' + eventType, handler);
+  ```
+- 移除事件：
+  ```javascript
+  element.detachEvent('on' + eventType, handler);
+  ```
+
+#### 特性：
+
+- 事件处理函数的 `this` 指向 `window`，而非事件目标。
+- 不支持事件捕获。
+
+示例：
+
+```javascript
+var btn = document.getElementById('btn');
+btn.attachEvent('onclick', function () {
+	console.log(this === window); // true
+});
 ```
 
-可以看到，`p`和`div`都是在冒泡阶段响应了事件，由于冒泡的特性，裹在里层的`p`率先做出响应
+---
 
-如果把第三个参数都改为`true`
+## 三、事件委托
 
-```js
-div.addEventListener('click', onClickFn, true);
-p.addEventListener('click', onClickFn, true);
+**事件委托** 是一种将事件绑定到父元素，从而管理多个子元素事件的技巧。由于事件冒泡特性，子元素的事件会传递到父元素上触发。
+
+#### 优点：
+
+- 减少内存消耗：避免为每个子元素单独绑定事件。
+- 动态支持新增子元素：父元素的事件处理器可以响应新添加的子元素事件。
+
+#### 示例：
+
+```html
+<ul id="list">
+	<li>Item 1</li>
+	<li>Item 2</li>
+</ul>
 ```
 
-输出如下
-
-```js
-DIV 1
-P 1
+```javascript
+var list = document.getElementById('list');
+list.addEventListener('click', function (event) {
+	if (event.target.tagName === 'LI') {
+		console.log('Clicked on', event.target.textContent);
+	}
+});
 ```
 
-两者都是在捕获阶段响应事件，所以`div`比`p`标签先做出响应
+---
 
-### IE 事件模型
+## 四、阻止默认行为和停止传播
 
-IE 事件模型共有两个过程:
+1. **阻止默认行为**：
+   使用 `event.preventDefault()` 阻止事件的默认动作，例如链接跳转或表单提交。
 
-- 事件处理阶段：事件到达目标元素, 触发目标元素的监听函数。
-- 事件冒泡阶段：事件从目标元素冒泡到`document`, 依次检查经过的节点是否绑定了事件监听函数，如果有则执行
+   ```javascript
+   document.querySelector('a').addEventListener('click', (event) => {
+   	event.preventDefault();
+   	console.log('Link clicked, but not followed.');
+   });
+   ```
 
-事件绑定监听函数的方式如下:
+2. **停止事件传播**：
+   使用 `event.stopPropagation()` 阻止事件在捕获或冒泡阶段的进一步传播。
 
-```
-attachEvent(eventType, handler)
-```
+   ```javascript
+   document.getElementById('child').addEventListener('click', (event) => {
+   	event.stopPropagation();
+   	console.log('Event propagation stopped.');
+   });
+   ```
 
-事件移除监听函数的方式如下:
+3. **同时阻止默认行为和传播**：
+   使用 `event.stopImmediatePropagation()`。
 
-```
-detachEvent(eventType, handler)
-```
+---
 
-举个例子：
+## 五、总结
 
-```js
-var btn = document.getElementById('.btn');
-btn.attachEvent(‘onclick’, showMessage);
-btn.detachEvent(‘onclick’, showMessage);
-```
+- **事件流**：由捕获到目标，再到冒泡。
+- **事件模型**：DOM0 简单但限制多，DOM2 强大且灵活，IE 模型已淘汰。
+- **事件委托**：利用冒泡机制优化事件处理。
+- **事件控制**：通过 `preventDefault` 和 `stopPropagation` 精确管理事件行为。

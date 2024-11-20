@@ -1,7 +1,5 @@
 # 说说对受控组件和非受控组件的理解？应用场景？
 
-![](https://static.vue-js.com/12990fd0-df2f-11eb-ab90-d9ae814b240d.png)
-
 ## 一、受控组件
 
 受控组件，简单来讲，就是受我们控制的组件，组件的状态全程响应外部数据
@@ -69,7 +67,7 @@ export class UnControll extends Component {
 
 针对两者的区别，其应用场景如下图所示：
 
-![](https://static.vue-js.com/f28aed20-df2f-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-10.png)
 
 ## 参考文献
 

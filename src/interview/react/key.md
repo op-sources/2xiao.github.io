@@ -1,7 +1,5 @@
 # React 中的 key 有什么作用？
 
-![](https://static.vue-js.com/31677360-dd69-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 首先，先给出`react`组件中进行列表渲染的一个示例：
@@ -116,7 +114,7 @@ insertMovie() {
 
 `react`判断`key`的流程具体如下图：
 
-![](https://static.vue-js.com/3b9afe10-dd69-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-31.png)
 
 ## 参考文献
 

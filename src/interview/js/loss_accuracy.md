@@ -1,7 +1,5 @@
 # 说说 Javascript 数字精度丢失的问题，如何解决？
 
-![](https://static.vue-js.com/09646a10-86f4-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、场景复现
 
 一个经典的面试题
@@ -32,7 +30,7 @@
 
 而计算机只能用二进制（0 或 1）表示，二进制转换为科学记数法的公式如下：
 
-![](https://static.vue-js.com/1b4b1620-86f4-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-js-10.png)
 
 其中，`a`的值为 0 或者 1，e 为小数点移动的位置
 
@@ -40,7 +38,7 @@
 
 27.0 转化成二进制为 11011.0 ，科学计数法表示为：
 
-![](https://static.vue-js.com/37007090-86f4-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-js-11.png)
 
 前面讲到，`javaScript`存储方式是双精度浮点数，其长度为 8 个字节，即 64 位比特
 
@@ -52,13 +50,13 @@
 
 如下图所示：
 
-![](https://static.vue-js.com/430d0100-86f4-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-js-12.png)
 
 举个例子：
 
 27.5 转换为二进制 11011.1
 
-11011.1 转换为科学记数法 ![[公式]](https://www.zhihu.com/equation?tex=1.10111%2A2%5E4)
+11011.1 转换为科学记数法 ![[公式]](../../image/interview-js-13.jpg)
 
 符号位为 1(正数)，指数位为 4+，1023+4，即 1027
 

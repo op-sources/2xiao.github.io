@@ -1,7 +1,5 @@
 # 说一下 GET 和 POST 的区别？
 
-![](https://static.vue-js.com/6e8d19e0-bc3d-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 `GET`和`POST`，两者是`HTTP`协议中发送请求的方法

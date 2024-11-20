@@ -1,7 +1,5 @@
 # Vue 项目中有封装过 axios 吗？主要是封装哪方面的？
 
-![](https://static.vue-js.com/2bf1e460-45a7-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、axios 是什么
 
 `axios` 是一个轻量的 `HTTP`客户端

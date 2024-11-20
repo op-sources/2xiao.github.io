@@ -1,7 +1,5 @@
 # v-if 和 v-for 的优先级是什么？
 
-![](https://static.vue-js.com/e8764810-3acb-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、作用
 
 `v-if` 指令用于条件性地渲染一块内容。这块内容只会在指令的表达式返回 `true`值的时候被渲染

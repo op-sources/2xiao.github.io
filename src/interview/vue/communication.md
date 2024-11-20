@@ -1,7 +1,5 @@
 # Vue 组件之间的通信方式都有哪些？
 
-![](https://static.vue-js.com/7de50d20-3aca-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、组件间通信的概念
 
 开始之前，我们把**组件间通信**这个词进行拆分
@@ -26,7 +24,7 @@
 
 关系图:
 
-![](https://static.vue-js.com/85b92400-3aca-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-1.png)
 
 ## 三、组件间通信的方案
 
@@ -43,7 +41,7 @@
 
 ### props 传递数据
 
-![](https://static.vue-js.com/8f80a670-3aca-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-2.png)
 
 - 适用场景：父组件传递数据给子组件
 - 子组件设置`props`属性，定义接收父组件传递过来的参数
@@ -212,7 +210,7 @@ inject: ['foo']; // 获取到祖先组件传递过来的值
 
 - 适用场景: 复杂关系的组件数据传递
 - `Vuex`作用相当于一个用来存储共享变量的容器
-  ![](https://static.vue-js.com/fa207cd0-3aca-11eb-ab90-d9ae814b240d.png)
+  ![](../../image/interview-vue-3.png)
 
 - `state`用来存放共享变量的地方
 - `getter`，可以增加一个`getter`派生状态，\(相当于`store`中的计算属性），用来获得共享变量的值

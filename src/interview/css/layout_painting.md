@@ -10,7 +10,7 @@
 
 具体的浏览器解析渲染机制如下所示：
 
-![](https://static.vue-js.com/2b56a950-9cdc-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-26.png)
 
 - 解析 HTML，生成 DOM 树，解析 CSS，生成 CSSOM 树
 

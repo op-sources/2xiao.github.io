@@ -1,6 +1,4 @@
-# 你是怎么理解 ES6 中 Generator 的？使用场景？
-
-![](https://static.vue-js.com/7db499b0-5947-11eb-ab90-d9ae814b240d.png)
+# 说说你对 ES6 中 Generator 的理解？
 
 ## 一、介绍
 

@@ -1,7 +1,5 @@
 # 说说 Node 中的 EventEmitter? 如何实现一个 EventEmitter?
 
-![](https://static.vue-js.com/16b10390-c83a-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 我们了解到，`Node `采用了事件驱动机制，而`EventEmitter `就是`Node`实现事件驱动的基础

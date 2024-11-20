@@ -1,7 +1,5 @@
 # 你知道 vue 中 key 的原理吗？说说你对它的理解
 
-![](https://static.vue-js.com/bc6e9540-3f41-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、Key 是什么
 
 开始之前，我们先还原两个实际工作场景
@@ -67,7 +65,7 @@
 
 在不使用`key`的情况，`vue`会进行这样的操作：
 
-![](https://static.vue-js.com/c9da6790-3f41-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-63.png)
 
 分析下整体流程：
 

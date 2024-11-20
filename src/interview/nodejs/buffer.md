@@ -1,6 +1,5 @@
 # 说说对 Node 中的 Buffer 的理解？应用场景？
 
-
 ## 一、是什么
 
 在`Node`应用中，需要处理网络协议、操作数据库、处理图片、接收上传文件等，在网络流和文件的操作中，要处理大量二进制数据，而`Buffer`就是在内存中开辟一片区域（初次初始化为 8KB），用来存放二进制数据
@@ -23,7 +22,7 @@ const buffer = Buffer.from('why');
 
 其存储过程如下图所示：
 
-![](https://static.vue-js.com/20371250-c69c-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-1.png)
 
 ## 二、使用方法
 

@@ -1,7 +1,5 @@
 # 如何理解 TCP/IP 协议?
 
-![](https://static.vue-js.com/4f69a930-b647-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 TCP/IP，**传输控制协议**/**网际协议**，是指能够在多个不同网络间实现信息传输的协议簇
@@ -28,7 +26,7 @@ TCP/IP 协议族按层次分别了五层体系或者四层体系
 
 如下图所示：
 
-![](https://static.vue-js.com/5bb93610-b647-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-http-3.png)
 
 ### 五层体系
 
@@ -90,7 +88,7 @@ OSI 参考模型与 TCP/IP 参考模型区别如下：
 
 三种模型对应关系如下图所示：
 
-![](https://static.vue-js.com/3fbff4d0-b647-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-http-4.png)
 
 ## 参考文献
 

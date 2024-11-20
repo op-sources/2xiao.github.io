@@ -4,7 +4,7 @@
 
 `git `的操作可以通过命令的形式如执行，日常使用就如下图 6 个命令即可
 
-![](https://static.vue-js.com/fe150520-f7af-11eb-991d-334fd31f0201.png)
+![](../../image/interview-git-8.png)
 
 实际上，如果想要熟练使用，超过 60 多个命令需要了解，下面则介绍下常见的的`git `命令
 
@@ -114,7 +114,7 @@
 
 `git`常用命令速查表如下所示：
 
-![](https://static.vue-js.com/0a10f3c0-f7b0-11eb-991d-334fd31f0201.png)
+![](../../image/interview-git-9.png)
 
 ## 参考文献
 

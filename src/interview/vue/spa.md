@@ -1,12 +1,10 @@
 # 你对 SPA 单页面的理解，它的优缺点分别是什么？如何实现 SPA 应用呢
 
-![](https://static.vue-js.com/cf6aa320-3ac6-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、什么是 SPA
 
 SPA（single-page application），翻译过来就是单页应用`SPA`是一种网络应用程序或网站的模型，它通过动态重写当前页面来与用户交互，这种方法避免了页面之间切换打断用户体验在单页应用中，所有必要的代码（`HTML`、`JavaScript`和`CSS`）都通过单个页面的加载而检索，或者根据需要（通常是为响应用户操作）动态装载适当的资源并添加到页面页面在任何时间点都不会重新加载，也不会将控制转移到其他页面举个例子来讲就是一个杯子，早上装的牛奶，中午装的是开水，晚上装的是茶，我们发现，变的始终是杯子里的内容，而杯子始终是那个杯子结构如下图
 
-![](https://static.vue-js.com/df14a5a0-3ac6-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-59.png)
 
 我们熟知的 JS 框架如`react`,`vue`,`angular`,`ember`都属于`SPA`
 
@@ -14,7 +12,7 @@ SPA（single-page application），翻译过来就是单页应用`SPA`是一种�
 
 上面大家已经对单页面有所了解了，下面来讲讲多页应用 MPA（MultiPage-page application），翻译过来就是多页应用在`MPA`中，每个页面都是一个主页面，都是独立的当我们在访问另一个页面的时候，都需要重新加载`html`、`css`、`js`文件，公共文件则根据需求按需加载如下图
 
-![](https://static.vue-js.com/eeb13aa0-3ac6-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-60.png)
 
 #### 单页应用与多页应用的区别
 
@@ -49,7 +47,7 @@ SPA（single-page application），翻译过来就是单页应用`SPA`是一种�
 1.  监听地址栏中`hash`变化驱动界面变化
 2.  用`pushsate`记录浏览器的历史，驱动界面发送变化
 
-![](https://static.vue-js.com/fc95bf60-3ac6-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-61.png)
 
 #### 实现
 
@@ -143,7 +141,7 @@ miniRouter.push('/page2'); // page2
 
 原理是通过`Nginx`配置，判断访问来源是否为爬虫，如果是则搜索引擎的爬虫请求会转发到一个`node server`，再通过`PhantomJS`来解析完整的`HTML`，返回给爬虫。下面是大致流程图
 
-![](https://static.vue-js.com/25be6630-3ac7-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-62.png)
 
 ### 参考文献
 

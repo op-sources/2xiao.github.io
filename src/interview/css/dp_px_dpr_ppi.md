@@ -1,6 +1,5 @@
 # 说说设备像素、css 像素、设备独立像素、dpr、ppi 之间的区别？
 
-
 ## 一、背景
 
 在`css`中我们通常使用 px 作为单位，在 PC 浏览器中`css`的 1 个像素都是对应着电脑屏幕的 1 个物理像素
@@ -47,7 +46,7 @@ px 会受到下面的因素的影响而变化：
 
 可以参考公园里的景观变色彩灯，一个彩灯(物理像素)由红、蓝、绿小灯组成，三盏小灯不同的亮度混合出各种色彩
 
-![](https://static.vue-js.com/cffc6570-91f2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-39.png)
 
 从屏幕在工厂生产出的那天起，它上面设备像素点就固定不变了，单位为`pt`
 
@@ -79,7 +78,7 @@ dpr（device pixel ratio），设备像素比，代表设备独立像素到设�
 
 计算公式如下：
 
-![](https://static.vue-js.com/dd45e2b0-91f2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-40.png)
 
 当设备像素比为 1:1 时，使用 1（1×1）个设备像素显示 1 个 CSS 像素
 
@@ -89,7 +88,7 @@ dpr（device pixel ratio），设备像素比，代表设备独立像素到设�
 
 如下图所示：
 
-![](https://static.vue-js.com/e63cceb0-91f2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-41.png)
 
 当`dpr`为 3，那么`1px`的`CSS`像素宽度对应`3px`的物理像素的宽度，1px 的`CSS`像素高度对应`3px`的物理像素高度
 
@@ -99,7 +98,7 @@ ppi （pixel per inch），每英寸像素，表示每英寸所包含的像素�
 
 计算公式如下：
 
-![](https://static.vue-js.com/f734adf0-91f2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-42.png)
 
 ## 三、总结
 

@@ -1,7 +1,5 @@
 # 说说对 Node 中的 Stream 的理解？应用场景？
 
-![](https://static.vue-js.com/a5df3c60-c76f-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 流（Stream），是一个数据传输手段，是端到端信息交换的一种方式，而且是有顺序的,是逐块读取数据、处理内容，用于顺序读取输入或写入输出
@@ -14,7 +12,7 @@
 
 在`source`和`dest`之间有一个连接的管道`pipe`,它的基本语法是`source.pipe(dest)`，`source`和`dest`就是通过 pipe 连接，让数据从`source`流向了`dest`，如下图所示：
 
-![](https://static.vue-js.com/aec05670-c76f-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-14.png)
 
 ## 二、种类
 
@@ -38,7 +36,7 @@
 
 如下图所示：
 
-![](https://static.vue-js.com/b7ac6d00-c76f-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-15.png)
 
 基本代码如下：
 
@@ -59,7 +57,7 @@ const myDuplex = new Duplex({
 
 双工流的演示图如下所示：
 
-![](https://static.vue-js.com/c02883b0-c76f-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-16.png)
 
 除了上述压缩包的例子，还比如一个 `babel`，把`es6`转换为，我们在左边写入 `es6`，从右边读取 `es5`
 
@@ -127,7 +125,9 @@ readStream.on('end', function () {
 });
 ```
 
-### 一些打包工具的底层操作
+#
+
+## 一些打包工具的底层操作
 
 目前一些比较火的前端打包构建工具，都是通过`node.js`编写的，打包和构建的过程肯定是文件频繁操作的过程，离不来`stream`，如`gulp`
 

@@ -1,7 +1,5 @@
 # 你了解 axios 的原理吗？有看过它的源码吗？
 
-![](https://static.vue-js.com/1564f7d0-4662-11eb-ab90-d9ae814b240d.png)
-
 ## 一、axios 的使用
 
 关于`axios`的基本使用，上篇文章已经有所涉及，这里再稍微回顾下：
@@ -293,7 +291,7 @@ request(config) {
 
 首先看看目录结构
 
-![](https://static.vue-js.com/9d90eaa0-48b6-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-21.png)
 
 `axios`发送请求有很多实现的方法，实现入口文件为`axios.js `
 
@@ -654,7 +652,7 @@ if (config.cancelToken) {
 
 ### 小结
 
-![](https://static.vue-js.com/b1d2ebd0-48b6-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-22.png)
 
 ## 参考文献
 

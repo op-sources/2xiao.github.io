@@ -1,7 +1,5 @@
 # 说说对 Redux 中间件的理解？常用的中间件有哪些？实现原理？
 
-![](https://static.vue-js.com/4520bbd0-e699-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 中间件（Middleware）是介于应用系统和系统软件之间的一类软件，它使用系统软件所提供的基础服务（功能），衔接网络上应用系统的各个部分或不同的应用，能够达到资源共享、功能共享的目的
@@ -12,7 +10,7 @@
 
 `Redux`中，中间件就是放在就是在`dispatch`过程，在分发`action`进行拦截处理，如下图：
 
-![](https://static.vue-js.com/57edf750-e699-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-13.png)
 
 其本质上一个函数，对`store.dispatch`方法进行了改造，在发出 `Action `和执行 `Reducer `这两步之间，添加了其他功能
 

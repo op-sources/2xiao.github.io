@@ -1,6 +1,4 @@
-# 你是怎么理解 ES6 中 Module 的？使用场景？
-
-![](https://static.vue-js.com/b6d19be0-5adb-11eb-ab90-d9ae814b240d.png)
+# 你是怎么理解 ES6 中 Module 的？
 
 ## 一、介绍
 

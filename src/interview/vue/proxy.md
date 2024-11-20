@@ -1,7 +1,5 @@
 # Vue3.0 里为什么要用 Proxy API 替代 defineProperty API ？
 
-![](https://static.vue-js.com/57aa5c80-5f7f-11eb-ab90-d9ae814b240d.png)
-
 ## 一、Object.defineProperty
 
 定义：`Object.defineProperty()` 方法会直接在一个对象上定义一个新属性，或者修改一个对象的现有属性，并返回此对象

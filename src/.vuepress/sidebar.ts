@@ -6,36 +6,43 @@ export default sidebar({
 		'',
 		{
 			text: '整体架构',
+			icon: 'tree',
 			children: ['1', '2'],
 			collapsible: false
 		},
 		{
 			text: '响应式原理',
+			icon: 'sidebar',
 			children: ['3', '4', '5', '6', '7'],
 			collapsible: false
 		},
 		{
 			text: '渲染原理',
+			icon: 'flow',
 			children: ['8', '9'],
 			collapsible: false
 		},
 		{
 			text: 'Diff 算法原理',
+			icon: 'compare',
 			children: ['10'],
 			collapsible: false
 		},
 		{
 			text: '组件渲染原理',
+			icon: 'plugin',
 			children: ['11', '12', '13', '14', '15', '16'],
 			collapsible: false
 		},
 		{
 			text: '其他实现原理',
+			icon: 'box',
 			children: ['17', '18', '19', '20'],
 			collapsible: false
 		},
 		{
 			text: '模板编译原理',
+			icon: 'condition',
 			children: ['21', '22', '23', '24'],
 			collapsible: false
 		}

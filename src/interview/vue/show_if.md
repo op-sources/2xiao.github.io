@@ -1,7 +1,5 @@
 # v-show 和 v-if 有什么区别？使用场景分别是什么？
 
-![](https://static.vue-js.com/d21c3c50-3acb-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、v-show 与 v-if 的共同点
 
 我们都知道在 `vue` 中 `v-show ` 与 `v-if` 的作用效果是相同的(不含 v-else)，都能控制元素在页面是否显示

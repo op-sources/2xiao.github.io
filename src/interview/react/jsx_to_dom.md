@@ -1,7 +1,5 @@
 # 说说 React Jsx 转换成真实 DOM 过程？
 
-![](https://static.vue-js.com/1d340620-f00a-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 `react`通过将组件编写的`JSX`映射到屏幕，以及组件中的状态发生了变化之后 `React`会将这些「变化」更新到屏幕上
@@ -222,7 +220,7 @@ export default {
 
 在`react`源码中，虚拟`Dom`转化成真实`Dom`整体流程如下图所示：
 
-![](https://static.vue-js.com/28824fa0-f00a-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-23.png)
 
 其渲染流程如下所示：
 

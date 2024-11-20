@@ -1,7 +1,5 @@
 # 你有写过自定义指令吗？自定义指令的应用场景有哪些？
 
-![](https://static.vue-js.com/bd85a970-4345-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、什么是指令
 
 开始之前我们先学习一下指令系统这个词
@@ -18,10 +16,10 @@
 
 ```js
 //会实例化一个指令，但这个指令没有参数
-`v-xxx`// -- 将值传到指令中
-`v-xxx="value"`// -- 将字符串传入到指令中，如`v-html="'<p>内容</p>'"`
-`v-xxx="'string'"`// -- 传参数（`arg`），如`v-bind:class="className"`
-`v-xxx:arg="value"`// -- 使用修饰符（`modifier`）
+`v-xxx` // -- 将值传到指令中
+`v-xxx="value"` // -- 将字符串传入到指令中，如`v-html="'<p>内容</p>'"`
+`v-xxx="'string'"` // -- 传参数（`arg`），如`v-bind:class="className"`
+`v-xxx:arg="value"` // -- 使用修饰符（`modifier`）
 `v-xxx:arg.modifier="value"`;
 ```
 

@@ -1,7 +1,5 @@
 # 你是怎么处理 vue 项目中的错误的？
 
-![](https://static.vue-js.com/3cafe4f0-4fd9-11eb-ab90-d9ae814b240d.png)
-
 ## 一、错误类型
 
 任何一个框架，对于错误的处理都是一种必备的能力

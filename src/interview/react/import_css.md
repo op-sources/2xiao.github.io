@@ -1,7 +1,5 @@
 # 说说 react 中引入 css 的方式有哪几种？区别？
 
-![](https://static.vue-js.com/7d825230-e217-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 组件式开发选择合适的`css`解决方案尤为重要

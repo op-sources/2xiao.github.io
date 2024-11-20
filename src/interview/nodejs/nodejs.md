@@ -1,7 +1,5 @@
 # 说说你对 Node.js 的理解？优缺点？应用场景？
 
-![](https://static.vue-js.com/b565d240-c1e6-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 `Node.js` 是一个开源与跨平台的 `JavaScript` 运行时环境
@@ -22,7 +20,7 @@
 
 比如读取一个文件，文件读取完毕后，就会触发对应的状态，然后通过对应的回调函数来进行处理
 
-![](https://static.vue-js.com/a7729590-c1e8-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-17.png)
 
 ## 二、优缺点
 

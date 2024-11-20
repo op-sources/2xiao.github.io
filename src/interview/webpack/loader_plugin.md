@@ -9,7 +9,7 @@
 
 从整个运行时机上来看，如下图所示：
 
-![](https://static.vue-js.com/9a04ec40-a7c2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-webpack-5.png)
 
 可以看到，两者在运行时机上的区别：
 

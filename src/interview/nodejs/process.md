@@ -1,7 +1,5 @@
 # 说说对 Node 中的 process 的理解？有哪些常用方法？
 
-![](https://static.vue-js.com/4f7866b0-c2b2-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 `process` 对象是一个全局变量，提供了有关当前 `Node.js `进程的信息并对其进行控制，作为一个全局变量

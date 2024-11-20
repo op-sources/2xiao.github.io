@@ -1,6 +1,5 @@
 # 说说你对 webpack 的理解？解决了什么问题？
 
-
 ## 一、背景
 
 `Webpack` 最初的目标是实现前端项目的模块化，旨在更高效地管理和维护项目中的每一个资源
@@ -82,16 +81,16 @@ window.moduleA = {
 
 当 `webpack `处理应用程序时，它会在内部构建一个依赖图，此依赖图对应映射到项目所需的每个模块（不再局限`js`文件），并生成一个或多个 `bundle`
 
-![](https://static.vue-js.com/9ce194a0-a578-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-webpack-19.png)
 
 #### `webpack`的能力：
 
 **编译代码能力**，提高效率，解决浏览器兼容问题
-![](https://static.vue-js.com/c5c2d360-a592-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-webpack-20.png)
 **模块整合能力**，提高性能，可维护性，解决浏览器频繁请求文件的问题
-![](https://static.vue-js.com/d306d260-a592-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-webpack-21.png)
 **万物皆可模块能力**，项目维护性增强，支持不同种类的前端模块类型，统一的模块化方案，所有资源文件的加载都可以通过代码控制
-![](https://static.vue-js.com/e3c5a040-a592-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-webpack-22.png)
 
 ## 参考文献
 

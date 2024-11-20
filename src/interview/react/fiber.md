@@ -1,7 +1,5 @@
 # 说说对 Fiber 架构的理解？解决了什么问题？
 
-![](https://static.vue-js.com/554da6d0-ed24-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、问题
 
 `JavaScript `引擎和页面渲染引擎两个线程是互斥的，当其中一个线程执行时，另一个线程只能挂起等待
@@ -14,7 +12,7 @@
 
 这就会导致一些用户交互、动画等任务无法立即得到处理，导致卡顿的情况
 
-![](https://static.vue-js.com/5eb3a850-ed24-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-18.png)
 
 ## 二、是什么
 

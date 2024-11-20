@@ -1,7 +1,5 @@
 # 你在 React 项目中是如何使用 Redux 的? 项目结构是如何划分的？
 
-![](https://static.vue-js.com/31a4aff0-e7dc-11eb-ab90-d9ae814b240d.png)
-
 ## 一、背景
 
 在前面文章了解中，我们了解到`redux`是用于数据状态管理，而`react`是一个视图层面的库
@@ -127,7 +125,7 @@ export default Foo;
 
 整体流程图大致如下所示：
 
-![](https://static.vue-js.com/3e47db10-e7dc-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-react-25.png)
 
 ## 三、项目结构
 

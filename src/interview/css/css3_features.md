@@ -1,6 +1,5 @@
 # CSS3 新增了哪些新特性？
 
-
 ## 一、是什么
 
 `css`，即层叠样式表（Cascading Style Sheets）的简称，是一种标记语言，由浏览器解释执行用来使页面变得更美观
@@ -13,7 +12,7 @@
 
 `css3`中新增了一些选择器，主要为如下图所示：
 
-![](https://static.vue-js.com/e368cf20-9b5e-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-css-4.png)
 
 ## 三、新样式
 

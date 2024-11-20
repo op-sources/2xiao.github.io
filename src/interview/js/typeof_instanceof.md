@@ -1,7 +1,5 @@
 # typeof 与 instanceof 区别
 
-![](https://static.vue-js.com/3fc158f0-7710-11eb-ab90-d9ae814b240d.png)
-
 ## 一、typeof
 
 `typeof` 操作符返回一个字符串，表示未经计算的操作数的类型

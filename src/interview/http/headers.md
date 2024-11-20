@@ -1,7 +1,5 @@
 # 说说 HTTP 常见的请求头有哪些? 作用？
 
-![](https://static.vue-js.com/964abb00-bc69-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 HTTP 头字段（HTTP header fields）,是指在超文本传输协议（HTTP）的请求和响应消息中的消息头部分
@@ -72,7 +70,7 @@ Cache-Control: max-age=0
 
 强制缓存与协商缓存的流程图如下所示：
 
-![](https://static.vue-js.com/a4065b00-bc69-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-http-6.png)
 
 ### 会话状态
 

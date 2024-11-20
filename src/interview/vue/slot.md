@@ -1,7 +1,5 @@
 # 说说你对 slot 的理解？slot 使用场景有哪些？
 
-![](https://static.vue-js.com/141ca660-3dbc-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、slot 是什么
 
 在 HTML 中 `slot` 元素 ，作为 `Web Components` 技术套件的一部分，是 Web 组件内的一个占位符
@@ -48,7 +46,7 @@ customElements.define(
 可以将其类比为插卡式的 FC 游戏机，游戏机暴露卡槽（插槽）让用户插入不同的游戏磁条（自定义内容）
 
 放张图感受一下
-![](https://static.vue-js.com/63c0dff0-3dbd-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-58.png)
 
 ## 二、使用场景
 

@@ -1,170 +1,177 @@
 # ajax 原理是什么？如何实现？
 
-![](https://static.vue-js.com/a35a2950-7b2a-11eb-ab90-d9ae814b240d.png)
+## 一、什么是 AJAX？
 
-## 一、是什么
+`AJAX` 的全称是 **Asynchronous JavaScript and XML**，即**异步的 JavaScript 和 XML**。它是一种用于创建**交互式网页应用**的技术，可以在不重新加载整个网页的情况下，与服务器交换数据并更新网页的部分内容。
 
-`AJAX `全称(Async Javascript and XML)
+### AJAX 的工作原理
 
-即异步的` JavaScript` 和` XML`，是一种创建交互式网页应用的网页开发技术，可以在不重新加载整个网页的情况下，与服务器交换数据，并且更新部分网页
+简单来说，`AJAX` 通过 `XMLHttpRequest` 对象向服务器发送异步请求，接收服务器的响应数据，然后用 JavaScript 更新页面的 DOM。
 
-`Ajax`的原理简单来说通过`XmlHttpRequest`对象来向服务器发异步请求，从服务器获得数据，然后用`JavaScript`来操作`DOM`而更新页面
+**示例比喻：**  
+一个领导想找小李汇报工作，他让秘书去叫小李（发起请求），自己继续工作（异步执行），等秘书告诉他小李已经到了（接收响应数据），再与小李沟通。
 
-流程图如下：
+流程如下：
 
-![](https://static.vue-js.com/af42de10-7b2a-11eb-85f6-6fac77c0c9b3.png)
+1. 浏览器发送 HTTP 请求；
+2. 浏览器可以同时继续处理其他任务（异步处理）；
+3. 服务端处理请求并返回数据；
+4. 浏览器接收数据并更新页面。
 
-下面举个例子：
+## 二、AJAX 的实现过程
 
-领导想找小李汇报一下工作，就委托秘书去叫小李，自己就接着做其他事情，直到秘书告诉他小李已经到了，最后小李跟领导汇报工作
+实现 AJAX 异步交互需要以下几个步骤：
 
-`Ajax`请求数据流程与“领导想找小李汇报一下工作”类似，上述秘书就相当于`XMLHttpRequest`对象，领导相当于浏览器，响应数据相当于小李
+1. **创建 `XMLHttpRequest` 对象**
+2. **与服务器建立连接**
+3. **发送请求**
+4. **监听响应**
+5. **处理响应数据并更新页面**
 
-浏览器可以发送`HTTP`请求后，接着做其他事情，等收到`XHR`返回来的数据再进行操作
+### 1. 创建 `XMLHttpRequest` 对象
 
-## 二、实现过程
+使用 `XMLHttpRequest` 构造函数创建一个实例对象：
 
-实现 `Ajax `异步交互需要服务器逻辑进行配合，需要完成以下步骤：
-
-- 创建 `Ajax `的核心对象 `XMLHttpRequest `对象
-
-- 通过 `XMLHttpRequest` 对象的 `open()` 方法与服务端建立连接
-
-- 构建请求所需的数据内容，并通过` XMLHttpRequest` 对象的 `send()` 方法发送给服务器端
-
-- 通过 `XMLHttpRequest` 对象提供的 `onreadystatechange` 事件监听服务器端你的通信状态
-
-- 接受并处理服务端向客户端响应的数据结果
-
-- 将处理结果更新到 `HTML `页面中
-
-### 创建 XMLHttpRequest 对象
-
-通过`XMLHttpRequest()` 构造函数用于初始化一个 `XMLHttpRequest` 实例对象
-
-```js
+```javascript
 const xhr = new XMLHttpRequest();
 ```
 
-### 与服务器建立连接
+### 2. 与服务器建立连接
 
-通过 `XMLHttpRequest` 对象的 `open()` 方法与服务器建立连接
+通过 `xhr.open()` 方法与服务器建立连接：
 
-```js
-xhr.open(method, url, [async][, user][, password])
+```javascript
+xhr.open(method, url, [async], [user], [password]);
 ```
 
-参数说明：
+**参数说明：**
 
-- `method`：表示当前的请求方式，常见的有`GET`、`POST`
+- `method`：HTTP 请求方法（常见有 `GET` 和 `POST`）。
+- `url`：请求的服务端地址。
+- `async`：是否异步，默认为 `true`。
+- `user` 和 `password`：可选，用于认证。
 
-- `url`：服务端地址
+**示例：**
 
-- `async`：布尔值，表示是否异步执行操作，默认为`true`
+```javascript
+xhr.open('GET', 'https://example.com/api', true);
+```
 
-- `user`: 可选的用户名用于认证用途；默认为`null
+### 3. 发送请求
 
-- `password`: 可选的密码用于认证用途，默认为`null
+使用 `xhr.send()` 方法将数据发送到服务器：
 
-### 给服务端发送数据
-
-通过 `XMLHttpRequest` 对象的 `send()` 方法，将客户端页面的数据发送给服务端
-
-```js
+```javascript
 xhr.send([body]);
 ```
 
-`body`: 在 `XHR` 请求中要发送的数据体，如果不传递数据则为 `null`
+**注意：**
 
-如果使用`GET`请求发送数据的时候，需要注意如下：
+- 如果是 `GET` 请求，请将数据拼接到 URL 中，`send` 方法的参数设置为 `null`。
+- 如果是 `POST` 请求，将数据通过 `body` 参数发送。
 
-- 将请求数据添加到`open()`方法中的`url`地址中
-- 发送请求数据中的`send()`方法中参数设置为`null`
+**示例：**
 
-### 绑定 onreadystatechange 事件
+```javascript
+xhr.send(null); // GET 请求
+xhr.send(JSON.stringify({ key: 'value' })); // POST 请求
+```
 
-`onreadystatechange` 事件用于监听服务器端的通信状态，主要监听的属性为`XMLHttpRequest.readyState` ,
+### 4. 监听响应
 
-关于`XMLHttpRequest.readyState`属性有五个状态，如下图显示
+监听服务器返回的响应状态，使用 `onreadystatechange` 事件来处理状态变化：
 
-![](https://static.vue-js.com/9782fc90-7b31-11eb-ab90-d9ae814b240d.png)
-
-只要 `readyState `属性值一变化，就会触发一次 `readystatechange` 事件
-
-`XMLHttpRequest.responseText`属性用于接收服务器端的响应结果
-
-举个例子：
-
-```js
-const request = new XMLHttpRequest();
-request.onreadystatechange = function (e) {
-	if (request.readyState === 4) {
-		// 整个请求过程完毕
-		if (request.status >= 200 && request.status <= 300) {
-			console.log(request.responseText); // 服务端返回的结果
-		} else if (request.status >= 400) {
-			console.log('错误信息：' + request.status);
+```javascript
+xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4) {
+		// 请求完成
+		if (xhr.status >= 200 && xhr.status < 300) {
+			// 成功响应
+			console.log(xhr.responseText); // 服务端返回的结果
+		} else {
+			// 错误响应
+			console.error('Error: ' + xhr.status);
 		}
 	}
 };
-request.open('POST', 'http://xxxx');
-request.send();
 ```
 
-## 三、封装
+**`readyState` 状态值：**
 
-通过上面对`XMLHttpRequest `对象的了解，下面来封装一个简单的`ajax`请求
+| 值  | 状态描述               |
+| --- | ---------------------- |
+| 0   | 请求未初始化           |
+| 1   | 连接已建立             |
+| 2   | 请求已接收             |
+| 3   | 请求处理中             |
+| 4   | 请求完成，且响应已就绪 |
 
-```js
-//封装一个ajax请求
+## 三、封装一个简单的 AJAX 函数
+
+根据上述实现过程，封装一个通用的 AJAX 函数：
+
+```javascript
 function ajax(options) {
-    //创建XMLHttpRequest对象
-    const xhr = new XMLHttpRequest()
+	// 创建 XMLHttpRequest 对象
+	const xhr = new XMLHttpRequest();
 
+	// 初始化参数
+	options = options || {};
+	options.type = (options.type || 'GET').toUpperCase();
+	const params = options.data
+		? new URLSearchParams(options.data).toString()
+		: '';
 
-    //初始化参数的内容
-    options = options || {}
-    options.type = (options.type || 'GET').toUpperCase()
-    options.dataType = options.dataType || 'json'
-    const params = options.data
+	// 发送请求
+	if (options.type === 'GET') {
+		xhr.open('GET', options.url + '?' + params, true);
+		xhr.send(null);
+	} else if (options.type === 'POST') {
+		xhr.open('POST', options.url, true);
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xhr.send(params);
+	}
 
-    //发送请求
-    if (options.type === 'GET') {
-        xhr.open('GET', options.url + '?' + params, true)
-        xhr.send(null)
-    } else if (options.type === 'POST') {
-        xhr.open('POST', options.url, true)
-        xhr.send(params)
-
-    //接收请求
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            let status = xhr.status
-            if (status >= 200 && status < 300) {
-                options.success && options.success(xhr.responseText, xhr.responseXML)
-            } else {
-                options.fail && options.fail(status)
-            }
-        }
-    }
+	// 监听响应
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState === 4) {
+			if (xhr.status >= 200 && xhr.status < 300) {
+				options.success && options.success(xhr.responseText);
+			} else {
+				options.fail && options.fail(xhr.status);
+			}
+		}
+	};
 }
 ```
 
-使用方式如下
+### 使用示例：
 
-```js
+```javascript
 ajax({
-	type: 'post',
-	dataType: 'json',
-	data: {},
-	url: 'https://xxxx',
-	success: function (text, xml) {
-		//请求成功后的回调函数
-		console.log(text);
+	type: 'POST',
+	url: 'https://example.com/api',
+	data: { key: 'value' },
+	success: function (response) {
+		console.log('成功：', response);
 	},
 	fail: function (status) {
-		////请求失败后的回调函数
-		console.log(status);
+		console.error('失败：状态码', status);
 	}
 });
 ```
+
+## 四、注意事项
+
+1. **跨域问题：**  
+   使用 `AJAX` 时需注意跨域请求，可以通过以下方式解决：
+
+   - 使用服务器端代理；
+   - 配置服务端支持 `CORS`；
+   - 使用 `JSONP`（仅支持 `GET` 请求）。
+
+2. **异步执行：**  
+   默认情况下，`AJAX` 是异步的。在需要确保请求顺序时，可将 `async` 设置为 `false`（不推荐）。
+
+3. **状态码检查：**  
+   在监听响应时，需判断状态码是否在 2xx 范围内。

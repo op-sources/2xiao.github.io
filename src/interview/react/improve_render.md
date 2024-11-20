@@ -1,7 +1,5 @@
 # 说说你是如何提高组件的渲染效率的？在 React 中如何避免不必要的 render？
 
-![](https://static.vue-js.com/de2d7e20-ecf8-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 `react` 基于虚拟 `DOM` 和高效 `Diff `算法的完美配合，实现了对 `DOM `最小粒度的更新，大多数情况下，`React `对 `DOM `的渲染效率足以我们的业务日常

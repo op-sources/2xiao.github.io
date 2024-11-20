@@ -1,7 +1,5 @@
 # 什么是虚拟 DOM？如何实现一个虚拟 DOM？说说你的思路
 
-![](https://static.vue-js.com/770b9670-442c-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、什么是虚拟 DOM
 
 虚拟 DOM （`Virtual DOM` ）这个概念相信大家都不陌生，从 `React` 到 `Vue` ，虚拟 `DOM` 为这两个框架都带来了跨平台的能力（`React-Native` 和 `Weex`）
@@ -55,7 +53,7 @@ const app = new Vue({
 `DOM`是很慢的，其元素非常庞大，页面的性能问题，大部分都是由`DOM`操作引起的
 
 真实的`DOM`节点，哪怕一个最简单的`div`也包含着很多属性，可以打印出来直观感受一下：
-![](https://static.vue-js.com/cc95c7f0-442c-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-5.png)
 
 由此可见，操作`DOM`的代价仍旧是昂贵的，频繁操作还是会出现页面卡顿，影响用户的体验
 

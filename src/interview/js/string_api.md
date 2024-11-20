@@ -1,190 +1,157 @@
 # JavaScript 字符串的常用方法有哪些？
 
-![](https://static.vue-js.com/ceb6ebc0-65c1-11eb-ab90-d9ae814b240d.png)
+JavaScript 中的字符串操作方法丰富，主要分为以下几类：**增、删、改、查、转换**和**正则匹配**。需要注意，**字符串是不可变的**，所有操作都会返回新的字符串，而不会修改原字符串。
 
-## 一、操作方法
+---
 
-我们也可将字符串常用的操作方法归纳为增、删、改、查，需要知道字符串的特点是一旦创建了，就不可变
+## 一、增
 
-### 增
+在字符串中“增”的本质是创建新字符串，以下是常用方法：
 
-这里增的意思并不是说直接增添内容，而是创建字符串的一个副本，再进行操作
+### 1. 字符串拼接
 
-除了常用`+`以及`${}`进行字符串拼接之外，还可通过`concat`
+- 使用 **`+`** 操作符或 **模板字符串 (`${}`)**。
+- 使用 **`concat()`** 方法。
 
-#### concat
+#### 示例：
 
-用于将一个或多个字符串拼接成一个新字符串
-
-```js
-let stringValue = 'hello ';
-let result = stringValue.concat('world');
+```javascript
+let str = 'hello ';
+let result = str.concat('world');
 console.log(result); // "hello world"
-console.log(stringValue); // "hello"
+console.log(str); // "hello"
 ```
 
-### 删
+---
 
-这里的删的意思并不是说删除原字符串的内容，而是创建字符串的一个副本，再进行操作
+## 二、删
 
-常见的有：
+“删”的操作指创建字符串副本，截取或移除部分内容，常用方法包括：
 
-- slice()
-- substr()
-- substring()
+- **`slice()`**
+- **`substr()`**
+- **`substring()`**
 
-这三个方法都返回调用它们的字符串的一个子字符串，而且都接收一或两个参数。
+### 区别与用法：
 
-```js
-let stringValue = 'hello world';
-console.log(stringValue.slice(3)); // "lo world"
-console.log(stringValue.substring(3)); // "lo world"
-console.log(stringValue.substr(3)); // "lo world"
-console.log(stringValue.slice(3, 7)); // "lo w"
-console.log(stringValue.substring(3, 7)); // "lo w"
-console.log(stringValue.substr(3, 7)); // "lo worl"
+```javascript
+let str = 'hello world';
+
+console.log(str.slice(3)); // "lo world" 从索引 3 截取到末尾
+console.log(str.substring(3, 7)); // "lo w" 从索引 3 截取到索引 7（不含）
+console.log(str.substr(3, 4)); // "lo w" 从索引 3 开始，截取 4 个字符
 ```
 
-### 改
+> **注意：** `substr` 已被废弃，建议使用 `slice` 或 `substring`。
 
-这里改的意思也不是改变原字符串，而是创建字符串的一个副本，再进行操作
+---
 
-常见的有：
+## 三、改
 
-- trim()、trimLeft()、trimRight()
+修改字符串生成副本，常见操作包括去空格、重复、填充和大小写转换。
 
-- repeat()
-- padStart()、padEnd()
-- toLowerCase()、 toUpperCase()
+### 1. 去空格
 
-#### trim()、trimLeft()、trimRight()
+- **`trim()`**：去除首尾空格。
+- **`trimStart()` / `trimEnd()`**：去除头部或尾部空格。
 
-删除前、后或前后所有空格符，再返回新的字符串
+#### 示例：
 
-```js
-let stringValue = ' hello world ';
-let trimmedStringValue = stringValue.trim();
-console.log(stringValue); // " hello world "
-console.log(trimmedStringValue); // "hello world"
+```javascript
+let str = ' hello world ';
+console.log(str.trim()); // "hello world"
+console.log(str.trimStart()); // "hello world "
+console.log(str.trimEnd()); // " hello world"
 ```
 
-#### repeat()
+### 2. 字符串重复
 
-接收一个整数参数，表示要将字符串复制多少次，然后返回拼接所有副本后的结果
+- **`repeat()`**：重复字符串指定次数。
 
-```js
-let stringValue = 'na ';
-let copyResult = stringValue.repeat(2); // na na
+```javascript
+let str = 'na ';
+console.log(str.repeat(2)); // "na na"
 ```
 
-#### padEnd()
+### 3. 字符填充
 
-复制字符串，如果小于指定长度，则在相应一边填充字符，直至满足长度条件
+- **`padStart()` / `padEnd()`**：填充字符串至指定长度。
 
-```js
-let stringValue = 'foo';
-console.log(stringValue.padStart(6)); // " foo"
-console.log(stringValue.padStart(9, '.')); // "......foo"
+```javascript
+let str = 'foo';
+console.log(str.padStart(6)); // "   foo"
+console.log(str.padEnd(6, '.')); // "foo..."
 ```
 
-### toLowerCase()、 toUpperCase()
+### 4. 大小写转换
 
-大小写转化
+- **`toLowerCase()`**：转为小写。
+- **`toUpperCase()`**：转为大写。
 
-```js
-let stringValue = 'hello world';
-console.log(stringValue.toUpperCase()); // "HELLO WORLD"
-console.log(stringValue.toLowerCase()); // "hello world"
+---
+
+## 四、查
+
+“查”指从字符串中获取某部分内容或判断是否包含特定字符。
+
+- **`charAt()`**：返回指定索引处的字符。
+- **`indexOf()`**：返回第一次出现的索引，未找到返回 -1。
+- **`startsWith()` / `includes()`**：判断是否以指定字符开头或包含指定字符。
+
+#### 示例：
+
+```javascript
+let str = 'foobarbaz';
+console.log(str.charAt(2)); // "o"
+console.log(str.indexOf('bar')); // 3
+console.log(str.startsWith('foo')); // true
+console.log(str.includes('baz')); // true
 ```
 
-### 查
+---
 
-除了通过索引的方式获取字符串的值，还可通过：
+## 五、转换
 
-- chatAt()
+### **`split()`**
 
-- indexOf()
+将字符串按照指定分隔符拆分为数组。
 
-- startWith()
+#### 示例：
 
-- includes()
-
-#### charAt()
-
-返回给定索引位置的字符，由传给方法的整数参数指定
-
-```js
-let message = 'abcde';
-console.log(message.charAt(2)); // "c"
-```
-
-#### indexOf()
-
-从字符串开头去搜索传入的字符串，并返回位置（如果没找到，则返回 -1 ）
-
-```js
-let stringValue = 'hello world';
-console.log(stringValue.indexOf('o')); // 4
-```
-
-#### startWith()、includes()
-
-从字符串中搜索传入的字符串，并返回一个表示是否包含的布尔值
-
-```js
-let message = 'foobarbaz';
-console.log(message.startsWith('foo')); // true
-console.log(message.startsWith('bar')); // false
-console.log(message.includes('bar')); // true
-console.log(message.includes('qux')); // false
-```
-
-## 二、转换方法
-
-### split
-
-把字符串按照指定的分割符，拆分成数组中的每一项
-
-```js
+```javascript
 let str = '12+23+34';
-let arr = str.split('+'); // [12,23,34]
+console.log(str.split('+')); // ["12", "23", "34"]
 ```
 
-## 三、模板匹配方法
+---
 
-针对正则表达式，字符串设计了几个方法：
+## 六、正则匹配
 
-- match()
-- search()
-- replace()
+针对正则表达式的匹配，字符串提供以下方法：
 
-### match()
+### 1. **`match()`**
 
-接收一个参数，可以是一个正则表达式字符串，也可以是一个`RegExp`对象，返回数组
+返回匹配结果的数组。
 
-```js
-let text = 'cat, bat, sat, fat';
-let pattern = /.at/;
-let matches = text.match(pattern);
-console.log(matches[0]); // "cat"
+```javascript
+let str = 'cat, bat, sat, fat';
+console.log(str.match(/.at/)); // ["cat"]
 ```
 
-### search()
+### 2. **`search()`**
 
-接收一个参数，可以是一个正则表达式字符串，也可以是一个`RegExp`对象，找到则返回匹配索引，否则返回 -1
+返回匹配项的索引，未找到返回 -1。
 
-```js
-let text = 'cat, bat, sat, fat';
-let pos = text.search(/at/);
-console.log(pos); // 1
+```javascript
+let str = 'cat, bat, sat, fat';
+console.log(str.search(/at/)); // 1
 ```
 
-### replace()
+### 3. **`replace()`**
 
-接收两个参数，第一个参数为匹配的内容，第二个参数为替换的元素（可用函数）
+用指定内容替换匹配项，支持函数作为替换逻辑。
 
-```js
-let text = 'cat, bat, sat, fat';
-let result = text.replace('at', 'ond');
-console.log(result); // "cond, bat, sat, fat"
+```javascript
+let str = 'cat, bat, sat, fat';
+console.log(str.replace('at', 'ond')); // "cond, bat, sat, fat"
 ```

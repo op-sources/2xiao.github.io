@@ -1,7 +1,3 @@
----
-order: 1
----
-
 # apply、call、bind 的区别是什么？
 
 `call`、`apply`、`bind` 的作用是改变函数执行时的上下文，简而言之就是改变函数运行时的 `this` 指向。
@@ -99,9 +95,11 @@ bindFn(1, 2); // this 指向 obj
 fn(1, 2); // this 指向 window
 ```
 
+## 区别
+
 从上面可以看到，`apply`、`call`、`bind`三者的区别在于：
 
-- 三者都可以改变函数的 `this` 对象指向
-- 三者第一个参数都是 `this` 要指向的对象，如果如果没有这个参数或参数为 `undefined` 或 `null`，则默认指向全局 `window`
-- 三者都可以传参，但是 `apply` 是数组，而 `call` 是参数列表，且 `apply` 和 `call` 是一次性传入参数，而 `bind` 可以分为多次传入
-- `bind` 返回绑定 `this` 之后的函数，`apply`、`call` 则是立即执行
+1. 三者都可以改变函数的 `this` 对象指向
+2. 三者第一个参数都是 `this` 要指向的对象，如果如果没有这个参数或参数为 `undefined` 或 `null`，则默认指向全局 `window`
+3. 三者都可以传参，但是 `apply` 是数组，而 `call` 是参数列表，且 `apply` 和 `call` 是一次性传入参数，而 `bind` 可以分为多次传入
+4. `bind` 返回绑定 `this` 之后的函数，`apply`、`call` 则是立即执行

@@ -1,7 +1,5 @@
 # 说说 React diff 的原理是什么？
 
-![](https://static.vue-js.com/967e6150-ec91-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 跟`Vue`一致，`React`通过引入`Virtual DOM`的概念，极大地避免无效的`Dom`操作，使我们的页面的构建效率提到了极大的提升
@@ -10,7 +8,7 @@
 
 传统 diff 算法通过循环递归对节点进行依次对比，效率低下，算法复杂度达到 O(n^3)，`react`将算法进行一个优化，复杂度姜维`O(n)`，两者效率差距如下图：
 
-![](https://static.vue-js.com/a43c9960-ec91-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-3.png)
 
 ## 二、原理
 
@@ -26,11 +24,11 @@
 
 `DOM`节点跨层级的操作不做优化，只会对相同层级的节点进行比较
 
-![](https://static.vue-js.com/ae71d1c0-ec91-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-react-4.png)
 
 只有删除、创建操作，没有移动操作，如下图：
 
-![](https://static.vue-js.com/b85f2bb0-ec91-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-5.png)
 
 `react`发现新树中，R 节点下没有了 A，那么直接删除 A，在 D 节点下创建 A 以及下属节点
 
@@ -40,7 +38,7 @@
 
 如果是同一个类的组件，则会继续往下`diff`运算，如果不是一个类的组件，那么直接删除这个组件下的所有子节点，创建新的
 
-![](https://static.vue-js.com/c1fcdf00-ec91-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-6.png)
 
 当`component D `换成了`component G` 后，即使两者的结构非常类似，也会将`D`删除再重新创建`G`
 
@@ -52,13 +50,13 @@
 
 如下场景：
 
-![](https://static.vue-js.com/cae1c9a0-ec91-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-react-7.png)
 
 通过`key`可以准确地发现新旧集合中的节点都是相同的节点，因此无需进行节点删除和创建，只需要将旧集合中节点的位置进行移动，更新为新集合中节点的位置
 
 流程如下表：
 
-![](https://static.vue-js.com/d34c5420-ec91-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-react-8.png)
 
 - index： 新集合的遍历下标。
 - oldIndex：当前节点在老集合中的下标

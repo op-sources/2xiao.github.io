@@ -1,7 +1,5 @@
 # 说说你对 React Router 的理解？常用的 Router 组件有哪些？
 
-![](https://static.vue-js.com/c6635670-e8ac-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 `react-router`等前端路由的原理大致相同，可以实现无刷新的条件下切换显示不同的页面

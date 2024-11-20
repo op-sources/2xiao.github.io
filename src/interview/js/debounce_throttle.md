@@ -1,56 +1,50 @@
-# 什么是防抖和节流？有什么区别？如何实现？
+# 如何实现防抖和节流？
 
-![](https://static.vue-js.com/912f1a10-8787-11eb-85f6-6fac77c0c9b3.png)
+## 一、概述
 
-## 一、是什么
+防抖（Debounce）与节流（Throttle）是两种常见的性能优化手段，旨在限制高频率事件的执行次数，避免资源浪费，提高前端性能。
 
-本质上是优化高频率执行代码的一种手段
+在浏览器中，诸如 `resize`、`scroll`、`keypress`、`mousemove` 等事件会频繁触发绑定的回调函数。如果不加限制，这些事件可能会显著增加资源消耗，导致页面卡顿。因此，通过防抖或节流机制，我们可以有效减少事件回调的执行频率。
 
-如：浏览器的 `resize`、`scroll`、`keypress`、`mousemove` 等事件在触发时，会不断地调用绑定在事件上的回调函数，极大地浪费资源，降低前端性能
+- **节流（Throttle）**的核心思想是控制函数的执行频率。在指定的时间间隔内，无论事件触发多少次，函数最多执行一次。
 
-为了优化体验，需要对这类事件进行调用次数的限制，对此我们就可以采用 **防抖（debounce）** 和 **节流（throttle）** 的方式来减少调用频率
+- **防抖（Debounce）**的核心思想是延迟函数的执行。在事件不断触发的情况下，只有在事件触发停止后的一段时间内，函数才会被执行。
 
-#### 定义
+可以将电梯的运行比作函数的执行：
 
-- 节流: n 秒内只运行一次，若在 n 秒内重复触发，只有一次生效
-- 防抖: n 秒后在执行该事件，若在 n 秒内被重复触发，则重新计时
+- **节流**：电梯每隔 15 秒运行一次，无论期间进出多少人，每 15 秒固定出发一次。
+- **防抖**：电梯在乘客进入后等待 15 秒。如果在等待期间还有乘客进入，电梯重新计时，直到 15 秒内无人进入才出发。
 
-一个经典的比喻:
+## 二、节流的实现
 
-想象每天上班大厦底下的电梯。把电梯完成一次运送，类比为一次函数的执行和响应
+### 时间戳实现
 
-假设电梯有两种运行策略 `debounce` 和 `throttle`，超时设定为 15 秒，不考虑容量限制
+利用时间戳，记录上次函数执行的时间点。每次事件触发时，检查当前时间与上次执行时间的间隔是否大于指定时间，若满足条件则执行函数。  
+这种方式在事件触发时会立即执行，但在停止触发后无法再执行。
 
-电梯第一个人进来后，15 秒后准时运送一次，这是节流
+```javascript
+function throttleByTimestamp(fn, delay = 500) {
+	let lastTime = Date.now();
 
-电梯第一个人进来后，等待 15 秒。如果过程中又有人进来，15 秒等待重新计时，直到 15 秒后开始运送，这是防抖
-
-## 代码实现
-
-### 节流
-
-完成节流可以使用时间戳与定时器的写法
-
-使用时间戳写法，事件会立即执行，停止触发后没有办法再次执行
-
-```js
-function throttled1(fn, delay = 500) {
-	let oldtime = Date.now();
 	return function (...args) {
-		let newtime = Date.now();
-		if (newtime - oldtime >= delay) {
-			fn.apply(null, args);
-			oldtime = Date.now();
+		const now = Date.now();
+		if (now - lastTime >= delay) {
+			fn.apply(this, args);
+			lastTime = now;
 		}
 	};
 }
 ```
 
-使用定时器写法，`delay`毫秒后第一次执行，第二次事件停止触发后依然会再一次执行
+### 定时器实现
 
-```js
-function throttled2(fn, delay = 500) {
+通过定时器延迟函数执行。事件触发后，若定时器尚未结束，则不重新设定定时器；只有在当前定时器完成后，才允许设定新的定时器。  
+这种方式在事件停止后仍会执行一次函数。
+
+```javascript
+function throttleByTimer(fn, delay = 500) {
 	let timer = null;
+
 	return function (...args) {
 		if (!timer) {
 			timer = setTimeout(() => {
@@ -62,103 +56,102 @@ function throttled2(fn, delay = 500) {
 }
 ```
 
-可以将时间戳写法的特性与定时器写法的特性相结合，实现一个更加精确的节流。实现如下
+### 综合实现
 
-```js
-function throttled(fn, delay) {
+结合时间戳和定时器，确保函数在触发时立即执行，同时在停止触发后还能再次执行。
+
+```javascript
+function throttle(fn, delay = 500) {
+	let lastTime = Date.now();
 	let timer = null;
-	let starttime = Date.now();
-	return function () {
-		let curTime = Date.now(); // 当前时间
-		let remaining = delay - (curTime - starttime); // 从上一次到现在，还剩下多少多余时间
-		let context = this;
-		let args = arguments;
-		clearTimeout(timer);
+
+	return function (...args) {
+		const now = Date.now();
+		const remaining = delay - (now - lastTime);
+
 		if (remaining <= 0) {
-			fn.apply(context, args);
-			starttime = Date.now();
-		} else {
-			timer = setTimeout(fn, remaining);
+			clearTimeout(timer);
+			timer = null;
+			lastTime = now;
+			fn.apply(this, args);
+		} else if (!timer) {
+			timer = setTimeout(() => {
+				lastTime = Date.now();
+				timer = null;
+				fn.apply(this, args);
+			}, remaining);
 		}
 	};
 }
 ```
 
-### 防抖
+## 三、防抖的实现
 
-简单版本的实现
+### 基础实现
 
-```js
-function debounce(func, wait) {
-	let timeout;
+通过 `setTimeout` 延迟函数的执行，每次事件触发时重置计时器。在计时器到期之前，若有新的事件触发，则重新计时。
 
-	return function () {
-		let context = this; // 保存this指向
-		let args = arguments; // 拿到event对象
+```javascript
+function debounce(fn, delay = 500) {
+	let timer = null;
 
-		clearTimeout(timeout);
-		timeout = setTimeout(function () {
-			func.apply(context, args);
-		}, wait);
+	return function (...args) {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			fn.apply(this, args);
+		}, delay);
 	};
 }
 ```
 
-防抖如果需要立即执行，可加入第三个参数用于判断，实现如下：
+### 支持立即执行的实现
 
-```js
-function debounce(func, wait, immediate) {
-	let timeout;
+在部分场景下，需要函数在第一次触发事件时立即执行，随后进入防抖逻辑。可以通过一个标志变量 `immediate` 实现。
 
-	return function () {
-		let context = this;
-		let args = arguments;
+```javascript
+function debounce(fn, delay = 500, immediate = false) {
+	let timer = null;
 
-		if (timeout) clearTimeout(timeout); // timeout 不为null
-		if (immediate) {
-			let callNow = !timeout; // 第一次会立即执行，以后只有事件执行后才会再次触发
-			timeout = setTimeout(function () {
-				timeout = null;
-			}, wait);
-			if (callNow) {
-				func.apply(context, args);
-			}
-		} else {
-			timeout = setTimeout(function () {
-				func.apply(context, args);
-			}, wait);
+	return function (...args) {
+		const callNow = immediate && !timer;
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			timer = null;
+		}, delay);
+		if (callNow) {
+			fn.apply(this, args);
 		}
 	};
 }
 ```
 
-## 二、区别
+## 四、区别与对比
 
-相同点：
+| **特性**     | **防抖（Debounce）**               | **节流（Throttle）**               |
+| ------------ | ---------------------------------- | ---------------------------------- |
+| **执行时机** | 事件停止触发后的指定时间内执行一次 | 指定时间间隔内执行一次             |
+| **适用场景** | 连续事件中只需执行最后一次回调     | 需要限制高频事件的回调执行次数     |
+| **实现机制** | 使用 `setTimeout` 延迟函数执行     | 使用时间戳或定时器控制函数执行频率 |
 
-- 都可以通过使用 `setTimeout` 实现
-- 目的都是，降低回调执行频率。节省计算资源
+示例对比：
 
-不同点：
+- 防抖：频繁触发的搜索框输入，只有在用户输入完成后才发起请求。
+- 节流：滚动事件监听，每隔一定时间触发一次滚动加载逻辑。
 
-- 函数防抖，在一段连续操作结束后，处理回调，利用`clearTimeout `和 `setTimeout`实现。函数节流，在一段连续操作中，每一段时间只执行一次，频率较高的事件中使用来提高性能
-- 函数防抖关注一定时间连续触发的事件，只在最后执行一次，而函数节流一段时间内只执行一次
+下图展示了两者在时间轴上的执行效果：
 
-例如，都设置时间频率为 500ms，在 2 秒时间内，频繁触发函数，节流，每隔 500ms 就执行一次。防抖，则不管调动多少次方法，在 2s 后，只会执行一次
+![Execution Diagram](../../image/interview-js-16.png)
 
-如下图所示：
+## 五、应用场景
 
-![](https://static.vue-js.com/a2c81b50-8787-11eb-ab90-d9ae814b240d.png)
+### 防抖适用场景
 
-## 三、应用场景
+1. **搜索框输入**：用户停止输入时发起搜索请求。
+2. **表单验证**：如手机号或邮箱验证，防止每次输入都触发检测。
+3. **窗口调整事件**：`resize` 操作结束后重新计算窗口布局。
 
-防抖在连续的事件，只需触发一次回调的场景有：
+### 节流适用场景
 
-- 搜索框搜索输入。只需用户最后一次输入完，再发送请求
-- 手机号、邮箱验证输入检测
-- 窗口大小`resize`。只需窗口调整完成后，计算窗口大小。防止重复渲染。
-
-节流在间隔一段时间执行一次回调的场景有：
-
-- 滚动加载，加载更多或滚到底部监听
-- 搜索框，搜索联想功能
+1. **滚动加载**：例如滚动加载下一页内容或监听是否滚动到底部。
+2. **输入框联想功能**：在输入过程中，定时获取联想结果。
+3. **鼠标移动事件**：如元素拖拽，限制触发频率以减少性能消耗。

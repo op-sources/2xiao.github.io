@@ -1,7 +1,5 @@
 # 说说对 React 中类组件和函数组件的理解？有什么区别？
 
-![](https://static.vue-js.com/6c196d80-de39-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、类组件
 
 类组件，顾名思义，也就是通过使用`ES6`类的编写形式去编写组件，该类必须继承`React.Component`

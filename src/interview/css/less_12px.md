@@ -59,11 +59,11 @@ Chrome 中文版浏览器会默认设定页面的最小字号是 12px，英文�
 
 效果如下：
 
-![](https://static.vue-js.com/d5243980-a334-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-23.png)
 
 > 需要注意的是，`Zoom` 并不是标准属性，需要考虑其兼容性
 
-![image.png](https://static.vue-js.com/3defe3c0-a343-11eb-85f6-6fac77c0c9b3.png)
+![image.png](../../image/interview-css-24.png)
 
 ### -webkit-transform:scale()
 
@@ -93,7 +93,7 @@ Chrome 中文版浏览器会默认设定页面的最小字号是 12px，英文�
 
 效果如下：
 
-![](https://static.vue-js.com/d5243980-a334-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-23.png)
 
 ### -webkit-text-size-adjust:none
 

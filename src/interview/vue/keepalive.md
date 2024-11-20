@@ -1,7 +1,5 @@
 # 说说你对 keep-alive 的理解是什么？
 
-![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy9nSDMxdUY5VklpYlRaSXdpY3ZmUkR3STRiamRBVGlhVEpFZDNzamRoeTd3MDlVM0k5ZERjNUVVSUNFVk1WSVE2aDFYMjVpY1NRT3lraWFwWEpEUFM0VGJST0l3LzY0MA?x-oss-process=image/format,png)
-
 ## 一、Keep-alive 是什么
 
 `keep-alive`是`vue`中的内置组件，能在组件切换过程中将状态保留在内存中，防止重复渲染`DOM`

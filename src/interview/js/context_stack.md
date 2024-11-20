@@ -1,215 +1,108 @@
 # JavaScript 中执行上下文和执行栈是什么？
 
-![](https://static.vue-js.com/8652b710-74c1-11eb-85f6-6fac77c0c9b3.png)
+## 一、执行上下文（Execution Context）
 
-## 一、执行上下文
+**执行上下文**是 JavaScript 代码执行的运行环境，包含了变量、函数及其作用域链等关键信息。任何 JavaScript 代码都必须运行在某个执行上下文中。
 
-简单的来说，执行上下文是一种对`Javascript`代码执行环境的抽象概念，也就是说只要有`Javascript`代码运行，那么它就一定是运行在执行上下文中
+执行上下文的类型有以下三种：
 
-执行上下文的类型分为三种：
+1. **全局执行上下文**
 
-- 全局执行上下文：只有一个，浏览器中的全局对象就是 `window `对象，`this` 指向这个全局对象
-- 函数执行上下文：存在无数个，只有在函数被调用的时候才会被创建，每次调用函数都会创建一个新的执行上下文
-- Eval 函数执行上下文： 指的是运行在 `eval` 函数中的代码，很少用而且不建议使用
+   - 全局代码的默认环境。
+   - 创建时会绑定一个全局对象（浏览器中为 `window`，Node.js 中为 `global`），并将 `this` 指向全局对象。
 
-下面给出全局上下文和函数上下文的例子：
+2. **函数执行上下文**
 
-![](https://static.vue-js.com/90dd3b60-74c1-11eb-85f6-6fac77c0c9b3.png)
+   - 每当一个函数被调用时，都会为该函数创建一个新的执行上下文。
+   - 包含函数内部的变量、参数和 `this` 的绑定。
 
-紫色框住的部分为全局上下文，蓝色和橘色框起来的是不同的函数上下文。只有全局上下文（的变量）能被其他任何上下文访问
+3. **Eval 执行上下文**
+   - 仅在 `eval()` 函数中运行的代码会创建此上下文。
+   - 较少使用且不推荐。
 
-可以有任意多个函数上下文，每次调用函数创建一个新的上下文，会创建一个私有作用域，函数内部声明的任何变量都不能在当前函数作用域外部直接访问
+## 二、执行上下文的生命周期
 
-## 二、生命周期
+每个执行上下文都有完整的生命周期，由以下三个阶段组成：
 
-执行上下文的生命周期包括三个阶段：创建阶段 → 执行阶段 → 回收阶段
+1. **创建阶段**
 
-### 创建阶段
+   - **确定 `this` 的值（This Binding）**  
+     根据调用方式确定 `this` 的值（全局上下文中指向全局对象，函数上下文中取决于调用形式）。
+   - **创建词法环境（Lexical Environment）**
+     - 包含环境记录（存储变量和函数声明）和外部环境的引用（作用域链）。
+     - 全局环境与函数环境的结构不同，全局环境的外部引用为 `null`。
+   - **创建变量环境（Variable Environment）**
+     - 类似于词法环境，但专门用于处理 `var` 声明的变量。
+     - 在 ES6 中，`let` 和 `const` 被存储在词法环境中，而 `var` 被存储在变量环境中。
 
-创建阶段即当函数被调用，但未执行任何其内部代码之前
+2. **执行阶段**
 
-创建阶段做了三件事：
+   - 变量和函数声明被赋值。
+   - 执行具体代码。
 
-- 确定 this 的值，也被称为 `This Binding`
-- LexicalEnvironment（词法环境） 组件被创建
-- VariableEnvironment（变量环境） 组件被创建
+3. **销毁阶段**
+   - 当前执行上下文被销毁，内存释放。
+   - 若该上下文有闭包引用，则可能不会立即销毁。
 
-伪代码如下：
+## 三、执行栈（Execution Stack）
 
-```js
-ExecutionContext = {
-  ThisBinding = <this value>,     // 确定this
-  LexicalEnvironment = { ... },   // 词法环境
-  VariableEnvironment = { ... },  // 变量环境
+**执行栈**（又称调用栈）是一种后进先出（LIFO）的数据结构，用于管理代码执行过程中创建的执行上下文。
+
+### 工作流程
+
+1. **全局执行上下文入栈**  
+   脚本开始执行时，全局执行上下文被压入栈中。
+2. **函数执行上下文入栈**  
+   每当函数被调用时，都会为该函数创建新的执行上下文并压入栈顶。
+
+3. **执行栈顶上下文**  
+   JavaScript 引擎总是运行栈顶的执行上下文。
+
+4. **函数执行完毕**  
+   栈顶的执行上下文被弹出，控制权回到下一个上下文。
+
+5. **全局执行上下文出栈**  
+   所有代码执行完毕后，全局执行上下文出栈，执行栈清空。
+
+### 示例代码
+
+```javascript
+function foo() {
+	console.log('foo start');
+	bar();
+	console.log('foo end');
 }
+
+function bar() {
+	console.log('inside bar');
+}
+
+foo();
+console.log('Global end');
 ```
 
-#### This Binding
+**栈变化**：
 
-确定`this`的值我们前面讲到，`this`的值是在执行的时候才能确认，定义的时候不能确认
+| 执行步骤         | 执行栈内容           |
+| ---------------- | -------------------- |
+| 初始化           | `[Global]`           |
+| 调用 `foo()`     | `[Global, foo]`      |
+| 调用 `bar()`     | `[Global, foo, bar]` |
+| `bar()` 执行完毕 | `[Global, foo]`      |
+| `foo()` 执行完毕 | `[Global]`           |
+| 全局上下文结束   | `[]`                 |
 
-#### 词法环境
+通过图表和过程，可以直观了解 JavaScript 如何管理代码执行和上下文。
 
-词法环境有两个组成部分：
+## 四、注意事项
 
-- 全局环境：是一个没有外部环境的词法环境，其外部环境引用为` null`，有一个全局对象，`this` 的值指向这个全局对象
+1. **变量提升**
 
-- 函数环境：用户在函数中定义的变量被存储在环境记录中，包含了`arguments` 对象，外部环境的引用可以是全局环境，也可以是包含内部函数的外部函数环境
+   - 在创建阶段，`var` 声明的变量会被初始化为 `undefined`。
+   - `let` 和 `const` 声明的变量处于**暂时性死区**，必须等执行到声明语句才能访问。
 
-伪代码如下：
+2. **闭包**  
+   闭包引用了外部上下文中的变量，可能会延长执行上下文的生命周期，导致变量无法被销毁。
 
-```js
-GlobalExectionContext = {  // 全局执行上下文
-  LexicalEnvironment: {       // 词法环境
-    EnvironmentRecord: {     // 环境记录
-      Type: "Object",           // 全局环境
-      // 标识符绑定在这里
-      outer: <null>           // 对外部环境的引用
-  }
-}
-
-FunctionExectionContext = { // 函数执行上下文
-  LexicalEnvironment: {     // 词法环境
-    EnvironmentRecord: {    // 环境记录
-      Type: "Declarative",      // 函数环境
-      // 标识符绑定在这里      // 对外部环境的引用
-      outer: <Global or outer function environment reference>
-  }
-}
-```
-
-#### 变量环境
-
-变量环境也是一个词法环境，因此它具有上面定义的词法环境的所有属性
-
-在 ES6 中，词法环境和变量环境的区别在于前者用于存储函数声明和变量（ `let` 和 `const` ）绑定，而后者仅用于存储变量（ `var` ）绑定
-
-举个例子
-
-```js
-let a = 20;
-const b = 30;
-var c;
-
-function multiply(e, f) {
-	var g = 20;
-	return e * f * g;
-}
-
-c = multiply(20, 30);
-```
-
-执行上下文如下：
-
-```js
-GlobalExectionContext = {
-
-  ThisBinding: <Global Object>,
-
-  LexicalEnvironment: {  // 词法环境
-    EnvironmentRecord: {
-      Type: "Object",
-      // 标识符绑定在这里
-      a: < uninitialized >,
-      b: < uninitialized >,
-      multiply: < func >
-    }
-    outer: <null>
-  },
-
-  VariableEnvironment: {  // 变量环境
-    EnvironmentRecord: {
-      Type: "Object",
-      // 标识符绑定在这里
-      c: undefined,
-    }
-    outer: <null>
-  }
-}
-
-FunctionExectionContext = {
-
-  ThisBinding: <Global Object>,
-
-  LexicalEnvironment: {
-    EnvironmentRecord: {
-      Type: "Declarative",
-      // 标识符绑定在这里
-      Arguments: {0: 20, 1: 30, length: 2},
-    },
-    outer: <GlobalLexicalEnvironment>
-  },
-
-  VariableEnvironment: {
-    EnvironmentRecord: {
-      Type: "Declarative",
-      // 标识符绑定在这里
-      g: undefined
-    },
-    outer: <GlobalLexicalEnvironment>
-  }
-}
-```
-
-留意上面的代码，`let`和`const`定义的变量`a`和`b`在创建阶段没有被赋值，但`var`声明的变量从在创建阶段被赋值为`undefined`
-
-这是因为，创建阶段，会在代码中扫描变量和函数声明，然后将函数声明存储在环境中
-
-但变量会被初始化为`undefined`(`var`声明的情况下)和保持`uninitialized`(未初始化状态)(使用`let`和`const`声明的情况下)
-
-这就是变量提升的实际原因
-
-### 执行阶段
-
-在这阶段，执行变量赋值、代码执行
-
-如果 `Javascript` 引擎在源代码中声明的实际位置找不到变量的值，那么将为其分配 `undefined` 值
-
-### 回收阶段
-
-执行上下文出栈等待虚拟机回收执行上下文
-
-## 二、执行栈
-
-执行栈，也叫调用栈，具有 LIFO（后进先出）结构，用于存储在代码执行期间创建的所有执行上下文
-
-![](https://static.vue-js.com/9eda0310-74c1-11eb-ab90-d9ae814b240d.png)
-
-当`Javascript`引擎开始执行你第一行脚本代码的时候，它就会创建一个全局执行上下文然后将它压到执行栈中
-
-每当引擎碰到一个函数的时候，它就会创建一个函数执行上下文，然后将这个执行上下文压到执行栈中
-
-引擎会执行位于执行栈栈顶的执行上下文(一般是函数执行上下文)，当该函数执行结束后，对应的执行上下文就会被弹出，然后控制流程到达执行栈的下一个执行上下文
-
-举个例子：
-
-```js
-let a = 'Hello World!';
-function first() {
-	console.log('Inside first function');
-	second();
-	console.log('Again inside first function');
-}
-function second() {
-	console.log('Inside second function');
-}
-first();
-console.log('Inside Global Execution Context');
-```
-
-转化成图的形式
-
-![](https://static.vue-js.com/ac11a600-74c1-11eb-ab90-d9ae814b240d.png)
-
-简单分析一下流程：
-
-- 创建全局上下文请压入执行栈
-- `first`函数被调用，创建函数执行上下文并压入栈
-- 执行`first`函数过程遇到`second`函数，再创建一个函数执行上下文并压入栈
-- `second`函数执行完毕，对应的函数执行上下文被推出执行栈，执行下一个执行上下文`first`函数
-- `first`函数执行完毕，对应的函数执行上下文也被推出栈中，然后执行全局上下文
-- 所有代码执行完毕，全局上下文也会被推出栈中，程序结束
-
-## 参考文献
-
-- https://zhuanlan.zhihu.com/p/107552264
+3. **递归调用**  
+   每次递归调用都会生成新的执行上下文。如果递归层数过多，可能导致栈溢出。

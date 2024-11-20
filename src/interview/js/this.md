@@ -1,7 +1,5 @@
 # 谈谈 this 对象的理解
 
-![](https://static.vue-js.com/46c820d0-74b7-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、定义
 
 函数的 `this` 关键字在 `JavaScript` 中的表现略有不同，此外，在严格模式和非严格模式之间也会有一些差别

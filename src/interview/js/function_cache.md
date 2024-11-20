@@ -1,130 +1,138 @@
-# Javascript 中如何实现函数缓存？函数缓存有哪些应用场景？
+# Javascript 中如何实现函数缓存？应用场景？
 
-![](https://static.vue-js.com/2ae9dda0-85fa-11eb-ab90-d9ae814b240d.png)
+## 如何实现函数缓存？
 
-## 一、是什么
+在 JavaScript 中，函数缓存（Memoization）是一种优化技术，旨在将函数的计算结果缓存起来，避免重复计算。它常用于需要反复计算相同结果的函数，尤其是在高成本的计算过程中。
 
-函数缓存，就是将函数运算过的结果进行缓存
+实现函数缓存的基本思想是：对于每一组输入参数，记录下它的计算结果，若下次调用时参数相同，就直接返回缓存的结果，而不是再次计算。
 
-本质上就是用空间（缓存存储）换时间（计算过程）
+以下是三种常见的实现方式：
 
-常用于缓存数据计算结果和缓存对象
+### 1. 使用对象和闭包实现缓存
 
-```js
-const add = (a, b) => a + b;
-const calc = memoize(add); // 函数缓存
-calc(10, 20); // 30
-calc(10, 20); // 30 缓存
-```
-
-缓存只是一个临时的数据存储，它保存数据，以便将来对该数据的请求能够更快地得到处理
-
-## 二、如何实现
-
-实现函数缓存主要依靠闭包、柯里化、高阶函数，这里再简单复习下：
-
-### 闭包
-
-闭包可以理解成，函数 + 函数体内可访问的变量总和
+最简单的一种方式是使用闭包，将函数计算的结果存储在一个对象中，通过对象的键值对来缓存计算结果。
 
 ```js
-(function () {
-	var a = 1;
-	function add() {
-		const b = 2;
-		let sum = b + a;
-		console.log(sum); // 3
-	}
-	add();
-})();
-```
-
-`add `函数本身，以及其内部可访问的变量，即 `a = 1 `，这两个组合在⼀起就形成了闭包
-
-### 柯里化
-
-把接受多个参数的函数转换成接受一个单一参数的函数
-
-```js
-// 非函数柯里化
-var add = function (x, y) {
-	return x + y;
-};
-add(3, 4); //7
-
-// 函数柯里化
-var add2 = function (x) {
-	//**返回函数**
-	return function (y) {
-		return x + y;
-	};
-};
-add2(3)(4); //7
-```
-
-将一个二元函数拆分成两个一元函数
-
-### 高阶函数
-
-通过接收其他函数作为参数或返回其他函数的函数
-
-```js
-function foo() {
-	var a = 2;
-
-	function bar() {
-		console.log(a);
-	}
-	return bar;
-}
-var baz = foo();
-baz(); //2
-```
-
-函数 `foo` 如何返回另一个函数 `bar`，`baz` 现在持有对 `foo` 中定义的`bar` 函数的引用。由于闭包特性，`a`的值能够得到
-
-下面再看看如何实现函数缓存，实现原理也很简单，把参数和对应的结果数据存在一个对象中，调用时判断参数对应的数据是否存在，存在就返回对应的结果数据，否则就返回计算结果
-
-如下所示
-
-```js
-const memoize = function (func, content) {
-	let cache = Object.create(null);
-	content = content || this;
-	return (...key) => {
-		if (!cache[key]) {
-			cache[key] = func.apply(content, key);
+function memoize(func) {
+	let cache = {}; // 使用对象缓存计算结果
+	return function (...args) {
+		const key = JSON.stringify(args); // 将参数序列化为字符串作为缓存键
+		if (cache[key]) {
+			return cache[key]; // 如果缓存中已有结果，直接返回
 		}
-		return cache[key];
+		const result = func(...args); // 否则计算结果
+		cache[key] = result; // 存入缓存
+		return result;
 	};
-};
+}
+
+// 示例函数
+const add = (a, b) => a + b;
+const memoizedAdd = memoize(add);
+
+console.log(memoizedAdd(1, 2)); // 计算并缓存结果
+console.log(memoizedAdd(1, 2)); // 从缓存中返回结果
 ```
 
-调用方式也很简单
+### 2. 使用 Map 实现缓存
+
+Map 是一种更高效的数据结构，尤其在处理较复杂的键时（如对象、数组等）。与对象不同，Map 允许任何数据类型作为键。
 
 ```js
-const calc = memoize(add);
-const num1 = calc(100, 200);
-const num2 = calc(100, 200); // 缓存得到的结果
+function memoize(func) {
+	const cache = new Map(); // 使用 Map 缓存计算结果
+	return function (...args) {
+		const key = args.join(','); // 将参数连接成字符串作为缓存键
+		if (cache.has(key)) {
+			return cache.get(key); // 如果缓存中已有结果，直接返回
+		}
+		const result = func(...args); // 否则计算结果
+		cache.set(key, result); // 存入缓存
+		return result;
+	};
+}
+
+// 示例函数
+const multiply = (a, b) => a * b;
+const memoizedMultiply = memoize(multiply);
+
+console.log(memoizedMultiply(2, 3)); // 计算并缓存结果
+console.log(memoizedMultiply(2, 3)); // 从缓存中返回结果
 ```
 
-过程分析：
+### 3. 使用 WeakMap 实现缓存
 
-- 在当前函数作用域定义了一个空对象，用于缓存运行结果
-- 运用柯里化返回一个函数，返回的函数由于闭包特性，可以访问到`cache`
-- 然后判断输入参数是不是在`cache`的中。如果已经存在，直接返回`cache`的内容，如果没有存在，使用函数`func`对输入参数求值，然后把结果存储在`cache`中
+`WeakMap` 是一种特殊的 Map，它的键是弱引用，意味着当键不再被引用时，缓存会被自动清理。这对于缓存对象尤其有用，避免了内存泄漏问题。
 
-## 三、应用场景
+```js
+function memoize(func) {
+	const cache = new WeakMap(); // 使用 WeakMap 缓存对象结果
+	return function (...args) {
+		if (args.length === 1 && typeof args[0] === 'object') {
+			if (cache.has(args[0])) {
+				return cache.get(args[0]); // 如果缓存中已有结果，直接返回
+			}
+			const result = func(...args); // 否则计算结果
+			cache.set(args[0], result); // 存入缓存
+			return result;
+		}
+		return func(...args); // 对于非对象参数，直接计算
+	};
+}
 
-虽然使用缓存效率是非常高的，但并不是所有场景都适用，因此千万不要极端的将所有函数都添加缓存
+// 示例函数
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj)); // 模拟深拷贝
+const memoizedClone = memoize(deepClone);
 
-以下几种情况下，适合使用缓存：
+const obj = { a: 1, b: 2 };
+console.log(memoizedClone(obj)); // 计算并缓存结果
+console.log(memoizedClone(obj)); // 从缓存中返回结果
+```
 
-- 对于昂贵的函数调用，执行复杂计算的函数
-- 对于具有有限且高度重复输入范围的函数
-- 对于具有重复输入值的递归函数
-- 对于纯函数，即每次使用特定输入调用时返回相同输出的函数
+## 函数缓存的应用场景
 
-## 参考文献
+尽管函数缓存能够显著提高性能，但并不是所有情况下都需要使用。以下是一些适合使用函数缓存的场景：
 
-- https://zhuanlan.zhihu.com/p/112505577
+### 1. 昂贵的计算函数
+
+对于计算复杂、耗时的函数，缓存可以避免每次都重新计算。例如，涉及大数据运算、复杂数学计算等。
+
+例如，计算斐波那契数列的递归版本：
+
+```js
+function fibonacci(n) {
+	if (n <= 1) return n;
+	return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+const memoizedFibonacci = memoize(fibonacci);
+```
+
+通过缓存，避免了重复计算相同的斐波那契数值。
+
+### 2. 具有有限且高度重复输入范围的函数
+
+当函数的输入范围较小，并且很多调用会重复相同的输入时，函数缓存能够极大地提高效率。例如，UI 组件渲染过程中，某些函数可能会反复计算相同的数据。
+
+### 3. 递归函数
+
+对于递归函数，尤其是涉及重复子问题的递归，缓存可以显著减少计算次数，优化性能。例如，树或图遍历时，某些结果可能会被重复计算。
+
+### 4. 纯函数
+
+纯函数是指对于相同的输入总是返回相同的输出，这种函数特别适合使用缓存。因为它们的输出与输入一一对应，不受外部因素影响。
+
+```js
+function square(x) {
+	return x * x;
+}
+const memoizedSquare = memoize(square);
+```
+
+## 不适合使用缓存的场景
+
+尽管缓存具有优势，但并不是所有场景都适合使用缓存：
+
+- **输入变化频繁**：如果输入值变化频繁，缓存的优势不明显，甚至可能会增加额外的存储和查找开销。
+- **需要实时计算的场景**：对于需要实时计算的函数，如时钟、传感器数据处理等，缓存可能不适合。
+- **不适合高并发的场景**：如果缓存的计算过程依赖于大量共享资源，可能会遇到并发问题。

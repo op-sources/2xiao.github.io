@@ -1,7 +1,5 @@
 # 如何实现上拉加载，下拉刷新？
 
-![](https://static.vue-js.com/89cd1850-8adc-11eb-ab90-d9ae814b240d.png)
-
 ## 一、前言
 
 下拉刷新和上拉加载这两种交互方式通常出现在移动端中
@@ -24,7 +22,7 @@
 
 首先可以看一张图
 
-![](https://static.vue-js.com/df498a00-8ae3-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-js-51.png)
 
 上拉加载的本质是页面触底，或者快要触底时的动作
 

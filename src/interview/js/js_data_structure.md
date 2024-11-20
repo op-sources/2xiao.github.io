@@ -36,14 +36,14 @@
 栈是一种遵循后进先出（LIFO）原则的有序集合
 在栈里，新元素都接近栈顶，旧元素都接近栈底。
 每次加入新的元素和拿走元素都在顶部操作
-![](https://upload-images.jianshu.io/upload_images/13253432-ddcb884374470d2c?imageMogr2/auto-orient/strip|imageView2/2/format/webp)
+![](../../image/interview-js-32.jpg)
 
 ## 队列（Queue）
 
 队列是遵循先进先出（FIFO，也称为先来先服务）原则的一组有序的项
 队列在尾部添加新元素，并从顶部移除元素
 最新添加的元素必须排在队列的末尾
-![](https://upload-images.jianshu.io/upload_images/13253432-55ad7c7db40d3796?imageMogr2/auto-orient/strip|imageView2/2/format/webp)
+![](../../image/interview-js-33.jpg)
 
 ## 链表（Linked List）
 
@@ -55,7 +55,7 @@ JavaScript 中数组的主要问题时，它们被实现成了对象，
 使用条件：
 链表几乎可以用在任何可以使用一维数组的情况中。
 如果需要随机访问，数组仍然是更好的选择。
-![](https://raw.githubusercontent.com/zoro-web/blog/master/img/lian.jpg)
+![](../../image/interview-js-34.jpg)
 
 ## 字典
 
@@ -74,4 +74,4 @@ JavaScript 中数组的主要问题时，它们被实现成了对象，
 即使使用一个高效的散列函数，依然存在将两个键映射为同一个值得可能，这种现象叫做碰撞。常见碰撞的处理方法有：开链法和线性探测法（具体概念有兴趣的可以网上自信了解）
 使用条件：
 可以用于数据的插入、删除和取用，不适用于查找数据
-![](https://raw.githubusercontent.com/zoro-web/blog/master/img/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20170820211406.png)
+![](../../image/interview-js-35.png)

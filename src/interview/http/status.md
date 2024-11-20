@@ -1,7 +1,5 @@
 # 说说 HTTP 常见的状态码有哪些，适用场景？
 
-![](https://static.vue-js.com/038831d0-bbc9-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 HTTP 状态码（英语：HTTP Status Code），用以表示网页服务器超文本传输协议响应状态的 3 位数字代码

@@ -1,7 +1,5 @@
 # 说说你对 vue 的 mixin 的理解，有什么应用场景？
 
-![](https://static.vue-js.com/8a739c90-3b7f-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、mixin 是什么
 
 `Mixin`是面向对象程序设计语言中的类，提供了方法的实现。其他类可以访问`mixin`类的方法而不必成为其子类

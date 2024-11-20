@@ -1,7 +1,5 @@
 # 说说对 Node 中的 fs 模块的理解? 有哪些常用方法
 
-![](https://static.vue-js.com/a141e5c0-c46a-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 fs（filesystem），该模块提供本地文件的读写能力，基本上是`POSIX`文件操作命令的简单包装
@@ -26,7 +24,7 @@ const fs = require('fs');
 
 ### 权限位 mode
 
-![](https://static.vue-js.com/4f4d41a0-c46b-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-nodejs-2.png)
 
 针对文件所有者、文件所属组、其他用户进行权限分配，其中类型又分成读、写和执行，具备权限位 4、2、1，不具备权限为 0
 

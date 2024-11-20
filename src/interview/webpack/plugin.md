@@ -1,6 +1,5 @@
 # 说说 webpack 中常见的 Plugin？解决了什么问题？
 
-
 ## 一、是什么
 
 `Plugin`（Plug-in）是一种计算机应用程序，它和主应用程序互相交互，以提供特定的功能
@@ -9,7 +8,7 @@
 
 `webpack`中的`plugin`也是如此，`plugin`赋予其各种灵活的功能，例如打包优化、资源管理、环境变量注入等，它们会运行在 `webpack` 的不同阶段（钩子 / 生命周期），贯穿了`webpack`整个编译周期
 
-![](https://static.vue-js.com/9a04ec40-a7c2-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-webpack-3.png)
 
 目的在于解决`loader` 无法实现的其他事
 
@@ -68,7 +67,7 @@ module.exports = ConsoleLogOnBuildWebpackPlugin;
 
 常见的`plugin`有如图所示：
 
-![](https://static.vue-js.com/bd749400-a7c2-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-webpack-4.png)
 
 下面介绍几个常用的插件用法：
 

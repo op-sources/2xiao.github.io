@@ -1,7 +1,5 @@
 # SSR 解决了什么问题？有做过 SSR 吗？你是怎么做的？
 
-![](https://static.vue-js.com/84bd83f0-4986-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、是什么
 
 `Server-Side Rendering` 我们称其为`SSR`，意为服务端渲染
@@ -18,7 +16,7 @@
 
 网页内容在服务端渲染完成，⼀次性传输到浏览器
 
-![img](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e4d666b24e784fd09e565458c7753b54~tplv-k3u1fbpfcp-watermark.image)
+![img](../../image/interview-vue-53.png)
 
 打开页面查看源码，浏览器拿到的是全部的`dom`结构
 
@@ -26,7 +24,7 @@
 
 单页应用优秀的用户体验，使其逐渐成为主流，页面内容由`JS`渲染出来，这种方式称为客户端渲染
 
-![img](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5e8e524a8e7d44cba73e0c3416690087~tplv-k3u1fbpfcp-watermark.image)
+![img](../../image/interview-vue-54.png)
 
 打开页面查看源码，浏览器拿到的仅有宿主元素`#app`，并没有内容
 
@@ -34,7 +32,7 @@
 
 `SSR`解决方案，后端渲染出完整的首屏的`dom`结构返回，前端拿到的内容包括首屏及完整`spa`结构，应用激活后依然按照`spa`方式运行
 
-![img](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f1604e7cfad7431f99920e8ab833bc37~tplv-k3u1fbpfcp-watermark.image)
+![img](../../image/interview-vue-55.png)
 
 看完前端发展，我们再看看`Vue`官方对`SSR`的解释：
 
@@ -81,7 +79,7 @@ SSR 主要解决了以下两种问题：
 
 这里需要生成一个服务器`bundle`文件用于服务端首屏渲染和一个客户端`bundle`文件用于客户端激活
 
-![](https://static.vue-js.com/9dcd12c0-4986-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-56.png)
 
 代码结构 除了两个不同入口之外，其他结构和之前`vue`应用完全相同
 

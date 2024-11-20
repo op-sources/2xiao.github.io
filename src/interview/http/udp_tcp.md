@@ -1,7 +1,5 @@
 # 如何理解 UDP 和 TCP? 区别? 应用场景?
 
-![](https://static.vue-js.com/85ad65b0-b393-11eb-ab90-d9ae814b240d.png)
-
 ## 一、UDP
 
 UDP（User Datagram Protocol），用户数据包协议，是一个简单的**面向数据报的通信协议**，即对应用层交下来的报文，不合并，不拆分，只是在其上面加上首部后就交给了下面的网络层
@@ -12,7 +10,7 @@ UDP（User Datagram Protocol），用户数据包协议，是一个简单的**�
 
 `UDP`报头包括 4 个字段，每个字段占用 2 个字节（即 16 个二进制位），标题短，开销小
 
-![](https://static.vue-js.com/928e5d20-b393-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-http-7.png)
 
 特点如下：
 
@@ -29,7 +27,7 @@ TCP（Transmission Control Protocol），传输控制协议，是一种可靠、
 
 `TCP`报文首部有 20 个字节，额外开销大
 
-![](https://static.vue-js.com/a0010d40-b393-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-http-8.png)
 
 特点如下：
 
@@ -41,7 +39,7 @@ TCP（Transmission Control Protocol），传输控制协议，是一种可靠、
 
 `UDP`与`TCP`两者的都位于传输层，如下图所示：
 
-![](https://static.vue-js.com/a92bda80-b393-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-http-9.png)
 
 两者区别如下表所示：
 
@@ -64,7 +62,7 @@ TCP（Transmission Control Protocol），传输控制协议，是一种可靠、
 
 两者应用场景如下图：
 
-![](https://static.vue-js.com/b6cdd800-b393-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-http-10.png)
 
 可以看到，TCP 应用场景适用于对效率要求低，对准确性要求高或者要求有链接的场景，而 UDP 适用场景为对效率要求高，对准确性要求低的场景
 

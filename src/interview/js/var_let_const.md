@@ -1,7 +1,5 @@
 # 说说 var、let、const 之间的区别
 
-![](https://static.vue-js.com/d2aba2e0-50f7-11eb-85f6-6fac77c0c9b3.png)
-
 ## 一、var
 
 在 ES5 中，顶层对象的属性和全局变量是等价的，用`var`声明的变量既是全局变量，也是顶层变量

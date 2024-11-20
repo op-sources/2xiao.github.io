@@ -8,13 +8,13 @@
 
 执行遗弃时，需要根据影响的范围而指定不同的参数，可以指定是否复原索引或工作树内容
 
-![](https://static.vue-js.com/ab4d0c00-ff72-11eb-bc6f-3f06e1491664.png)
+![](../../image/interview-git-40.png)
 
 ### git revert
 
 在当前提交后面，新增一次提交，抵消掉上一次提交导致的所有变化，不会改变过去的历史，主要是用于安全地取消过去发布的提交
 
-![](https://static.vue-js.com/bd12c290-ff72-11eb-991d-334fd31f0201.png)
+![](../../image/interview-git-41.png)
 
 ## 二、如何用
 
@@ -54,7 +54,7 @@ Date:   Tue Aug 17 22:20:01 2021 +0800
 
 - --soft：如果使用 --soft 参数，那么暂存区和工作区都不会变化
 
-![](https://static.vue-js.com/225b41e0-ff73-11eb-bc6f-3f06e1491664.png)
+![](../../image/interview-git-42.png)
 
 ### git revert
 

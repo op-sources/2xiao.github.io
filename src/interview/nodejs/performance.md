@@ -1,7 +1,5 @@
 # Node 性能如何进行监控以及优化？
 
-![](https://static.vue-js.com/bb37dae0-d179-11eb-ab90-d9ae814b240d.png)
-
 ## 一、 是什么
 
 `Node`作为一门服务端语言，性能方面尤为重要，其衡量指标一般有如下：

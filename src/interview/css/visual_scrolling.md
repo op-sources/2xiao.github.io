@@ -1,17 +1,16 @@
 # 如何使用 css 完成视差滚动效果?
 
-
 ## 一、是什么
 
 视差滚动（Parallax Scrolling）是指多层背景以不同的速度移动，形成立体的运动效果，带来非常出色的视觉体验
 
 我们可以把网页解刨成：背景层、内容层、悬浮层
 
-![](https://static.vue-js.com/57c942a0-a1cc-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-css-1.png)
 
 当滚动鼠标滑轮的时候，各个图层以不同的速度移动，形成视觉差的效果
 
-![image.png](https://static.vue-js.com/e57ab280-a1dd-11eb-ab90-d9ae814b240d.png)
+![image.png](../../image/interview-css-2.png)
 
 ## 二、实现方式
 
@@ -101,7 +100,7 @@ section {
 
 `3D`视角示意图如下所示：
 
-![](https://static.vue-js.com/24f37dd0-a18d-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-css-3.png)
 
 举个例子：
 

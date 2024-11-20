@@ -1,7 +1,5 @@
 # 说说 Vue 3.0 中 Treeshaking 特性？举例说明一下？
 
-![](https://static.vue-js.com/5e8bf1d0-6097-11eb-ab90-d9ae814b240d.png)
-
 ## 一、是什么
 
 `Tree shaking` 是一种通过清除多余代码方式来优化项目打包体积的技术，专业术语叫 `Dead code elimination`
@@ -63,7 +61,7 @@ export default {
 
 对项目进行打包，体积如下图
 
-![](https://static.vue-js.com/6bd2aff0-6097-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-64.png)
 
 为组件设置其他属性（`compted`、`watch`）
 
@@ -87,7 +85,7 @@ export default {
 
 再一次打包，发现打包出来的体积并没有变化
 
-![](https://static.vue-js.com/7c29e260-6097-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-vue-65.png)
 
 ### Vue3 项目
 
@@ -109,7 +107,7 @@ export default defineComponent({
 
 将项目进行打包
 
-![](https://static.vue-js.com/95df0000-6097-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-66.png)
 
 在组件中引入`computed`和`watch`
 
@@ -141,7 +139,7 @@ export default defineComponent({
 
 再次对项目进行打包，可以看到在引入`computer`和`watch`之后，项目整体体积变大了
 
-![](https://static.vue-js.com/b36a7a00-6097-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-vue-67.png)
 
 ## 三、作用
 

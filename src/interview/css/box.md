@@ -6,7 +6,7 @@
 
 一个盒子由四个部分组成：`content`、`padding`、`border`、`margin`
 
-![](https://static.vue-js.com/976789a0-8f9b-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-css-33.png)
 
 `content`，即实际内容，显示文本和图像
 
@@ -18,7 +18,7 @@
 
 上述是一个从二维的角度观察盒子，下面再看看看三维图：
 
-![](https://static.vue-js.com/b2548b00-8f9b-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-34.png)
 
 下面来段代码：
 
@@ -48,7 +48,7 @@
 
 下面看看标准盒子模型的模型图：
 
-![](https://static.vue-js.com/c0e1d2e0-8f9b-11eb-85f6-6fac77c0c9b3.png)
+![](../../image/interview-css-35.png)
 
 从上图可以看到：
 
@@ -64,7 +64,7 @@
 
 同样看看 IE 怪异盒子模型的模型图：
 
-![](https://static.vue-js.com/cfbb3ef0-8f9b-11eb-ab90-d9ae814b240d.png)
+![](../../image/interview-css-36.png)
 
 从上图可以看到：
 
