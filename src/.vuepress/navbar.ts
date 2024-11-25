@@ -20,6 +20,12 @@ export default navbar([
 		link: '/my-vue/'
 	},
 	{
+		text: '系统设计',
+		icon: 'launch',
+		prefix: '/system-design/',
+		link: '/system-design/'
+	},
+	{
 		text: '前端面试题',
 		icon: 'creative',
 		prefix: '/interview/',

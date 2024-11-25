@@ -6,7 +6,7 @@ export default sidebar({
 		'',
 		{
 			text: '整体架构',
-			icon: 'tree',
+			icon: 'guide',
 			children: ['1', '2'],
 			collapsible: false
 		},
@@ -42,7 +42,7 @@ export default sidebar({
 		},
 		{
 			text: '模板编译原理',
-			icon: 'condition',
+			icon: 'change',
 			children: ['21', '22', '23', '24'],
 			collapsible: false
 		}
@@ -69,20 +69,6 @@ export default sidebar({
 					text: 'CSS 相关',
 					icon: 'palette',
 					prefix: 'css/',
-					children: 'structure',
-					collapsible: true
-				},
-				{
-					text: 'HTTP 相关',
-					icon: 'http',
-					prefix: 'http/',
-					children: 'structure',
-					collapsible: true
-				},
-				{
-					text: 'NodeJS 相关',
-					icon: 'nodeJS',
-					prefix: 'nodejs/',
 					children: 'structure',
 					collapsible: true
 				}
@@ -141,27 +127,32 @@ export default sidebar({
 			children: [
 				{
 					text: '算法笔记',
+					icon: 'repo',
 					link: 'https://2xiao.github.io/leetcode-js/book/',
 					target: '_self'
 				},
 				{
 					text: 'LeetCode 题解',
+					icon: 'code',
 					link: 'https://2xiao.github.io/leetcode-js/problem/',
 					target: '_self'
 				},
 				{
 					text: '剑指 Offer',
+					icon: 'keyboard',
 					link: 'https://2xiao.github.io/leetcode-js/offer/',
 					target: '_self'
 				},
 				{
 					text: '剑指 Offer II',
+					icon: 'template',
 					link: 'https://2xiao.github.io/leetcode-js/offer2/',
 					target: '_self'
 				},
 				{
 					text: '程序员面试金典',
 					link: 'https://2xiao.github.io/leetcode-js/interview/',
+					icon: 'result',
 					target: '_self'
 				}
 			],
@@ -169,9 +160,35 @@ export default sidebar({
 		},
 		{
 			text: '系统设计',
-			prefix: 'system_design/',
-			children: 'structure',
-			collapsible: true
+			children: [
+				{
+					text: '系统设计入门',
+					icon: 'study',
+					link: '/system-design/0_computer_architecture.html',
+					target: '_self'
+				},
+				{
+					text: '系统设计实战',
+					icon: 'launch',
+					link: '/system-design/0_computer_architecture.html',
+					target: '_self'
+				},
+				{
+					text: 'HTTP 相关',
+					icon: 'http',
+					prefix: 'http/',
+					children: 'structure',
+					collapsible: true
+				},
+				{
+					text: 'NodeJS 相关',
+					icon: 'nodeJS',
+					prefix: 'nodejs/',
+					children: 'structure',
+					collapsible: true
+				}
+			],
+			collapsible: false
 		},
 		{
 			text: '行为面试',
@@ -183,6 +200,88 @@ export default sidebar({
 			text: '最新技术趋势',
 			prefix: 'trend/',
 			children: 'structure',
+			collapsible: true
+		}
+	],
+	'/system-design/': [
+		'',
+		{
+			text: '系统设计入门',
+			children: [
+				{
+					text: '概述',
+					icon: 'guide',
+					children: [
+						'0_computer_architecture',
+						'1_application_architecture',
+						'2_design_requirements'
+					],
+					collapsible: false
+				},
+				{
+					text: '网络',
+					icon: 'any',
+					children: ['3_networking_basics', '4_tcp_and_udp', '5_dns'],
+					collapsible: false
+				},
+				{
+					text: 'APIs',
+					icon: 'api',
+					children: [
+						'6_http',
+						'7_websockets',
+						'8_api_paradigms',
+						'9_api_design'
+					],
+					collapsible: false
+				},
+				{
+					text: '缓存',
+					icon: 'cache',
+					children: ['10_caching', '11_cdns'],
+					collapsible: false
+				},
+				{
+					text: '代理',
+					icon: 'plugin',
+					children: ['12_proxies_and_load_balancing', '13_consistent_hashing'],
+					collapsible: false
+				},
+				{
+					text: '存储',
+					icon: 'mysql',
+					children: [
+						'14_sql',
+						'15_nosql',
+						'16_replication_and_sharding',
+						'17_cap_theorem',
+						'18_object_storage'
+					],
+					collapsible: false
+				},
+				{
+					text: '大数据',
+					icon: 'map',
+					children: ['19_message_queues', '20_map_reduce'],
+					collapsible: false
+				}
+			],
+			collapsible: true
+		},
+		{
+			text: '系统设计实战',
+			children: [
+				'21_how_to_approach.md',
+				'22_design_a_rate_limiter.md',
+				'23_design_tinyurl.md',
+				'24_design_twitter.md',
+				'25_design_discord.md',
+				'26_design_youtube.md',
+				'27_design_google_drive.md',
+				'28_design_google_maps.md',
+				'29_design_a_key_value_store.md',
+				'30_design_a_distributed_message_queue.md'
+			],
 			collapsible: true
 		}
 	]
