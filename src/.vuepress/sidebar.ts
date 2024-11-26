@@ -170,7 +170,7 @@ export default sidebar({
 				{
 					text: '系统设计实战',
 					icon: 'launch',
-					link: '/system-design/0_computer_architecture.html',
+					link: '/system-design/21_how_to_approach.html',
 					target: '_self'
 				},
 				{
@@ -206,70 +206,60 @@ export default sidebar({
 	'/system-design/': [
 		'',
 		{
-			text: '系统设计入门',
+			text: '基础概述',
+			icon: 'guide',
 			children: [
-				{
-					text: '概述',
-					icon: 'guide',
-					children: [
-						'0_computer_architecture',
-						'1_application_architecture',
-						'2_design_requirements'
-					],
-					collapsible: false
-				},
-				{
-					text: '网络',
-					icon: 'any',
-					children: ['3_networking_basics', '4_tcp_and_udp', '5_dns'],
-					collapsible: false
-				},
-				{
-					text: 'APIs',
-					icon: 'api',
-					children: [
-						'6_http',
-						'7_websockets',
-						'8_api_paradigms',
-						'9_api_design'
-					],
-					collapsible: false
-				},
-				{
-					text: '缓存',
-					icon: 'cache',
-					children: ['10_caching', '11_cdns'],
-					collapsible: false
-				},
-				{
-					text: '代理',
-					icon: 'plugin',
-					children: ['12_proxies_and_load_balancing', '13_consistent_hashing'],
-					collapsible: false
-				},
-				{
-					text: '存储',
-					icon: 'mysql',
-					children: [
-						'14_sql',
-						'15_nosql',
-						'16_replication_and_sharding',
-						'17_cap_theorem',
-						'18_object_storage'
-					],
-					collapsible: false
-				},
-				{
-					text: '大数据',
-					icon: 'map',
-					children: ['19_message_queues', '20_map_reduce'],
-					collapsible: false
-				}
+				'0_computer_architecture',
+				'1_application_architecture',
+				'2_design_requirements'
 			],
-			collapsible: true
+			collapsible: false
+		},
+		{
+			text: '网络基础',
+			icon: 'any',
+			children: ['3_networking_basics', '4_tcp_and_udp', '5_dns'],
+			collapsible: false
+		},
+		{
+			text: 'APIs',
+			icon: 'api',
+			children: ['6_http', '7_websockets', '8_api_paradigms', '9_api_design'],
+			collapsible: false
+		},
+		{
+			text: '缓存',
+			icon: 'cache',
+			children: ['10_caching', '11_cdns'],
+			collapsible: false
+		},
+		{
+			text: '代理',
+			icon: 'plugin',
+			children: ['12_proxies_and_load_balancing', '13_consistent_hashing'],
+			collapsible: false
+		},
+		{
+			text: '存储',
+			icon: 'mysql',
+			children: [
+				'14_sql',
+				'15_nosql',
+				'16_replication_and_sharding',
+				'17_cap_theorem',
+				'18_object_storage'
+			],
+			collapsible: false
+		},
+		{
+			text: '分布式',
+			icon: 'map',
+			children: ['19_message_queues', '20_map_reduce'],
+			collapsible: false
 		},
 		{
 			text: '系统设计实战',
+			icon: 'discover',
 			children: [
 				'21_how_to_approach.md',
 				'22_design_a_rate_limiter.md',
@@ -282,7 +272,7 @@ export default sidebar({
 				'29_design_a_key_value_store.md',
 				'30_design_a_distributed_message_queue.md'
 			],
-			collapsible: true
+			collapsible: false
 		}
 	]
 });

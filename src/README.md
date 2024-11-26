@@ -9,17 +9,20 @@ bgImageStyle:
   background-attachment: fixed
 heroText: LeetCode-JS
 # heroFullScreen: true
-tagline: LeetCode 算法 + 框架源码 + 前端八股文 = Offer
+tagline: 算法 + 框架源码 + 系统设计 + 前端面试题 = Offer
 actions:
   - text: 🧭 LeetCode 通关指南
     link: https://2xiao.github.io/leetcode-js/
     type: primary
 
-  - text: 🍭 React 源码
+  - text: 🍭 手写 React 源码
     link: ./my-react/
 
-  - text: 🤡 Vue 源码
+  - text: 🤡 手写 Vue 源码
     link: ./my-vue/
+
+  - text: 🚀 系统设计入门
+    link: ./system-design/
 
   - text: 🔥 前端面试题
     link: ./interview/
@@ -123,6 +126,39 @@ highlights:
         icon: condition
         details: 学习编译优化技巧，掌握解析器、AST 语法树的优化、代码生成原理
         link: ./my-vue/21.md
+
+  - header: 系统设计入门
+    description: 从基础概念到经典案例，系统性地掌握系统设计核心知识，为面试和实际开发打下扎实基础
+    image: assets/image/system-logo.png
+    bgImage: https://theme-hope-assets.vuejs.press/bg/1-light.svg
+    bgImageDark: https://theme-hope-assets.vuejs.press/bg/1-dark.svg
+    bgImageStyle:
+      opacity: 0.5
+    highlights:
+      - title: 基础知识
+        icon: guide
+        details: 深入讲解计算机架构、网络基础、TCP/IP 协议、缓存机制等系统设计核心概念
+        link: ./system-design/0_computer_architecture.md
+
+      - title: API 设计
+        icon: api
+        details: 学习 HTTP、WebSocket、API 模式及设计的最佳实践
+        link: ./system-design/6_http.md
+
+      - title: 存储与数据库
+        icon: mysql
+        details: 理解 SQL 与 NoSQL 数据库原理，掌握 CAP 定理及分片与复制的关键技术
+        link: ./system-design/14_sql.md
+
+      - title: 分布式系统
+        icon: map
+        details: 掌握一致性哈希、分布式消息队列的架构设计及 MapReduce 的大数据处理模型
+        link: ./system-design/19_message_queues.md
+
+      - title: 实战案例
+        icon: discover
+        details: 涵盖限流器、短链接、Twitter、YouTube 等经典系统设计题目的全方位解析
+        link: ./system-design/21_how_to_approach.md
 
   - header: 前端面试题
     description: 常见的前端面试题梳理，提炼分析面试难点，助你系统备战，收割 Offer

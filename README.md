@@ -1,16 +1,17 @@
 # LeetCode-JS
 
-> **LeetCode 算法 + 框架源码 + 前端面试题 = Offer**
+> **LeetCode 算法 + 框架源码 + 系统设计 + 前端面试题 = Offer**
 
 ## 项目简介
 
-LeetCode-JS 是一个帮助前端开发者系统提升算法能力、理解框架源码以及掌握前端面试要点的学习项目。通过丰富的解题思路、源码解析和面试指南，助力你快速通关算法题、掌握核心知识点，从容面对技术面试，拿到心仪 Offer。
+LeetCode-JS 是一个帮助前端开发者系统提升算法能力、理解框架源码、掌握系统设计和前端面试核心知识的学习项目。通过丰富的解题思路、源码解析、系统设计实站和面试指南，助力你快速通关算法题、深入理解核心概念，从容应对技术面试，拿到心仪 Offer。
 
 ## 在线访问
 
 👉 [**🧭 LeetCode 通关指南**](https://2xiao.github.io/leetcode-js/)  
 👉 [**🍭 React 源码**](https://2xiao.github.io/my-react/)  
 👉 [**🤡 Vue 源码**](https://2xiao.github.io/my-vue/)  
+👉 [**🚀 系统设计入门**](https://2xiao.github.io/system-design/)  
 👉 [**🔥 前端面试题**](https://2xiao.github.io/interview/)
 
 ## 项目亮点
@@ -60,6 +61,22 @@ LeetCode-JS 是一个帮助前端开发者系统提升算法能力、理解框�
 - **模板编译原理**: 掌握编译优化与 AST 的生成
 
 👉 [立即学习](https://2xiao.github.io/my-vue/)
+
+---
+
+### 🚀 系统设计入门
+
+<img src="./src/image/system-logo.png" alt="logo" height="200"/>
+
+系统性掌握基础知识与核心概念，并通过实战案例熟悉常见系统设计题目的解决思路：
+
+- **基础知识**：计算机架构、网络基础、HTTP、缓存机制
+- **API 设计**：WebSocket、API 模式与设计最佳实践
+- **存储系统**：SQL、NoSQL、CAP 定理、分片与复制
+- **分布式系统**：一致性哈希、消息队列、MapReduce 等
+- **系统设计实战**：设计限流器、短链接、Twitter、YouTube 等经典题目
+
+👉 [立即学习](https://2xiao.github.io/system-design/)
 
 ---
 
