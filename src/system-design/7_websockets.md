@@ -65,12 +65,6 @@ asyncio.get_event_loop().run_until_complete(chat())
     |                                |
 ```
 
-## 结论
-
-WebSocket 彻底改变了我们对 Web 上实时通信的看法。通过提供一个持久的双向连接，它消除了低效的轮询机制，并减少了延迟，成为实时数据交换应用的首选协议。
-
-无论你是在构建聊天应用、实时信息流还是其他需要实时更新的系统，WebSocket 都提供了一个强大的解决方案，超越了 HTTP 的局限性。随着 Web 技术的不断发展，理解并利用 WebSocket 将是创建响应迅速且高效的 Web 应用的关键。
-
 ## 相关链接
 
 - [MDN Web Docs 关于 WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)

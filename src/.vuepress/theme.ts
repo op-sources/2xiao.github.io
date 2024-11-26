@@ -21,7 +21,7 @@ export default hopeTheme(
 
 		favicon: 'assets/image/logo.png',
 
-		repo: '2xiao',
+		repo: '2xiao/2xiao.github.io',
 
 		docsBranch: 'master',
 

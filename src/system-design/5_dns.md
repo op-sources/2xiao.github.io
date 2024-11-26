@@ -79,10 +79,6 @@ https://www.google.com/search?q=dns
 | ----- | ------ | ------ | ---- | -------------- |
 | https | www    | google | .com | /search?q=dns  |
 
-## 结论
-
-DNS 是互联网中不可或缺的组成部分，它通过将域名映射到 IP 地址，帮助用户友好地访问网站。理解它的运作原理，从递归查找到权威服务器的作用，有助于我们深入理解系统设计的复杂性。尽管在日常使用和面试中，DNS 的概念可能被简化，但深入了解它，可以帮助我们更好地理解支撑我们日常互联网活动的复杂分布式架构。
-
 ## 参考资源
 
 - [Cloudflare: DNS 详解](https://www.cloudflare.com/learning/dns/what-is-dns/)
