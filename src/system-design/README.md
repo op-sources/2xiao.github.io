@@ -20,7 +20,7 @@ headerDepth: 0
 | 基础概述 | [1. 计算机架构](./0_computer_architecture.md) <br> [2. 应用程序架构](./1_application_architecture.md) <br> [3. 核心概念与指标](./2_design_requirements.md) |
 | 网络基础 | [4. 网络基础](./3_networking_basics.md) <br> [5. TCP 和 UDP](./4_tcp_and_udp.md) <br> [6. 域名系统（DNS）](./5_dns.md) |
 | APIs | [7. HTTP](./6_http.md) <br> [8. WebSocket](./7_websockets.md) <br> [9. API 模式](./8_api_paradigms.md) <br> [10. API 设计](./9_api_design.md) |
-| 缓存 | [11. 缓存](./10_caching.md) <br> [12. CDNs](./11_cdns.md) |
+| 缓存 | [11. 缓存](./10_caching.md) <br> [12. CDN](./11_cdns.md) |
 | 代理 | [13. 代理与负载均衡](./12_proxies_and_load_balancing.md) <br> [14. 一致性哈希](./13_consistent_hashing.md) |
 | 存储 | [15. SQL](./14_sql.md) <br> [16. NoSQL](./15_nosql.md) <br> [17. 分片与复制](./16_replication_and_sharding.md) <br> [18. CAP 定理](./17_cap_theorem.md) <br> [19. 对象存储](./18_object_storage.md) |
 | 分布式 | [20. 消息队列](./19_message_queues.md) <br> [21. Map Reduce](./20_map_reduce.md) |
