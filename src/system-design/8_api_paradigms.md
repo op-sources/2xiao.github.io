@@ -4,7 +4,7 @@ API，即应用程序编程接口，是一组允许不同软件应用程序相�
 
 API 是现代 Web 开发中的核心工具，在本文中，我们将探讨三种常见的 API 模式：REST、GraphQL 和 gRPC，重点介绍它们的定义、关键概念以及各自的优缺点。
 
-## REST API：现代 Web 开发的支柱
+## REST API
 
 ### 什么是 REST？
 
@@ -27,7 +27,7 @@ GET /videos?limit=10&offset=20
 
 在这个例子中，客户端请求从第 21 个视频开始的 10 个视频。通过这种方式，服务器不需要记住客户端的先前请求，从而实现高效的扩展。
 
-## GraphQL：REST 的灵活替代方案
+## GraphQL
 
 ### 什么是 GraphQL？
 
@@ -54,7 +54,7 @@ query {
 
 该查询仅返回指定的字段，从而优化了数据传输并减少了服务器和客户端的负担。
 
-## gRPC：微服务的高性能 API
+## gRPC
 
 ### 什么是 gRPC？
 
@@ -86,7 +86,7 @@ message HelloReply {
 
 这个 Protobuf 定义了一个 `Greeter` 服务，包含一个 `SayHello` 方法。客户端发送一个 `HelloRequest`，服务器回应一个 `HelloReply`。
 
-## 结论
+## 总结
 
 REST、GraphQL 和 gRPC 各自有不同的优缺点：
 

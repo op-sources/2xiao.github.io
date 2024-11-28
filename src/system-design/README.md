@@ -22,7 +22,7 @@ headerDepth: 0
 | APIs | [7. HTTP](./6_http.md) <br> [8. WebSocket](./7_websockets.md) <br> [9. API 模式](./8_api_paradigms.md) <br> [10. API 设计](./9_api_design.md) |
 | 缓存 | [11. 缓存](./10_caching.md) <br> [12. CDN](./11_cdns.md) |
 | 代理 | [13. 代理与负载均衡](./12_proxies_and_load_balancing.md) <br> [14. 一致性哈希](./13_consistent_hashing.md) |
-| 存储 | [15. SQL](./14_sql.md) <br> [16. NoSQL](./15_nosql.md) <br> [17. 分片与复制](./16_replication_and_sharding.md) <br> [18. CAP 定理](./17_cap_theorem.md) <br> [19. 对象存储](./18_object_storage.md) |
+| 存储 | [15. SQL](./14_sql.md) <br> [16. NoSQL](./15_nosql.md) <br> [17. 复制与分片](./16_replication_and_sharding.md) <br> [18. CAP 定理](./17_cap_theorem.md) <br> [19. 对象存储](./18_object_storage.md) |
 | 分布式 | [20. 消息队列](./19_message_queues.md) <br> [21. Map Reduce](./20_map_reduce.md) |
 | 系统设计实战 | [1. 如何着手](./21_how_to_approach.md) <br> [2. 设计一个限流器](./22_design_a_rate_limiter.md) <br> [3. 设计 TinyUrl 系统](./23_design_tinyurl.md) <br> [4. 设计 Twitter 系统](./24_design_twitter.md) <br> [5. 设计 Discord 系统](./25_design_discord.md) <br> [6. 设计 YouTube 系统](./26_design_youtube.md) <br> [7. 设计 Google Drive 系统](./27_design_google_drive.md) <br> [8. 设计 Google Maps 系统](./28_design_google_maps.md) <br> [9. 设计一个键值存储](./29_design_a_key_value_store.md) <br> [10. 设计一个分布式消息队列](./30_design_a_distributed_message_queue.md) |
 
@@ -43,7 +43,7 @@ headerDepth: 0
 1. 掌握计算机与应用程序架构的核心概念。
 2. 深入理解网络协议（TCP、UDP、HTTP）及其在系统中的应用。
 3. 系统学习 API 设计与缓存优化的策略与实践。
-4. 熟悉 SQL 与 NoSQL 数据库的使用场景，掌握分片与复制技术。
+4. 熟悉 SQL 与 NoSQL 数据库的使用场景，掌握复制与分片技术。
 5. 理解分布式系统的核心技术，包括一致性哈希、消息队列和 MapReduce。
 6. 全方位解析限流器、短链接、Twitter、YouTube 等经典系统设计案例。
 
