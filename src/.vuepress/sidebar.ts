@@ -261,16 +261,16 @@ export default sidebar({
 			text: '系统设计实战',
 			icon: 'discover',
 			children: [
-				'21_how_to_approach.md',
-				'22_design_a_rate_limiter.md',
-				'23_design_tinyurl.md',
-				'24_design_twitter.md',
-				'25_design_discord.md',
-				'26_design_youtube.md',
-				'27_design_google_drive.md',
-				'28_design_google_maps.md',
-				'29_design_a_key_value_store.md',
-				'30_design_a_distributed_message_queue.md'
+				'21_a_framework_for_system_design_interviews.md',
+				'22_back_of_the_envelope_estimation.md',
+				'23_scale_from_zero_to_millions_of_users.md',
+				'24_design_a_rate_limiter.md',
+				'25_design_consistent_hashing.md',
+				'26_design_a_key_value_store.md',
+				'27_design_a_unique_id_generator_in_distributed_systems.md',
+				'28_design_a_url_shortener.md',
+				'29_design_a_web_crawler.md',
+				'30_design_a_notification_system.md'
 			],
 			collapsible: false
 		}

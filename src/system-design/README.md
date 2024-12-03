@@ -12,19 +12,81 @@ headerDepth: 0
 
 ---
 
-### 目录
+### 系统设计入门
 
-<!-- prettier-ignore -->
-| 章节 | 目录 |
-| :--- | :--- |
-| 基础概述 | [1. 计算机架构](./0_computer_architecture.md) <br> [2. 应用程序架构](./1_application_architecture.md) <br> [3. 核心概念与指标](./2_design_requirements.md) |
-| 网络基础 | [4. 网络基础](./3_networking_basics.md) <br> [5. TCP 和 UDP](./4_tcp_and_udp.md) <br> [6. 域名系统（DNS）](./5_dns.md) |
-| APIs | [7. HTTP](./6_http.md) <br> [8. WebSocket](./7_websockets.md) <br> [9. API 模式](./8_api_paradigms.md) <br> [10. API 设计](./9_api_design.md) |
-| 缓存 | [11. 缓存](./10_caching.md) <br> [12. CDN](./11_cdns.md) |
-| 代理 | [13. 代理与负载均衡](./12_proxies_and_load_balancing.md) <br> [14. 一致性哈希](./13_consistent_hashing.md) |
-| 存储 | [15. SQL](./14_sql.md) <br> [16. NoSQL](./15_nosql.md) <br> [17. 复制与分片](./16_replication_and_sharding.md) <br> [18. CAP 定理](./17_cap_theorem.md) <br> [19. 对象存储](./18_object_storage.md) |
-| 分布式 | [20. 消息队列](./19_message_queues.md) <br> [21. Map Reduce](./20_map_reduce.md) |
-| 系统设计实战 | [1. 如何着手](./21_how_to_approach.md) <br> [2. 设计一个限流器](./22_design_a_rate_limiter.md) <br> [3. 设计 TinyUrl 系统](./23_design_tinyurl.md) <br> [4. 设计 Twitter 系统](./24_design_twitter.md) <br> [5. 设计 Discord 系统](./25_design_discord.md) <br> [6. 设计 YouTube 系统](./26_design_youtube.md) <br> [7. 设计 Google Drive 系统](./27_design_google_drive.md) <br> [8. 设计 Google Maps 系统](./28_design_google_maps.md) <br> [9. 设计一个键值存储](./29_design_a_key_value_store.md) <br> [10. 设计一个分布式消息队列](./30_design_a_distributed_message_queue.md) |
+- 基础概述
+
+  - [1. 计算机架构](./0_computer_architecture.md)
+  - [2. 应用程序架构](./1_application_architecture.md)
+  - [3. 核心概念与指标](./2_design_requirements.md)
+
+- 网络基础
+
+  - [4. 网络基础](./3_networking_basics.md)
+  - [5. TCP 和 UDP](./4_tcp_and_udp.md)
+  - [6. 域名系统（DNS）](./5_dns.md)
+
+- APIs
+
+  - [7. HTTP](./6_http.md)
+  - [8. WebSocket](./7_websockets.md)
+  - [9. API 模式](./8_api_paradigms.md)
+  - [10. API 设计](./9_api_design.md)
+
+- 缓存
+
+  - [11. 缓存](./10_caching.md)
+  - [12. CDN](./11_cdns.md)
+
+- 代理
+
+  - [13. 代理与负载均衡](./12_proxies_and_load_balancing.md)
+  - [14. 一致性哈希](./13_consistent_hashing.md)
+
+- 存储
+
+  - [15. SQL](./14_sql.md)
+  - [16. NoSQL](./15_nosql.md)
+  - [17. 复制与分片](./16_replication_and_sharding.md)
+  - [18. CAP 定理](./17_cap_theorem.md)
+  - [19. 对象存储](./18_object_storage.md)
+
+- 分布式
+  - [20. 消息队列](./19_message_queues.md)
+  - [21. Map Reduce](./20_map_reduce.md)
+
+---
+
+### 系统设计实战
+
+- [1. 系统设计面试框架](./21_a_framework_for_system_design_interviews.md)
+- [2. 粗略估算](./22_back_of_the_envelope_estimation.md)
+- [3. 从零到数百万用户的扩展](./23_scale_from_zero_to_millions_of_users.md)
+- [4. 设计速率限制器](./24_design_a_rate_limiter.md)
+- [5. 设计一致性哈希](./25_design_consistent_hashing.md)
+- [6. 设计键值存储](./26_design_a_key_value_store.md)
+- [7. 设计分布式唯一 ID 生成器](./27_design_a_unique_id_generator_in_distributed_systems.md)
+- [8. 设计 TinyUrl 系统](./28_design_a_url_shortener.md)
+- [9. 设计网页爬虫](./29_design_a_web_crawler.md)
+- [10. 设计通知系统](./30_design_a_notification_system.md)
+- [11. 设计新闻推送系统](./31_design_a_news_feed_system.md)
+- [12. 设计聊天系统](./32_design_a_chat_system.md)
+- [13. 设计搜索自动补全系统](./33_design_a_search_autocomplete_system.md)
+- [14. 设计 YouTube](./34_design_youtube.md)
+- [15. 设计 Google Drive](./35_design_google_drive.md)
+- [16. 设计邻近服务](./36_proximity_service.md)
+- [17. 设计附近朋友](./37_nearby_friends.md)
+- [18. 设计 Google Maps](./38_google_maps.md)
+- [19. 设计分布式消息队列](./39_distributed_message_queue.md)
+- [20. 设计指标监控与告警系统](./40_metrics_monitoring_and_alerting_system.md)
+- [21. 设计广告点击事件聚合](./41_ad_click_event_aggregation.md)
+- [22. 设计酒店预订系统](./42_hotel_reservation_system.md)
+- [23. 设计分布式邮件服务](./43_distributed_email_service.md)
+- [24. 设计类似 S3 的对象存储](./44_s3_like_object_storage.md)
+- [25. 设计实时游戏排行榜](./45_real_time_gaming_leaderboard.md)
+- [26. 设计支付系统](./46_payment_system.md)
+- [27. 设计数字钱包](./47_digital_wallet.md)
+- [28. 设计股票交易所](./48_stock_exchange.md)
 
 ---
 

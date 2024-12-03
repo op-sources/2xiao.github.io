@@ -158,7 +158,7 @@ highlights:
       - title: 实战案例
         icon: discover
         details: 涵盖限流器、短链接、Twitter、YouTube 等经典系统设计题目的全方位解析
-        link: ./system-design/21_how_to_approach.md
+        link: ./system-design/21_a_framework_for_system_design_interviews.md
 
   - header: 前端面试题
     description: 常见的前端面试题梳理，提炼分析面试难点，助你系统备战，收割 Offer
