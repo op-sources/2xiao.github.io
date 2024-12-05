@@ -10,7 +10,7 @@
 
 当滚动鼠标滑轮的时候，各个图层以不同的速度移动，形成视觉差的效果
 
-![image.png](../../image/interview-css-2.png)
+![](../../image/interview-css-2.png)
 
 ## 二、实现方式
 

@@ -1,320 +1,318 @@
-# Design YouTube
+# 14. 设计 YouTube
 
-This chapter is about designing a video sharing platform such as youtube. Its solution can be applied to also eg designing Netflix, Hulu.
+下面我们将讨论如何设计一个类似 YouTube 的视频分享平台，其解决方案也适用于 Netflix、Hulu 等服务的设计。
 
-## Step 1 - Understand the problem and establish design scope
+## 第一步：理解问题并确定设计范围
 
-- C: What features are important?
-- I: Upload video + watch video
-- C: What clients do we need to support?
-- I: Mobile apps, web apps, smart TV
-- C: How many DAUs do we have?
-- I: 5mil
-- C: Average time per day spend on YouTube?
-- I: 30m
-- C: Do we need to support international users?
-- I: Yes
-- C: What video resolutions do we need to support?
-- I: Most of them
-- C: Is encryption required?
-- I: Yes
-- C: File size requirement for videos?
-- I: Max file size is 1GB
-- C: Can we leverage existing cloud infra from Google, Amazon, Microsoft?
-- I: Yes, building everything from scratch is not a good idea.
+- **候选人**：哪些功能是重要的？
+- **面试官**：上传视频 + 观看视频
 
-Features, we'll focus on:
+- **候选人**：需要支持哪些客户端？
+- **面试官**：移动应用、网页应用、智能电视
 
-- Upload videos fast
-- Smooth video streaming
-- Ability to change video quality
-- Low infrastructure cost
-- High availability, scalability, reliability
-- Supported clients - web, mobile, smart TV
+- **候选人**：我们每天的活跃用户数（DAU）是多少？
+- **面试官**：500 万
 
-### Back of the envelope estimation
+- **候选人**：用户平均每天在 YouTube 上花费的时间是多少？
+- **面试官**：30 分钟
 
-- Assume product has 5mil DAU
-- Users watch 5 videos per day
-- 10% of users upload 1 video per day
-- Average video size is 300mb
-- Daily storage cost needed - 5mil _ 10% _ 300mb = 150TB
-- CDN Cost, assuming 0.02$ per GB - 5mil _ 5 videos _ 0.3GB \* 0.02$ = USD 150k per day
+- **候选人**：是否需要支持国际用户？
+- **面试官**：是的
 
-## Step 2 - Propose high-level design and get buy-in
+- **候选人**：需要支持哪些视频分辨率？
+- **面试官**：大部分的分辨率
 
-As previously discussed, we won't be building everything from scratch.
+- **候选人**：是否需要加密？
+- **面试官**：是的
 
-Why?
+- **候选人**：对视频文件大小有何要求？
+- **面试官**：最大文件大小为 1GB
 
-- In a system design interview, choosing the right technology is more important than explaining how the technology works.
-- Building scalable blob storage over CDN is complex and costly. Even big tech don't build everything from scratch. Netflix uses AWS and Facebook uses Akamai's CDN.
+- **候选人**：是否可以使用 Google、Amazon 或 Microsoft 的现有云基础设施？
+- **面试官**：可以，从头开始构建所有功能并不实际。
 
-Here's our system design at a high-level:
+### 非功能性需求
 
-![high-level-sys-design](../image/system-design-139.png)
+- 快速上传视频
+- 流畅的视频播放
+- 支持更改视频质量
+- 降低基础设施成本
+- 高可用性、可扩展性和可靠性
+- 支持的客户端：网页、移动设备和智能电视
 
-- Client - you can watch youtube on web, mobile and TV.
-- CDN - videos are stored in CDN.
-- API Servers - Everything else, except video streaming goes through the API servers. Feed recommendation, generating video URL, updating metadata db and cache, user signup.
+### 粗略估算
 
-Let's explore high-level design of video streaming and uploading.
+- 假设产品有 500 万日活跃用户
+- 每位用户每天观看 5 个视频
+- 10% 的用户每天上传 1 个视频
+- 平均视频大小为 300MB
+- 每日存储需求：500 万 × 10% × 300MB = 150TB
+- CDN 成本（假设每 GB 0.02 美元）：500 万 × 5 个视频 × 0.3GB × 0.02 美元 = 每日 15 万美元
 
-### Video uploading flow
+## 第二步：提出高层设计并获得认可
 
-![video-uploading-flow](../image/system-design-140.png)
+正如之前讨论的，我们不会从头构建所有功能，因为：
 
-- Users watch videos on a supported client
-- Load balancer evenly distributes requests across API servers
-- All user requests go through API servers, except video streaming
-- Metadata DB - sharded and replicated to meet performance and availability requirements
-- Metadata cache - for better performance, video metadata and user objects are cached
-- A blob storage system is used to store the actual videos
-- Transcoding/encoding servers - transform videos to various formats (eg MPEG, HLS, etc) which are suitable for different devices and bandwidth
-- Transcoded storage stores result files from transcoding
-- Videos are cached in CDN - clicking play streams the video from CDN
-- Completion queue - stores events about video transcoding results
-- Completion handler - a set of workers which pull event data from completion queue and update metadata cache and database
+- 在系统设计面试中，选择合适的技术比解释其工作原理更重要。
+- 构建基于 CDN 的可扩展二进制存储非常复杂且昂贵，即使是大型科技公司也不会从头构建所有功能。例如，Netflix 使用 AWS，而 Facebook 使用 Akamai 的 CDN。
 
-Let's now explore the flow of uploading videos and video metadata. Metadata includes info about video URL, size, resolution, format, etc.
+以下是我们高层系统设计的示意图：
 
-Here's how the video uploading flow works:
+![高层系统设计](../image/system-design-139.png)
 
-![video-uploading-flow](../image/system-design-141.png)
+- **客户端**：用户可通过网页、移动设备和智能电视观看 YouTube。
+- **CDN**：视频存储在 CDN 中。
+- **API 服务器**：除视频流以外的所有请求都通过 API 服务器处理，包括 Feed 推荐、生成视频 URL、更新元数据数据库和缓存、用户注册等。
 
-- Videos are uploaded to original storage
-- Transcoding servers fetch videos from storage and start transcoding
-- Once transcoding is complete, two steps are executed in parallel:- Transcoded videos are sent to transcoded storage and distributed to CDN
-- Transcoding completion events are queued in completion queue, workers pick up the events and update metadata database & cache
-- API servers inform user that uploading is complete
+接下来，我们将深入探讨视频流和视频上传的高层设计。
 
-Here's how the metadata update flow works:
+### 视频上传流程
 
-![metadata-update-flow](../image/system-design-142.png)
+这是上传视频和更新视频元数据的整体架构图：
 
-- While file is being uploaded, user sends a request to update the video metadata - file name, size, format, etc.
-- API servers update metadata database & cache
+- 用户可以上传视频及视频元数据
+- 用户也可以在支持的客户端上观看视频，负载均衡器将请求均匀分发到 API 服务器，除视频流外，所有用户请求都经过 API 服务器：
 
-### Video streaming flow
+![视频上传流程](../image/system-design-140.png)
 
-![video-streaming-flow](../image/system-design-143.png)
+- **转码/编码服务器（Transcoding/encoding servers）**：将视频转换为适合不同设备和带宽的各种格式（如 MPEG、HLS 等）
 
-Whenever users watch videos on YouTube, they don't download the whole video at once. Instead, they download a little and start watching it while downloading the rest.
-This is referred to as streaming. Stream is served from closest CDN server for lowest latency.
+- **转码后存储（Transcoded storage）**：存储转码结果文件，使用二进制存储系统存储实际视频
+- 视频缓存到 CDN 中，点击播放时会从最近的 CDN 服务器流式传输视频
+- **完成队列（Completion queue）**：存储有关视频转码结果的事件
+- **完成处理器（Completion handler）**：一组从完成队列中提取事件数据并更新元数据缓存和数据库的工作程序
+- **元数据数据库（Metadata DB）**：分片和复制以满足性能和可用性要求
+- **元数据缓存（Metadata cache）**：缓存视频元数据和用户对象以提高性能
 
-Some popular streaming protocols:
+这是视频上传流程：
 
-- MPEG-DASH - "Moving Picture Experts Group"-"Dynamic Adaptive Streaming over HTTP"
-- Apple HLS - "HTTP Live Streaming"
-- Microsoft Smooth Streaming
-- Adobe HTTP Dynamic Streaming (HDS)
+1. 视频上传到原始存储
+2. 转码服务器从存储中获取视频并开始转码
+3. 转码完成后并行执行两步操作：
+   - 将转码视频发送到转码存储并分发到 CDN
+   - 将转码完成事件排入完成队列，工作程序提取事件并更新元数据数据库和缓存
+4. API 服务器通知用户上传完成
 
-You don't need to understand those protocols in detail. It is important to understand, though, that different streaming protocols support different video encodings and playback players.
+这是元数据更新流程，元数据包括视频 URL、大小、分辨率、格式等信息。
 
-We need to choose the right streaming protocol to support our use-case.
+![元数据更新流程](../image/system-design-142.png)
 
-## Step 3 - Design deep dive
+- 文件上传过程中，用户发送请求更新视频元数据（文件名、大小、格式等）
+- API 服务器更新元数据数据库和缓存
 
-In this part, we'll deep dive into the video uploading and video streaming flows.
+---
 
-### Video transcoding
+### 视频流流程
 
-Video transcoding is important for a few reasons:
+![视频流流程](../image/system-design-143.png)
 
-- Raw video consumes a lot of storage space.
-- Many browsers have constraints on the type of videos they can support. It is important to encode a video for compatibility reasons.
-- To ensure good UX, you ought to serve HD videos to users with good network connection and lower-quality formats for the ones with slower connection.
-- Network conditions can change, especially on mobile. It is important to be able to automatically switch video formats at runtime for smooth UX.
+当用户在 YouTube 上观看视频时，他们不会一次性下载完整视频，而是边下载边播放，这种方法称为流式传输。流数据从最近的 CDN 服务器提供，以实现最低延迟。
 
-Most transcoding formats consist of two parts:
+一些流行的流媒体协议包括：
 
-- Container - the basket which contains the video file. Recognized by the file extension, eg .avi, .mov, .mp4
-- Codecs - Compression and decompression algorithms, which reduce video size while preserving quality. Most popular ones - H.264, VP9, HEVC.
+- **MPEG-DASH**：动态自适应 HTTP 流媒体协议
+- **Apple HLS**：HTTP 实时流媒体
+- **Microsoft Smooth Streaming**
+- **Adobe HTTP 动态流媒体（HDS）**
 
-### Directed Acyclic Graph (DAG) model
+无需详细了解这些协议的技术细节，但需要理解不同的协议支持不同的视频编码和播放方式，我们需要选择适合使用场景的流媒体协议。
 
-Transcoding video is computationally expensive and time-consuming.
-In addition to that, different creators have different inputs - some provide thumbnails, others do not, some upload HD, others don't.
+## 第三步：深入设计
 
-In order to support video processing pipelines, dev customisations, high parallelism, we adopt a DAG model:
+在这一部分，我们将深入探讨视频上传和视频流的流程。
+
+### 视频转码
+
+视频转码之所以重要，有以下几点原因：
+
+- 原始视频会占用大量存储空间。
+- 许多浏览器对视频的类型有一定限制，将视频编码以确保兼容性非常重要。
+- 为了提供良好的用户体验，需要为网络良好的用户提供高清（HD）视频，而为网络较差的用户提供低质量格式。
+- 网络条件可能会变化，特别是在移动设备上，因此，需要能够在运行时自动切换视频格式以确保流畅的用户体验。
+
+大多数转码格式由两个部分组成：
+
+- **容器**：存放视频文件的框架，通常通过文件扩展名识别，例如 `.avi`、`.mov`、`.mp4`。
+- **编码器**：用于压缩和解压视频的算法，这些算法在保持质量的同时减少视频大小。常见的编码器包括 H.264、VP9、HEVC。
+
+---
+
+### 有向无环图模型
+
+视频转码需要大量计算资源，并且耗时较长。此外，不同创作者上传的视频可能有所不同：有些提供缩略图，有些没有；有些是高清的，有些不是。
+
+为了支持视频处理流水线、开发定制化以及高并行性，我们采用了 DAG（Directed Acyclic Graph）模型：
 
 ![dag-model](../image/system-design-144.png)
 
-Some of the tasks applied on a video file:
+对视频文件执行以下任务：
 
-- Ensure video has good quality and is not malformed
-- Video is encoded to support different resolutions, codecs, bitrates, etc.
-- Thumbnail is automatically added if a user doesn't specify it.
-- Watermark - image overlay on video if specified by creator
+- 检查视频，确保质量良好且没有损坏。
+- 对视频进行编码以支持不同的分辨率、编码器、比特率等。
+- 如果用户未指定缩略图，则自动生成。
+- 添加水印——根据创作者的要求在视频上叠加图像。
 
 ![video-encodings](../image/system-design-145.png)
 
-### Video transcoding architecture
+---
+
+### 视频转码架构
 
 ![video-transcoding-architecture](../image/system-design-146.png)
 
-### Preprocessor
+#### 预处理器（Preprocessor）
 
-![preprocessor](../image/system-design-147.png)
+预处理器的职责包括：
 
-The preprocessor's responsibilities:
+- **视频分割**：将视频按图片组（GOP）对齐分割，即将视频安排为独立播放的块组。
+- **缓存**：将中间步骤存储在持久存储中，以便在失败时重试。
+- **DAG 生成**：根据程序员指定的配置文件生成 DAG。
 
-- Video splitting - video is split in group of pictures (GOP) alignment, ie arranged groups of chunks which can be played independently
-- Cache - intermediary steps are stored in persistent storage in order to retry on failure.
-- DAG generation - DAG is generated based on config files specified by programmers.
-
-Example DAG configuration with two steps:
+以下是一个包含两个步骤的 DAG 配置示例：
 
 ![dag-config-example](../image/system-design-148.png)
 
-### DAG Scheduler
+#### DAG 调度器（DAG Scheduler）
 
-![dag-scheduler](../image/system-design-149.png)
-
-DAG scheduler splits a DAG into stages of tasks and puts them in a task queue, managed by a resource manager:
+DAG 调度器将 DAG 分为任务阶段，并将其放入由资源管理器管理的任务队列：
 
 ![dag-split-example](../image/system-design-150.png)
 
-In this example, a video is split into video, audio and metadata stages which are processed in parallel.
+在这个示例中，视频被分为视频、音频和元数据阶段，并行处理。
 
-### Resource manager
+#### 资源管理器（Resource manager）
 
-![resource-manager](../image/system-design-151.png)
-
-Resource manager is responsible for optimizing resource allocation.
+资源管理器负责优化资源分配。
 
 ![resource-manager-deep-dive](../image/system-design-152.png)
 
-- Task queue is a priority queue of tasks to be executed
-- Worker queue is a queue of available workers and worker utilization info
-- Running queue contains info about currently running tasks and which workers they're assigned to
+- **任务队列**：一个优先级任务队列，存储待执行任务。
+- **工作队列**：存储可用 workers 和 worker 利用率信息的队列。
+- **运行队列**：包含当前运行任务及其分配的 workers 信息。
 
-How it works:
+**工作流程**：
 
-- task scheduler gets highest-priority task from queue
-- task scheduler gets optimal task worker to run the task
-- task scheduler instructs worker to start working on the task
-- task scheduler binds worker to task & puts task/worker info in running queue
-- task scheduler removes the job from the running queue once the job is done
+1. 任务调度器从队列中获取最高优先级任务。
+2. 调度器获取最优任务 worker 来执行任务。
+3. 调度器指示 workers 开始任务。
+4. 调度器将 workers 绑定到任务，并将任务/workers 信息放入运行队列。
+5. 任务完成后，调度器从运行队列中移除任务。
 
-### Task workers
+#### 任务 workers（Task workers）
 
-![task-workers](../image/system-design-153.png)
-
-The workers execute the tasks in the DAG. Different workers are responsible for different tasks and can be scaled independently.
+workers 负责执行 DAG 中的任务。不同 worker 负责不同任务，可以独立扩展。
 
 ![task-workers-example](../image/system-design-154.png)
 
-### Temporary storage
+#### 临时存储（Temporary storage）
 
-![temporary-storage](../image/system-design-155.png)
+不同类型的数据使用不同的存储系统。例如，临时图像、视频、音频存储在 Blob 存储中，元数据存储在内存缓存中，因为数据体积较小。
 
-Multiple storage systems are used for different types of data. Eg temporary images/video/audio is put in blob storage. Metadata is put in an in-memory cache as data size is small.
+处理完成后，数据将被释放。
 
-Data is freed up once processing is complete.
+#### 编码后的视频（Encoded video）
 
-### Encoded video
+DAG 的最终输出。例如，`funny_720p.mp4`。
 
-![encoded-video](../image/system-design-156.png)
+---
 
-Final output of the DAG. Example output -`funny_720p.mp4`.
+### 系统优化
 
-### System Optimizations
+以下是一些关于速度、安全性和成本节约的优化方案：
 
-Now it's time to introduce some optimizations for speed, safety, cost-saving.
+#### 速度优化 - 并行视频上传
 
-### Speed optimization - parallelize video uploading
-
-We can split video uploading into separate units via GOP alignment:
+通过 GOP 对齐将视频上传分为独立单元：
 
 ![video-uploading-optimization](../image/system-design-157.png)
 
-This enables fast resumable uploads if something goes wrong. Splitting the video file is done by the client.
+这样可以在上传失败时快速恢复。视频文件的分割由客户端完成。
 
-### Speed optimization - place upload centers close to users
+#### 速度优化 - 将上传中心靠近用户
 
 ![upload-centers](../image/system-design-158.png)
 
-This can be achieved by leveraging CDNs.
+可以通过利用 CDN 实现。
 
-### Speed optimization - parallelism everywhere
+#### 速度优化 - 全面并行化
 
-We can build a loosely coupled system and enable high parallelism.
+我们可以构建松耦合系统，启用高并行性。
 
-Currently, components rely on inputs from previous components in order to produce outputs:
+目前，组件依赖前置组件的输出：
 
 ![no-parralelism-components](../image/system-design-159.png)
 
-We can introduce message queues so that components can start doing their task independently of previous one once events are available:
+引入消息队列后，组件可以在事件可用时独立执行任务：
 
 ![parralelism-components](../image/system-design-160.png)
 
-### Safety optimization - pre-signed upload URL
+#### 安全优化 - 预签名上传 URL
 
-To avoid unauthorized users from uploading videos, we introduce pre-signed upload URLs:
+为防止未经授权的用户上传视频，我们引入预签名上传 URL：
 
 ![presigned-upload-url](../image/system-design-161.png)
 
-How it works:
+**工作流程**：
 
-- client makes request to API server to fetch upload URL
-- API servers generate the URL and return it to the client
-- Client uploads the video using the URL
+1. 客户端向 API 服务器请求上传 URL。
+2. API 服务器生成 URL 并返回给客户端。
+3. 客户端使用该 URL 上传视频。
 
-### Safety optimization - protect your videos
+#### 安全优化 - 保护视频内容
 
-To protect creators from having their original content stolen, we can introduce some safety options:
+为防止创作者的原创内容被盗，可以引入以下安全选项：
 
-- Digital right management (DRM) systems - Apple FairPlay, Google Widevine, Microsoft PlayReady
-- AES encryption - you can encrypt a video and configure an authorization policy. It is decrypted on playback.
-- Visual watermarking - image overlay on top of video which contains your identifying information, eg company name.
+- 数字版权管理（DRM）系统：如 Apple FairPlay、Google Widevine、Microsoft PlayReady。
+- AES 加密：可以加密视频并配置授权策略，在播放时解密。
+- 可视水印：在视频上叠加包含标识信息（如公司名称）的图像。
 
-### Cost-saving optimization
+#### 成本节约优化
 
-CDN is expensive, as we've seen in our back of the envelope estimation.
-
-We can piggyback on the fact that video streams follow a long-tail distribution - ie a few popular videos are accessed frequently, but everything else is not.
-
-Hence, we can store popular videos in CDN and serve everything else from high capacity storage servers:
+CDN 成本较高，因为视频播放符合长尾分布（少数热门视频访问频繁，其余视频较少访问），我们可以对热门视频使用 CDN，而将其他视频存储在高容量存储服务器中：
 
 ![cdn-optimization](../image/system-design-162.png)
 
-Other cost-saving optimizations:
+其他节约方案包括：
 
-- We might not need to store many encoded versions for less popular videos. Short videos can be encoded on-demand.
-- Some videos are only popular in certain regions. We can avoid distributing them in all regions.
-- Build your own CDN. Can make sense for large streaming companies like Netflix.
+- 不需要为不受欢迎的视频存储多种编码版本，短视频可以按需编码。
+- 某些视频仅在特定地区流行，可以避免在所有地区分发。
+- 自建 CDN：对于像 Netflix 这样的大型流媒体公司来说是可行的。
 
-### Error Handling
+---
 
-For a large-scale system, errors are unavoidable. To make a fault-tolerant system, we need to handle errors gracefully and recover from them.
+### 错误处理
 
-There are two types of errors:
+在大规模系统中，错误是不可避免的。为了构建容错系统，我们需要优雅地处理错误并从中恢复。
 
-- Recoverable error - can be mitigated by retrying a few times. If retrying fails, a proper error code is returned to the client.
-- Non-recoverable error - system stops running related tasks and returns proper error code to the client.
+常见错误类型包括：
 
-Other typical errors and their resolution:
+- **可恢复错误**：通过重试几次可以缓解。如果重试失败，会向客户端返回适当的错误代码。
+- **不可恢复错误**：系统停止运行相关任务，并向客户端返回适当的错误代码。
 
-- Upload error - retry a few times
-- Split video error - entire video is passed to server if older clients don't support GOP alignment.
-- Transcoding error - retry
-- Preprocessor error - regenerate DAG
-- DAG scheduler error - retry scheduling
-- Resource manager queue down - use a replica
-- Task worker down - retry task on different worker
-- API server down - they're stateless so requests can be redirected to other servers
-- Metadata db/cache server down - replicate data across multiple nodes
-- Master is down - Promote one of the slaves to become master
-- Slave is down - If slave goes down, you can use another slave for reads and bring up another slave instance
+其他典型错误及解决方案：
 
-## Step 4 - Wrap up
+- 上传错误：重试几次。
+- 视频分割错误：如果旧客户端不支持 GOP 对齐，则将整个视频传输到服务器。
+- 转码错误：重试。
+- 预处理错误：重新生成 DAG。
+- DAG 调度器错误：重试调度。
+- 资源管理器队列故障：使用副本。
+- 任务工作者故障：在不同工作者上重试任务。
+- API 服务器故障：无状态，可将请求重定向到其他服务器。
+- 元数据数据库/缓存服务器故障：跨多个节点复制数据。
+- 主节点故障：提升一个从节点为主节点。
+- 从节点故障：如果从节点故障，可以使用另一个从节点进行读取并启动新的从节点实例。
 
-Additional talking points:
+## 第四步：总结
 
-- Scaling the API layer - easy to scale horizontally as API layer is stateless
-- Scale the database - replication and sharding
-- Live streaming - our system is not designed for live streams, but it shares some similarities, eg uploading, encoding, streaming. Notable differences:- Live streaming has higher latency requirements so it might demand a different streaming protocol
-- Lower requirement for parallelism as small chunks of data are already processed in real time
-- different error handling, as there is a timeout after which we need to stop retrying
-- Video takedowns - videos that violate copyrights, pornography, any other illegal acts need to be removed either during upload flow or based on user flagging.
+其他讨论点：
+
+- **扩展 API 层**：API 层是无状态的，可以轻松横向扩展。
+- **扩展数据库**：通过复制和分片实现。
+- **直播流**：我们的系统并未设计用于直播流，但共享一些相似性，例如上传、编码、流式传输。主要区别在于：
+
+  - 直播流对延迟有更高的要求，可能需要不同的流式传输协议。
+  - 对并行性的需求较低，因为小数据块已经实时处理。
+  - 不同的错误处理方式，例如在超时后需要停止重试。
+
+- **视频下架**：需要移除违反版权、色情或其他非法行为的视频，可以在上传流程中或根据用户举报移除。

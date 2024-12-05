@@ -64,6 +64,7 @@
 #### 短信
 
 利用第三方提供商如 Twilio 发送。
+
 ![sms-messages](../image/system-design-89.png)
 
 #### 邮件

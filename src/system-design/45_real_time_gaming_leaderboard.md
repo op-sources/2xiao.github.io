@@ -1,70 +1,70 @@
-# Real-time Gaming Leaderboard
+# 25. 设计实时游戏排行榜
 
-We are going to design a leaderboard for an online mobile game:
+我们将为一款在线手机游戏设计一个排行榜：
 
 ![leaderboard](../image/system-design-367.png)
 
-## Step 1 - Understand the Problem and Establish Design Scope
+## 第一步：理解问题并确定设计范围
 
-- C: How is the score calculated for the leaderboard?
-- I: User gets a point whenever they win a match.
-- C: Are all players included in the leaderboard?
-- I: Yes
-- C: Is there a time segment, associated with the leaderboard?
-- I: Each month, a new tournament starts which starts a new leaderboard.
-- C: Can we assume we only care about top 10 users?
-- I: We want to display top 10 users, along with position of specific user. If time permits, we can discuss showing users around particular user in the leaderboard.
-- C: How many users are in a tournament?
-- I: 5mil DAU and 25mil MAU
-- C: How many matches are played on average during a tournament?
-- I: Each player plays 10 matches per day on average
-- C: How do we determine the rank if two players have the same score?
-- I: Their rank is the same in that case. If time permits, we can discuss breaking ties.
-- C: Does the leaderboard need to be real-time?
-- I: Yes, we want to present real-time results or as close as possible to real-time. It is not okay to present batched result history.
+- **候选人**: 排行榜的得分是如何计算的？
+- **面试官**: 用户每赢得一场比赛就获得 1 分。
+- **候选人**: 排行榜中是否包括所有玩家？
+- **面试官**: 是的。
+- **候选人**: 排行榜是否与时间段相关？
+- **面试官**: 每个月都会启动一个新的锦标赛，从而启动一个新的排行榜。
+- **候选人**: 我们可以假设只关心排名前 10 的用户吗？
+- **面试官**: 我们希望展示前 10 名用户，并显示特定用户的位置。如果时间允许，我们可以讨论如何展示特定用户周围的其他用户。
+- **候选人**: 每个锦标赛有多少玩家？
+- **面试官**: 500 万日活跃用户（DAU）和 2500 万月活跃用户（MAU）。
+- **候选人**: 每个锦标赛期间平均有多少场比赛？
+- **面试官**: 每个玩家每天平均玩 10 场比赛。
+- **候选人**: 如果两名玩家得分相同，如何确定排名？
+- **面试官**: 在这种情况下，他们的排名是相同的。如果时间允许，我们可以讨论如何打破平局。
+- **候选人**: 排行榜需要实时更新吗？
+- **面试官**: 是的，我们希望呈现实时结果，或者尽可能接近实时。展示批量结果历史是不允许的。
 
-### Functional requirements
+### 功能需求
 
-- Display top 10 players on leaderboard
-- Show a user's specific rank
-- Display users which are four places above and below given user (bonus)
+- 显示排行榜前 10 名玩家
+- 显示用户的具体排名
+- 显示给定用户上下四名的玩家（附加功能）
 
-### Non-functional requirements
+### 非功能需求
 
-- Real-time updates on scores
-- Score update is reflected on the leaderboard in real-time
-- General scalability, availability, reliability
+- 实时更新得分
+- 得分更新实时反映在排行榜上
+- 一般的可扩展性、可用性和可靠性
 
-### Back-of-the-envelope estimation
+### 粗略估算
 
-With 50mil DAU, if the game has an even distribution of players during a 24h period, we'd have an average of 50 users per second.
-However, since distribution is typically uneven, we can estimate that the peak online users would be 250 users per second.
+假设游戏的日活跃用户数为 5000 万，如果玩家在 24 小时内的分布均匀，那么每秒约有 50 个用户在线。
+然而，由于分布通常不均匀，我们可以估算峰值在线用户为每秒 250 个用户。
 
-QPS for users scoring a point - given 10 games per day on average, 50 users/s \* 10 = 500 QPS. Peak QPS = 2500.
+每秒查询量（QPS）对于用户得分的请求：假设每个玩家每天玩 10 场比赛，那么每秒得分请求数为 50 用户/s \* 10 = 500 QPS。峰值 QPS = 2500。
 
-QPS for fetching the top 10 leaderboard - assuming users open that once a day on average, QPS is 50.
+每秒查询量（QPS）用于获取前 10 名排行榜：假设用户平均每天查看一次排行榜，则 QPS 为 50。
 
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层设计并获得认可
 
-### API Design
+### API 设计
 
-The first API we need is one to update a user's score:
+我们需要的第一个 API 是更新用户得分的接口：
 
 ```
 POST /v1/scores
 ```
 
-This API takes two params -`user_id`and`points`scored for winning a game.
+该 API 接受两个参数：`user_id` 和用户通过赢得比赛获得的 `points`。
 
-This API should only be accessible to game servers, not end clients.
+此 API 仅对游戏服务器可访问，而非最终用户客户端。
 
-Next one is for getting the top 10 players of the leaderboard:
+接下来的 API 用于获取排行榜前 10 名玩家：
 
 ```
 GET /v1/scores
 ```
 
-Example response:
+示例响应：
 
 ```
 {
@@ -87,13 +87,13 @@ Example response:
 }
 ```
 
-You can also get the score of a particular user:
+你也可以获取特定用户的得分：
 
 ```
 GET /v1/scores/{:user_id}
 ```
 
-Example response:
+示例响应：
 
 ```
 {
@@ -105,65 +105,65 @@ Example response:
 }
 ```
 
-### High-level architecture
+### 高层架构
 
 ![high-level-architecture](../image/system-design-368.png)
 
-- When a player wins a game, client sends a request to the game service
-- Game service validates if win is valid and calls the leaderboard service to update the player's score
-- Leaderboard service updates the user's score in the leaderboard store
-- Player makes a call to leaderboard service to fetch leaderboard data, eg top 10 players and given player's rank
+- 当玩家赢得比赛时，客户端向游戏服务发送请求
+- 游戏服务验证胜利是否有效，并调用排行榜服务更新玩家的得分
+- 排行榜服务更新用户在排行榜存储中的得分
+- 玩家调用排行榜服务获取排行榜数据，例如前 10 名玩家和特定玩家的排名
 
-An alternative design which was considered is the client updating their score directly within the leaderboard service:
+考虑的另一种设计是客户端直接在排行榜服务中更新他们的得分：
 
 ![alternative-design](../image/system-design-369.png)
 
-This option is not secure as it's susceptible to man-in-the-middle attacks. Players can put a proxy and change their score as they please.
+这种方式不安全，因为它容易受到中间人攻击。玩家可以通过设置代理来修改他们的得分。
 
-One additional caveat is that for games, where the game logic is managed by the server, cliets don't need to call the server explicitly to record their win.
-Servers do it automatically for them based on the game logic.
+另一个需要注意的点是，在服务器管理游戏逻辑的游戏中，客户端不需要显式调用服务器来记录他们的胜利。
+服务器会基于游戏逻辑自动为他们处理这一过程。
 
-One additional consideration is whether we should put a message queue between the game server and the leaderboard service. This would be useful if other services are interested in game results, but that is not an explicit requirement in the interview so far, hence it's not included in the design:
+另一个需要考虑的问题是，是否应在游戏服务器和排行榜服务之间添加消息队列。如果其他服务也对游戏结果感兴趣，消息队列会很有用，但在面试中并没有明确要求，因此不在设计中包含此部分：
 
 ![message-queue-based-comm](../image/system-design-370.png)
 
-### Data models
+### 数据模型
 
-Let's discuss the options we have for storing leaderboard data - relational DBs, Redis, NoSQL.
+我们来讨论一下存储排行榜数据的选项——关系型数据库、Redis 和 NoSQL。
 
-The NoSQL solution is discussed in the deep dive section.
+NoSQL 解决方案将在深入探讨部分讨论。
 
-### Relational database solution
+### 关系型数据库解决方案
 
-If the scale doesn't matter and we don't have that many users, a relational DB serves our quite well.
+如果规模不大，且用户不多，关系型数据库可以很好地满足需求。
 
-We can start from a simple leaderboard table, one for each month (personal note - this doesn't make sense. You can just add a`month`column and avoid the headache of maintaining new tables each month):
+我们可以从一个简单的排行榜表开始，为每个月创建一个表（个人备注：这种做法不太合理。你可以只添加一个 `month` 列，避免每个月都需要维护新表的麻烦）：
 
 ![leaderboard-table](../image/system-design-371.png)
 
-There is additional data to include in there, but that is irrelevant to the queries we'd run, so it's omitted.
+这里有一些额外的数据可以包含，但与我们要执行的查询无关，因此省略了。
 
-What happens when a user wins a point?
+当用户赢得 1 分时会发生什么？
 
 ![user-wins-point](../image/system-design-372.png)
 
-If a user doesn't exist in the table yet, we need to insert them first:
+如果用户尚未在表中存在，我们需要先插入他们：
 
 ```
 INSERT INTO leaderboard (user_id, score) VALUES ('mary1934', 1);
 ```
 
-On subsequent calls, we'd just update their score:
+在后续调用中，我们只需更新他们的得分：
 
 ```
 UPDATE leaderboard set score=score + 1 where user_id='mary1934';
 ```
 
-How do we find the top players of a leaderboard?
+如何查找排行榜中的前几名玩家？
 
 ![find-leaderboard-position](../image/system-design-373.png)
 
-We can run the following query:
+我们可以运行以下查询：
 
 ```
 SELECT (@rownum := @rownum + 1) AS rank, user_id, score
@@ -171,9 +171,9 @@ FROM leaderboard
 ORDER BY score DESC;
 ```
 
-This is not performant though as it makes a table scan to order all records in the database table.
+不过，这种做法性能较差，因为它会进行全表扫描以按得分排序所有记录。
 
-We can optimize it by adding an index on`score`and using the`LIMIT`operation to avoid scanning everything:
+我们可以通过在 `score` 上添加索引，并使用 `LIMIT` 操作来避免扫描所有记录，从而进行优化：
 
 ```
 SELECT (@rownum := @rownum + 1) AS rank, user_id, score
@@ -182,34 +182,33 @@ ORDER BY score DESC
 LIMIT 10;
 ```
 
-This approach, however, doesn't scale well if the user is not at the top of the leaderboard and you'd want to locate their rank.
+然而，如果用户不在排行榜的顶部，你想要找到他们的排名时，这种方法就不太适用了，扩展性较差。
 
-### Redis solution
+### Redis 解决方案
 
-We want to find a solution, which works well even for millions of players without having to fallback on complex database queries.
+我们希望找到一种解决方案，即使在数百万玩家的情况下也能良好运行，而不必依赖复杂的数据库查询。
 
-Redis is an in-memory data store, which is fast as it works in-memory and has a suitable data structure to serve our needs - sorted set.
+Redis 是一个内存数据存储，它的速度非常快，因为它在内存中工作，并且具有适合我们需求的数据结构——有序集合（Sorted Set）。
 
-A sorted set is a data structure similar to sets in programming languages, which allows you to keep a data structure sorted by a given criteria.
-Internally, it is implemented using a hash-map to maintain mapping between key (user_id) and value (score) and a skip list which maps scores to users in sorted order:
+有序集合是一种类似于编程语言中的集合的数据结构，允许你根据给定的标准保持数据结构的排序。
+内部，它使用哈希表来维护键（user_id）和值（score）之间的映射，并使用跳表（skip list）将分数映射到按顺序排列的用户：
 
 ![sorted-set](../image/system-design-374.png)
 
-How does a skip list work?
+跳表是如何工作的？
 
-- It is a linked list which allows for fast search
-- It consists of a sorted linked list and multi-level indexes
+- 它是一个链表，允许快速查找
+- 它由一个排序的链表和多级索引组成
 
 ![skip-list](../image/system-design-375.png)
 
-This structure enables us to quickly search for specific values when the data set is large enough.
-In the example below (64 nodes), it requires traversing 62 nodes in a base linked list to find the given value and 11 nodes in the skip-list case:
+这种结构使我们能够在数据集足够大时快速搜索特定值。在下面的示例中（64 个节点），它需要遍历基本链表中的 62 个节点才能找到给定的值，而在跳表的情况下，只需要遍历 11 个节点：
 
 ![skip-list-performance](../image/system-design-376.png)
 
-Sorted sets are more performant than relational databases as the data is kept sorted at all times at the price of O(logN) add and find operation.
+有序集合比关系型数据库更高效，因为数据始终保持排序，代价是 O(logN)的添加和查找操作。
 
-In contract, here's an example nested query we need to run to find the rank of a given user in a relational DB:
+相比之下，以下是我们需要执行的嵌套查询，来查找给定用户在关系型数据库中的排名：
 
 ```
 SELECT *,(SELECT COUNT(*) FROM leaderboard lb2
@@ -218,186 +217,190 @@ FROM leaderboard lb1
 WHERE lb1.user_id = {:user_id};
 ```
 
-What operations do we need to operate our leaderboard in Redis?
+### 在 Redis 中操作我们的排行榜需要哪些操作？
 
-- `ZADD`- insert the user into the set if they don't exist. Otherwise, update the score. O(logN) time complexity.
-- `ZINCRBY`- increment the score of a user by given amount. If user doesn't exist, score starts at zero. O(logN) time complexity.
-- `ZRANGE/ZREVRANGE`- fetch a range of users, sorted by their score. We can specify order (ASC/DESC), offset and result size. O(logN+M) time complexity where M is result size.
-- `ZRANK/ZREVRANK`- Fetch the position (rank) of given user in ASC/DESC order. O(logN) time complexity.
+- `ZADD` - 如果用户不存在，则将其插入集合。否则，更新分数。时间复杂度为 O(logN)。
+- `ZINCRBY` - 按给定的增量增加用户的分数。如果用户不存在，分数从零开始。时间复杂度为 O(logN)。
+- `ZRANGE/ZREVRANGE` - 获取一范围内按分数排序的用户。可以指定排序顺序（ASC/DESC）、偏移量和结果大小。时间复杂度为 O(logN+M)，其中 M 是结果大小。
+- `ZRANK/ZREVRANK` - 获取给定用户的排名（按升序/降序）。时间复杂度为 O(logN)。
 
-What happens when a user scores a point?
+### 用户得分时会发生什么？
 
 ```
 ZINCRBY leaderboard_feb_2021 1 'mary1934'
 ```
 
-There's a new leaderboard created every month while old ones are moved to historical storage.
+每个月都会创建一个新的排行榜，而旧的排行榜会被移到历史存储中。
 
-What happens when a user fetches top 10 players?
+### 用户查看前 10 名玩家时会发生什么？
 
 ```
 ZREVRANGE leaderboard_feb_2021 0 9 WITHSCORES
 ```
 
-Example result:
+示例结果：
 
 ```
 [(user2,score2),(user1,score1),(user5,score5)...]
 ```
 
-What about user fetching their leaderboard position?
+### 用户查看自己在排行榜中的位置时呢？
 
 ![leaderboard-position-of-user](../image/system-design-377.png)
 
-This can be easily achieved by the following query, given that we know a user's leaderboard position:
+可以通过以下查询轻松实现，假设我们知道用户的排行榜位置：
 
 ```
 ZREVRANGE leaderboard_feb_2021 357 365
 ```
 
-A user's position can be fetched using`ZREVRANK <user-id>`.
+用户的位置可以使用 `ZREVRANK <user-id>` 获取。
 
-Let's explore what our storage requirements are:
+### 存储需求
 
-- Assuming worst-case scenario of all 25mil MAU participating in the game for a given month
-- ID is 24-character string and score is 16-bit integer, we need 26 bytes \* 25mil = ~650MB of storage
-- Even if we double the storage cost due to the overhead of the skip list, this would still easily fit in a modern redis cluster
+让我们探讨一下存储需求：
 
-Another non-functional requirement to consider is supporting 2500 updates per second. This is well within a single Redis server's capabilities.
+- 假设最坏情况是所有 2500 万 MAU 在给定月份都参与了游戏
+- 用户 ID 是 24 个字符的字符串，分数是 16 位整数，我们需要 26 字节 \* 2500 万 = ~650MB 的存储空间
+- 即使由于跳表的开销我们将存储成本加倍，这仍然可以轻松适应现代 Redis 集群
 
-Additional caveats:
+另一个非功能性需求是支持每秒 2500 次更新。这完全在单个 Redis 服务器的能力范围内。
 
-- We can spin up a Redis replica to avoid losing data when a redis server crashes
-- We can still leverage Redis persistence to not lose data in the event of a crash
-- We'll need two supporting tables in MySQL to fetch user details such as username, display name, etc as well as store when eg a user won a game
-- The second table in MySQL can be used to reconstruct leaderboard when there is an infrastructure failure
-- As a small performance optimization, we could cache the user details of top 10 players as they'd be frequently accessed
+### 其他注意事项：
 
-## Step 3 - Design Deep Dive
+- 我们可以启动 Redis 副本，以防 Redis 服务器崩溃时丢失数据
+- 我们仍然可以利用 Redis 的持久化机制，在发生崩溃时不丢失数据
+- 我们需要在 MySQL 中使用两个支持表，以获取用户详细信息（如用户名、显示名称等）以及记录何时某个用户赢得了比赛
+- MySQL 中的第二个表可以用于在发生基础设施故障时重建排行榜
+- 作为小的性能优化，我们可以缓存前 10 名玩家的用户详细信息，因为这些信息将被频繁访问
 
-### To use a cloud provider or not
+## 第三步：设计深入探讨
 
-We can either choose to deploy and manage our own services or use a cloud provider to manage them for us.
+### 使用云服务提供商与否
 
-If we choose to manage the services our selves, we'll use redis for leaderboard data, mysql for user profile and potentially a cache for user profile if we want to scale the database:
+我们可以选择自己部署和管理服务，或者使用云服务提供商来管理这些服务。
+
+如果我们选择自己管理服务，我们将使用 Redis 存储排行榜数据，使用 MySQL 存储用户资料，并且如果希望扩展数据库，可能还需要为用户资料设置缓存：
 
 ![manage-services-ourselves](../image/system-design-378.png)
 
-Alternatively, we could use cloud offerings to manage a lot of the services for us. For example, we can use AWS API Gateway to route API calls to AWS Lambda functions:
+另外，我们可以使用云服务来管理许多服务。例如，我们可以使用 AWS API Gateway 将 API 请求路由到 AWS Lambda 函数：
 
 ![api-gateway-mapping](../image/system-design-379.png)
 
-AWS Lambda enables us to run code without managing or provisioning servers ourselves. It runs only when needed and scales automatically.
+AWS Lambda 使我们能够在不管理或配置服务器的情况下运行代码。它只在需要时运行，并且可以自动扩展。
 
-Exmaple user scoring a point:
+用户得分示例：
 
 ![user-scoring-point-lambda](../image/system-design-380.png)
 
-Example user retrieving leaderboard:
+用户检索排行榜示例：
 
 ![user-retrieve-leaderboard](../image/system-design-381.png)
 
-Lambdas are an implementation of a serverless architecture. We don't need to manage scaling and environment setup.
+Lambda 是一种无服务器架构的实现。我们不需要管理扩展和环境设置。
 
-Author recommends going with this approach if we build the game from the ground up.
+作者建议，如果我们从零开始构建游戏，最好采用这种方法。
 
-### Scaling Redis
+### 扩展 Redis
 
-With 5mil DAU, we can get away with a single Redis instance from both a storage and QPS perspective.
+对于 500 万 DAU 用户，我们从存储和 QPS 角度来看，单个 Redis 实例足以应对。
 
-However, if we imagine userbase grows 10x to 500mil DAU, then we'd need 65gb for storage and QPS goes to 250k.
+但是，如果我们假设用户基数增长 10 倍，达到 5 亿 DAU，那么我们将需要 65GB 的存储空间，QPS 则会增长到 25 万。
 
-Such scale would require sharding.
+这种规模需要分片。
 
-One way to achieve it is by range-partitioning the data:
+一种实现方法是按范围分区数据：
 
 ![range-partition](../image/system-design-382.png)
 
-In this example, we'll shard based on user's score. We'll maintain the mapping between user_id and shard in application code.
-We can do that either via MySQL or another cache for the mapping itself.
+在这个示例中，我们将根据用户的分数进行分片。我们将在应用程序代码中维护用户 ID 和分片之间的映射。
+我们可以通过 MySQL 或其他缓存来管理映射。
 
-To fetch the top 10 players, we'd query the shard with the highest scores (`[900-1000]`).
+为了获取前 10 名玩家，我们可以查询分数最高的分片（`[900-1000]`）。
 
-To fetch a user's rank, we'll need to calculate the rank within the user's shard and add up all users with higher scores in other shards.
-The latter is a O(1) operation as total records per shard can quickly be accessed via the info keyspace command.
+为了获取用户的排名，我们需要计算该用户所在分片内的排名，并加上其他分片中所有分数更高的用户数量。
+后者是 O(1) 操作，因为每个分片的总记录可以通过 info keyspace 命令快速访问。
 
-Alternatively, we can use hash partitioning via Redis Cluster. It is a proxy which distributes data across redis nodes based on partitioning similar to consistent hashing, but not exactly the same:
+另外，我们可以使用 Redis 集群进行哈希分区。它是一个代理，将数据根据类似一致性哈希的方式分布到 Redis 节点上，但并不完全相同：
 
 ![hash-partition](../image/system-design-383.png)
 
-Calculating the top 10 players is challenging with this setup. We'll need to get the top 10 players of each shard and merge the results in the application:
+这种设置下，计算前 10 名玩家会比较复杂。我们需要获取每个分片的前 10 名玩家，并在应用程序中合并结果：
 
 ![top-10-players-calculation](../image/system-design-384.png)
 
-There are some limitations with the hash partitioning:
+哈希分区有一些限制：
 
-- If we need to fetch top K users, where K is high, latency can increase as we'll need to fetch a lot of data from all the shards
-- Latency increases as the number of partitions grows
-- There is no straightforward approach to determine a user's rank
+- 如果我们需要获取前 K 个用户，且 K 很大，延迟可能会增加，因为我们需要从所有分片获取大量数据
+- 随着分区数量的增加，延迟也会增加
+- 确定用户排名没有直接的办法
 
-Due to all this, the author leans towards using fixed partitions for this problem.
+由于这些原因，作者倾向于使用固定分区来解决这个问题。
 
-Other caveats:
+### 其他注意事项：
 
-- A best practice is to allocate twice as much memory as required for write-heavy redis nodes to accommodate snapshots if required
-- We can use a tool called Redis-benchmark to track the performance of a redis setup and make data-driven decisions
+- 最佳实践是为写密集型的 Redis 节点分配两倍于所需的内存，以适应快照（如果需要）
+- 我们可以使用 Redis-benchmark 工具来跟踪 Redis 设置的性能，并做出数据驱动的决策
 
-### Alternative solution: NoSQL
+### 替代方案：NoSQL
 
-An alternative solution to consider is using an appropriate NoSQL database optimized for:
+另一个需要考虑的替代方案是使用适合的 NoSQL 数据库，优化以下方面：
 
-- heavy writes
-- effectively sorting items within the same partition by score
+- 高写入负载
+- 在同一分区内根据分数有效地排序项
 
-DynamoDB, Cassandra or MongoDB are all good fits.
+DynamoDB、Cassandra 或 MongoDB 都是不错的选择。
 
-In this chapter, the author has decided to use DynamoDB. It is a fully-managed NoSQL database, which offers reliable performance and great scalability.
-It also enables usage of global secondary indexes when we need to query fields not part of the primary key.
+在本章中，作者选择了使用 DynamoDB。它是一个完全托管的 NoSQL 数据库，提供可靠的性能和很好的可扩展性。
+它还允许使用全局二级索引，当我们需要查询非主键字段时非常有用。
 
 ![dynamo-db](../image/system-design-385.png)
 
-Let's start from a table for storing a leaderboard for a chess game:
+让我们从存储一个棋类游戏排行榜的表开始：
 
 ![chess-game-leaderboard-table-1](../image/system-design-386.png)
 
-This works well, but doesn't scale well if we need to query anything by score. Hence, we can put the score as a sort key:
+这种设计很好，但如果我们需要按分数查询，它的扩展性就不好。因此，我们可以将分数作为排序键：
 
 ![chess-game-leaderboard-table-2](../image/system-design-387.png)
 
-Another problem with this design is that we're partitioning by month. This leads to a hotspot partition as the latest month will be unevenly accessed compared to the others.
+这个设计的另一个问题是我们按月份进行分区。由于最新的月份将比其他月份访问频繁，这导致了热点分区。
 
-We could use a technique called write sharding, where we append a partition number for each key, calculated via`user_id % num_partitions`:
+我们可以使用一种称为写分片（write sharding）的技术，为每个键附加一个分区编号，计算方法为 `user_id % num_partitions`：
 
-![chess-game-leaderboard-table-3](../image/system-design-388.png)
+![
 
-An important trade-off to consider is how many partitions we should use:
+chess-game-leaderboard-table-3](../image/system-design-388.png)
 
-- The more partitions there are, the higher the write scalability
-- However, read scalability suffers as we need to query more partitions to collect aggregate results
+一个重要的权衡是我们应该使用多少分区：
 
-Using this approach requires that we use the "scatter-gather" technique we saw earlier, which grows in time complexity as we add more partitions:
+- 分区越多，写入扩展性越高
+- 但是，读取扩展性会受到影响，因为我们需要查询更多的分区来汇总结果
+
+使用这种方法需要我们使用之前看到的“scatter-gather”技术，随着分区数量的增加，时间复杂度会增长：
 
 ![scatter-gather-2](../image/system-design-389.png)
 
-To make a good evaluation on the number of partitions, we'd need to do some benchmarking.
+为了做出关于分区数量的良好评估，我们需要进行一些基准测试。
 
-This NoSQL approach still has one major downside - it is hard to calculate the specific rank of a user.
+这种 NoSQL 方法仍然有一个主要的缺点——很难计算用户的具体排名。
 
-If we have sufficient scale to require us to shard, we could then perhaps tell users what "percentile" of scores they're in.
+如果我们有足够的规模需要分片，那么我们可以告诉用户他们的“百分位数”分数。
 
-A cron job can periodically run to analyze score distributions, based on which a user's percentile is determined, eg:
+一个定时任务可以定期运行，分析分数分布，并根据此确定用户的百分位数，例如：
 
 ```
-10th percentile = score < 100
-20th percentile = score < 500
+第 10 百分位 = 分数 < 100
+第 20 百分位 = 分数 < 500
 ...
-90th percentile = score < 6500
+第 90 百分位 = 分数 < 6500
 ```
 
-## Step 4 - Wrap Up
+## 第四步：总结
 
-Other things to discuss if time permits:
+如果时间允许，还有其他一些讨论：
 
-- Faster retrieval - We can cache the user object via a Redis hash with mapping`user_id -> user object`. This enables faster retrieval vs. querying the database.
-- Breaking ties - When two players have the same score, we can break the tie by sorting them based on last played game.
-- System failure recovery - In the event of a large-scale Redis outage, we can recreate the leaderboard by going through the MySQL WAL entries and recreate it via an ad-hoc script
+- 更快的检索 - 我们可以通过 Redis 哈希缓存用户对象，映射 `user_id -> user object`，这能加速检索，相比查询数据库更高效。
+- 破除平局 - 当两名玩家的分数相同，我们可以通过他们的最后一场比赛来打破平局。
+- 系统故障恢复 - 在大规模的 Redis 故障发生时，我们可以通过查看 MySQL 的 WAL 记录，并通过一个临时脚本重建排行榜。

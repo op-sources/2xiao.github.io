@@ -6,7 +6,7 @@
 
 首先，我们将所有内容放在一台服务器上——Web 应用、数据库、缓存等。
 
-![Image](../image/system-design-1.png)
+![](../image/system-design-1.png)
 
 在这种情况下，请求流程是怎样的？
 
@@ -41,7 +41,7 @@ Web 服务器的流量来自 Web 应用或移动应用：
 
 随着用户量的增加，将所有内容存储在单台服务器上已经不够用了。我们可以将数据库迁移到另一台服务器，这样它就可以独立于 Web 层进行扩展：
 
-![Image](../image/system-design-2.png)
+![](../image/system-design-2.png)
 
 ### 选择使用哪种数据库？
 
@@ -82,7 +82,7 @@ NoSQL 数据库被分为四类 - 键值存储、图形存储、列存储和文�
 
 负载均衡器将传入的流量均匀分配到负载均衡集中的多个 Web 服务器上：
 
-![Image](../image/system-design-3.png)
+![](../image/system-design-3.png)
 
 客户端通过负载均衡器的公共 IP 地址进行连接，Web 服务器无法直接被客户端访问，它们具有私有 IP，负载均衡器可以访问这些 IP。
 
@@ -102,7 +102,7 @@ Web 层现在看起来很强大。那么数据层呢？
 主数据库通常只支持写操作。从数据库存储主数据库的数据副本，只支持读操作。  
 这种设置适用于大多数应用程序，因为通常读取操作远多于写入操作。通过添加更多的从实例，读取操作可以轻松扩展。
 
-![Image](../image/system-design-4.png)
+![](../image/system-design-4.png)
 
 ### 优势
 
@@ -115,7 +115,7 @@ Web 层现在看起来很强大。那么数据层呢？
 - 如果从数据库宕机，读操作将临时路由到主数据库或其他从数据库。
 - 如果主数据库宕机，一个从实例将被提升为新的主数据库。一个新的从实例将取代旧的主数据库。
 
-![Image](../image/system-design-5.png)
+![](../image/system-design-5.png)
 
 这是精炼后的请求生命周期：
 
@@ -138,7 +138,7 @@ Web 层现在看起来很强大。那么数据层呢？
 缓存层是一个临时存储区域，数据从缓存中获取的速度比从数据库中获取要快得多。  
 它还可以独立于数据库进行扩展。
 
-![Image](../image/system-design-6.png)
+![](../image/system-design-6.png)
 
 上面的示例是一个读通过缓存的缓存（read-through cache）——服务器检查数据是否在缓存中。如果不在，则从数据库获取数据。
 
@@ -156,11 +156,11 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 每当用户请求静态内容时，离用户最近的 CDN 服务器将为其提供内容：
 
-![Image](../image/system-design-7.png)
+![](../image/system-design-7.png)
 
 以下是请求流程：
 
-![Image](../image/system-design-8.png)
+![](../image/system-design-8.png)
 
 - 用户通过 URL 请求图像。URL 由 CDN 提供，例如 `https://mysite.cloudfront.net/logo.jpg`
 - 如果图像不在缓存中，CDN 会从源服务器（例如 Web 服务器、S3 桶等）请求该文件。
@@ -176,7 +176,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 优化后的 Web 应用架构：
 
-![Image](../image/system-design-9.png)
+![](../image/system-design-9.png)
 
 ## 无状态 Web 层
 
@@ -188,7 +188,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 有状态服务器会在不同的请求之间记住客户端的数据。无状态服务器则不会。
 
-![Image](../image/system-design-10.png)
+![](../image/system-design-10.png)
 
 在上述情况下，用户与存储其会话数据的服务器绑定。如果他们向另一个服务器发起请求，另一个服务器将无法访问该用户的会话数据。
 
@@ -197,7 +197,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 ### 无状态架构
 
-![Image](../image/system-design-11.png)
+![](../image/system-design-11.png)
 
 在这种情况下，服务器本身不会存储任何用户数据。  
 相反，服务器将数据存储在一个所有服务器都可以访问的共享数据存储中。
@@ -206,20 +206,20 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 更新后的 Web 应用架构：
 
-![Image](../image/system-design-12.png)
+![](../image/system-design-12.png)
 
 用户会话数据存储可以是关系型数据库或 NoSQL 数据存储，这种存储更容易扩展以支持这类数据。  
 应用程序演进的下一步是支持多个数据中心。
 
 ## 数据中心
 
-![Image](../image/system-design-13.png)
+![](../image/system-design-13.png)
 
 在上述示例中，客户端根据 IP 地址被地理路由到最近的数据中心。
 
 如果发生故障，我们会将所有流量重定向到健康的数据中心：
 
-![Image](../image/system-design-14.png)
+![](../image/system-design-14.png)
 
 为了实现这种多数据中心设置，我们需要解决一些问题：
 
@@ -233,7 +233,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 消息队列是持久化组件，用于实现异步通信。
 
-![Image](../image/system-design-15.png)
+![](../image/system-design-15.png)
 
 基本架构：
 
@@ -248,7 +248,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 - Web 服务器将“照片处理任务”发布到消息队列。
 - 一个可伸缩的工作进程（可以动态增加或减少数量）订阅队列并处理这些任务。
 
-![Image](../image/system-design-16.png)
+![](../image/system-design-16.png)
 
 ## 日志记录、度量与自动化
 
@@ -260,7 +260,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 更新后的系统设计：
 
-![Image](../image/system-design-17.png)
+![](../image/system-design-17.png)
 
 ## 数据库扩展
 
@@ -283,18 +283,18 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 与其添加更大的服务器，不如增加更多的服务器：
 
-![Image](../image/system-design-18.png)
+![](../image/system-design-18.png)
 
 **分片**是一种数据库水平扩展方式，它将大数据集分割成更小的部分。
 每个分片共享相同的模式，但实际数据是不同的。
 
 一种分片数据库的方法是基于某个键，将该键均匀地分配到所有分片中，通常使用取模运算符：
 
-![Image](../image/system-design-19.png)
+![](../image/system-design-19.png)
 
 以下是该示例中用户数据的样子：
 
-![Image](../image/system-design-20.png)
+![](../image/system-design-20.png)
 
 **分片键**（又称分区键）是使用分片时最重要的考虑因素。
 特别地，应该选择一个能够尽可能均匀分布数据的键。
@@ -307,7 +307,7 @@ CDN 是由地理上分布的多个服务器组成的网络，用于分发静态�
 
 以下是我们应用架构引入分片和 NoSQL 数据库（用于存储一些非关系型数据）后的样子：
 
-![Image](../image/system-design-21.png)
+![](../image/system-design-21.png)
 
 ## 数百万用户及其扩展
 

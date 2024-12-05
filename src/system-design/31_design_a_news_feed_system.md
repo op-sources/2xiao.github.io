@@ -41,7 +41,7 @@
 
 ### 帖子发布流程
 
-![Image](../image/system-design-100.png)
+![](../image/system-design-100.png)
 
 1. 用户通过 API 提交帖子内容。
 2. **负载均衡器**：将请求分发到 Web 服务器。

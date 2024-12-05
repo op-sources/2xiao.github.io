@@ -74,7 +74,7 @@ Vue.js（/vjuː/，或简称为 Vue）是一个用于创建用户界面的开源
 - ViewModel：视图模型层，用来连接 Model 和 View，是 Model 和 View 之间的通信桥梁
 
 这时候需要一张直观的关系图，如下
-![image.png](../../image/interview-vue-26.png)
+![](../../image/interview-vue-26.png)
 
 ### 组件化
 

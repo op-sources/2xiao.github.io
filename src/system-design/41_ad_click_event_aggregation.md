@@ -1,123 +1,129 @@
-# Ad Click Event Aggregation
+# 21. 广告点击事件聚合
 
-Digital advertising is a big industry with the rise of Facebook, YouTube, TikTok, etc.
+随着 Facebook、YouTube、TikTok 等平台的兴起，数字广告行业变得越来越庞大。
 
-Hence, tracking ad click events is important. In this chapter, we explore how to design an ad click event aggregation system at Facebook/Google scale.
+因此，追踪广告点击事件变得非常重要。本章将探讨如何在 Facebook/Google 规模上设计一个广告点击事件聚合系统。
 
-Digital advertising has a process called real-time bidding (RTB), where digital advertising inventory is bought and sold:
+数字广告有一个叫做实时竞价（RTB）的过程，在这个过程中，数字广告库存被买卖：
 
 ![digital-advertising-example](../image/system-design-284.png)
 
-Speed of RTB is important as it usually occurs within a second.
-Data accuracy is also very important as it impacts how much money advertisers pay.
+RTB 的速度非常重要，因为它通常发生在一秒钟之内。
+数据准确性同样至关重要，因为它影响广告主的支付金额。
 
-Based on ad click event aggregations, advertisers can make decisions such as adjust target audience and keywords.
+基于广告点击事件的聚合，广告主可以做出一些决策，例如调整目标受众和关键词。
 
-## Step 1 - Understand the Problem and Establish Design Scope
+## 第一步：理解问题并确定设计范围
 
-- C: What is the format of the input data?
-- I: 1bil ad clicks per day and 2mil ads in total. Number of ad-click events grows 30% year-over-year.
-- C: What are some of the most important queries our system needs to support?
-- I: Top queries to take into consideration:- Return number of click events for ad X in last Y minutes
-- Return top 100 most clicked ads in the past 1min. Both parameters should be configurable. Aggregation occurs every minute.
-- Support data filtering by`ip`,`user_id`,`country`for the above queries
-- C: Do we need to worry about edge cases? Some of the ones I can think of:- There might be events that arrive later than expected
-- There might be duplicate events
-- Different parts of the system might be down, so we need to consider system recovery
-- I: That's a good list, take those into consideration
-- C: What is the latency requirement?
-- I: A few minutes of e2e latency for ad click aggregation. For RTB, it is less than a second. It is ok to have that latency for ad click aggregation as those are usually used for billing and reporting.
+- **候选人**: 输入数据的格式是什么？
+- **面试官**: 每天 10 亿次广告点击，共有 200 万个广告。广告点击事件的数量每年增长 30%。
+- **候选人**: 系统需要支持哪些最重要的查询？
+- **面试官**: 需要考虑的主要查询包括：
+  - 返回广告 X 在过去 Y 分钟内的点击次数
+  - 返回过去 1 分钟内点击次数最多的前 100 个广告。两个参数应可配置。聚合每分钟进行一次。
+  - 支持按`ip`、`user_id`、`country`等属性进行数据过滤。
+- **候选人**: 我们需要担心边缘情况吗？我能想到的一些边缘情况包括：
+  - 可能会有事件到达比预期晚
+  - 可能会有重复事件
+  - 系统的不同部分可能会出现故障，因此我们需要考虑系统恢复
+- **面试官**: 这是一个很好的列表，请考虑这些情况。
+- **候选人**: 延迟要求是什么？
+- **面试官**: 广告点击聚合的端到端延迟为几分钟。对于 RTB，则要求低于一秒。广告点击聚合的延迟是可以接受的，因为这些数据通常用于计费和报告。
 
-### Functional requirements
+### 功能要求
 
-- Aggregate the number of clicks of`ad_id`in the last Y minutes
-- Return top 100 most clicked`ad_id`every minute
-- Support aggregation filtering by different attributes
-- Dataset volume is at Facebook or Google scale
+- 聚合广告`ad_id`在过去 Y 分钟内的点击次数
+- 每分钟返回点击次数最多的前 100 个`ad_id`
+- 支持按不同属性进行聚合过滤
+- 数据集的体量为 Facebook 或 Google 级别
 
-### Non-functional requirements
+### 非功能要求
 
-- Correctness of the aggregation result is important as it's used for RTB and ads billing
-- Properly handle delayed or duplicate events
-- Robustness - system should be resilient to partial failures
-- Latency - a few minutes of e2e latency at most
+- 聚合结果的正确性非常重要，因为它用于 RTB 和广告计费
+- 正确处理延迟或重复事件
+- 系统的鲁棒性——系统应能抵御部分故障
+- 延迟——最多几分钟的端到端延迟
 
-### Back-of-the-envelope estimation
+### 粗略估算
 
-- 1bil DAU
-- Assuming user clicks 1 ad per day -> 1bil ad clicks per day
-- Ad click QPS = 10,000
-- Peak QPS is 5 times the number = 50,000
-- A single ad click occupies 0.1KB storage. Daily storage requirement is 100gb
-- Monthly storage = 3tb
+- 10 亿日活跃用户（DAU）
+- 假设每个用户每天点击 1 个广告 -> 每天 10 亿次广告点击
+- 广告点击 QPS = 10,000
+- 峰值 QPS 是正常的 5 倍 = 50,000
+- 单个广告点击占用 0.1KB 存储。每天存储需求为 100GB
+- 每月存储需求 = 3TB
 
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层设计并获得认同
 
-In this section, we discuss query API design, data model and high-level design.
+本节我们将讨论查询 API 设计、数据模型和高层设计。
 
-### Query API Design
+### 查询 API 设计
 
-The API is a contract between the client and the server. In our case, the client is the dashboard user - data scientist/analyst, advertiser, etc.
+API 是客户端与服务器之间的契约。在我们的案例中，客户端是仪表盘用户——数据科学家/分析师、广告主等。
 
-Here's our functional requirements:
+以下是我们的功能需求：
 
-- Aggregate the number of clicks of`ad_id`in the last Y minutes
-- Return top N most clicked`ad_id`in the last M minutes
-- Support aggregation filtering by different attributes
+- 聚合广告`ad_id`在过去 Y 分钟内的点击次数
+- 返回过去 M 分钟内点击次数最多的前 N 个`ad_id`
+- 支持按不同属性进行聚合过滤
 
-We need two endpoints to achieve those requirements. Filtering can be done via query parameters on one of them.
+我们需要两个端点来实现这些需求。可以通过查询参数进行过滤。
 
-Aggregate number of clicks of ad_id in the last M minutes:
+聚合广告`ad_id`在过去 M 分钟内的点击次数：
 
 ```
 GET /v1/ads/{:ad_id}/aggregated_count
 ```
 
-Query parameters:
+查询参数：
 
-- from - start minute. Default is now - 1 min
-- to - end minute. Default is now
-- filter - identifier for different filtering strategies. Eg 001 means "non-US clicks".
+- from - 起始分钟。默认值为当前时间前 1 分钟
+- to - 结束分钟。默认值为当前时间
+- filter - 用于不同过滤策略的标识符。例如，001 表示“非美国点击”。
 
-Response:
+响应：
 
-- ad_id - ad identifier
-- count - aggregated count between start and end minutes
+- ad_id - 广告标识符
+- count - 起始和结束分钟之间的聚合次数
 
-Return top N most clicked ad_ids in the last M minutes
+返回过去 M 分钟内点击次数最多的前 N 个广告：
 
 ```
 GET /v1/ads/popular_ads
 ```
 
-Query parameters:
+查询参数：
 
-- count - top N most clicked ads
-- window - aggregation window size in minutes
-- filter - identifier for different filtering strategies
+- count - 前 N 个点击最多的广告
+- window - 聚合窗口大小（以分钟为单位）
+- filter - 用于不同过滤策略的标识符
 
-Response:
+响应：
 
-- list of ad_ids
+- 广告 ID 列表
 
-### Data model
+### 数据模型
 
-In our system, we have raw and aggregated data.
+在我们的系统中，我们有原始数据和聚合数据。
 
-Raw data looks like this:
+原始数据如下所示：
 
 ```
 [AdClickEvent] ad001, 2021-01-01 00:00:01, user 1, 207.148.22.22, USA
 ```
 
-Here's an example in a structured format:
+这是一个结构化的示例：
+
+<!-- prettier-ignore -->
 | ad_id | click_timestamp | user | ip | country |
-|-------|---------------------|-------|---------------|---------|
+|-------|-----------------|------|----|---------|
 | ad001 | 2021-01-01 00:00:01 | user1 | 207.148.22.22 | USA |
 | ad001 | 2021-01-01 00:00:02 | user1 | 207.148.22.22 | USA |
 | ad002 | 2021-01-01 00:00:02 | user2 | 209.153.56.11 | USA |
 
-Here's the aggregated version:
+这是聚合后的版本：
+
+<!-- prettier-ignore -->
 | ad_id | click_minute | filter_id | count |
 |-------|--------------|-----------|-------|
 | ad001 | 202101010000 | 0012 | 2 |
@@ -125,127 +131,139 @@ Here's the aggregated version:
 | ad001 | 202101010001 | 0012 | 1 |
 | ad001 | 202101010001 | 0023 | 6 |
 
-The`filter_id`helps us achieve our filtering requirements.
-| filter*id | region | IP | user_id |
-|-----------|--------|-----------|---------|
+`filter_id`帮助我们实现过滤需求。
+
+<!-- prettier-ignore -->
+| filter_id | region | IP | user_id |
+|-----------|--------|-----|---------|
 | 0012 | US | * | _ |
-| 0013 | _ | 123.1.2.3 | \_ |
+| 0013 | _ | 123.1.2.3 | _ |
 
-To support quickly returning top N most clicked ads in the last M minutes, we'll also maintain this structure:
+为了支持快速返回过去 M 分钟内点击次数最多的前 N 个广告，我们还将维护以下结构：
+
+<!-- prettier-ignore -->
 | most_clicked_ads | | |
-|--------------------|-----------|--------------------------------------------------|
-| window_size | integer | The aggregation window size (M) in minutes |
-| update_time_minute | timestamp | Last updated timestamp (in 1-minute granularity) |
-| most_clicked_ads | array | List of ad IDs in JSON format. |
+|--------------|--------------|--------------|
+| window_size | integer | 聚合窗口大小（M）以分钟为单位 |
+| update_time_minute | timestamp | 上次更新时间戳（以1分钟为单位） |
+| most_clicked_ads | array | 广告ID的JSON格式列表 |
 
-What are some pros and cons between storing raw data and storing aggregated data?
+存储原始数据和存储聚合数据之间有哪些利弊？
 
-- Raw data enables using the full data set and supports data filtering and recalculation
-- On the other hand, aggregated data allows us to have a smaller data set and a faster query
-- Raw data means having a larger data store and a slower query
-- Aggregated data, however, is derived data, hence there is some data loss.
+- 原始数据允许使用完整的数据集，并支持数据过滤和重新计算
+- 聚合数据允许我们拥有较小的数据集，并且查询更快
+- 原始数据意味着需要更大的数据存储，并且查询较慢
+- 聚合数据是衍生数据，因此存在一定的数据丢失
 
-In our design, we'll use a combination of both approaches:
+在我们的设计中，我们将结合这两种方法：
 
-- It's a good idea to keep the raw data around for debugging. If there is some bug in aggregation, we can discover the bug and backfill.
-- Aggregated data should be stored as well for faster query performance.
-- Raw data can be stored in cold storage to avoid extra storage costs.
+- 保留原始数据对于调试很有帮助。如果聚合出现了问题，我们可以发现错误并回填数据。
+- 聚合数据也应该存储，以便更快的查询性能。
+- 原始数据可以存储在冷存储中，以避免额外的存储成本。
 
-When it comes to the database, there are several factors to take into consideration:
+在选择数据库时，有几个因素需要考虑：
 
-- What does the data look like? Is it relational, document or blob?
-- Is the workload read-heavy, write-heavy or both?
-- Are transactions needed?
-- Do the queries rely on OLAP functions like SUM and COUNT?
+- 数据的类型是什么？是关系型、文档型还是二进制大对象（BLOB）？
+- 工作负载是以读取为主、写入为主还是两者都有？
+- 是否需要事务支持？
+- 查询是否依赖于 OLAP 函数，如 SUM 和 COUNT？
 
-For the raw data, we can see that the average QPS is 10k and peak QPS is 50k, so the system is write-heavy.
-On the other hand, read traffic is low as raw data is mostly used as backup if anything goes wrong.
+对于原始数据，我们可以看到平均 QPS 为 10k，峰值 QPS 为 50k，因此系统是写入密集型的。
+另一方面，读取流量较低，因为原始数据主要作为备份，以防出现问题。
 
-Relational databases can do the job, but it can be challenging to scale the writes.
-Alternatively, we can use Cassandra or InfluxDB which have better native support for heavy write loads.
+关系型数据库能够完成这个任务，但扩展写入操作会比较有挑战。
+另一种选择是使用 Cassandra 或 InfluxDB，它们对重负载写入有更好的原生支持。
 
-Another option is to use Amazon S3 with a columnar data format like ORC, Parquet or AVRO. Since this setup is unfamiliar, we'll stick to Cassandra.
+另一个选择是使用 Amazon S3 和列式数据格式（如 ORC、Parquet 或 AVRO）。由于这种设置不太熟悉，我们将选择 Cassandra。
 
-For aggregated data, the workload is both read and write heavy as aggregated data is constantly queried for dashboards and alerts.
-It is also write-heavy as data is aggregated and written every minute by the aggregation service.
-Hence, we'll use the same data store (Cassandra) here as well.
+对于聚合数据，工作负载既有读取也有写入，因为聚合数据经常被用来为仪表盘和警报提供支持。
+它也是写入密集型的，因为数据是每分钟聚合并写入的。因此，我们在这里也会使用相同的数据存储（Cassandra）。
 
-### High-level design
+### 高层设计
 
-Here's how our system looks like:
+这是我们系统的架构：
 
 ![high-level-design-1](../image/system-design-285.png)
 
-Data flows as an unbounded data stream on both inputs and outputs.
+数据流作为一个无界数据流，输入和输出都如此。
 
-In order to avoid having a synchronous sink, where a consumer crashing can cause the whole system to stall,
-we'll leverage asynchronous processing using message queues (Kafka) to decouple consumers and producers.
+为了避免同步的汇聚点（即消费者崩溃可能导致整个系统停滞），我们将利用异步处理，使用消息队列（Kafka）解耦消费者和生产者。
 
 ![high-level-design-2](../image/system-design-286.png)
 
-The first message queue stores ad click event data:
+第一个消息队列存储广告点击事件数据：
+
+<!-- prettier-ignore -->
 | ad_id | click_timestamp | user_id | ip | country |
 |-------|-----------------|---------|----|---------|
 
-The second message queue contains ad click counts, aggregated per-minute:
+第二个消息队列包含每分钟聚合的广告点击计数：
+
+<!-- prettier-ignore -->
 | ad_id | click_minute | count |
 |-------|--------------|-------|
 
-As well as top N clicked ads aggregated per minute:
+以及每分钟聚合的点击次数
+
+最多的前 N 个广告：
+
+<!-- prettier-ignore -->
 | update_time_minute | most_clicked_ads |
 |--------------------|------------------|
 
-The second message queue is there in order to achieve end to end exactly-once atomic commit semantics:
+第二个消息队列的存在是为了实现端到端精确一次的原子提交语义：
 
 ![atomic-commit](../image/system-design-287.png)
 
-For the aggregation service, using the MapReduce framework is a good option:
+对于聚合服务，使用 MapReduce 框架是一个不错的选择：
 
 ![ad-count-map-reduce](../image/system-design-288.png)
 
 ![top-100-map-reduce](../image/system-design-289.png)
 
-Each node is responsible for one single task and it sends the processing result to the downstream node.
+每个节点负责一个单独的任务，并将处理结果发送给下游节点。
 
-The map node is responsible for reading from the data source, then filtering and transforming the data.
+Map 节点负责从数据源读取数据，然后进行过滤和转换。
 
-For example, the map node can allocate data across different aggregation nodes based on the`ad_id`:
+例如，Map 节点可以根据`ad_id`将数据分配到不同的聚合节点：
 
 ![map-node](../image/system-design-290.png)
 
-Alternatively, we can distribute ads across Kafka partitions and let the aggregation nodes subscribe directly within a consumer group.
-However, the mapping node enables us to sanitize or transform the data before subsequent processing.
+或者，我们可以将广告分布到 Kafka 分区中，让聚合节点直接在消费者组中进行订阅。
+然而，Map 节点可以帮助我们在后续处理之前进行数据清洗或转换。
 
-Another reason might be that we don't have control over how data is produced,
-so events related to the same`ad_id`might go on different partitions.
+另一个原因是我们可能无法控制数据的生产方式，
+因此与同一`ad_id`相关的事件可能会被发送到不同的分区。
 
-The aggregate node counts ad click events by`ad_id`in-memory every minute.
+聚合节点每分钟在内存中统计广告点击事件，按`ad_id`进行聚合。
 
-The reduce node collects aggregated results from aggregate node and produces the final result:
+Reduce 节点收集来自聚合节点的聚合结果，并生成最终结果：
 
 ![reduce-node](../image/system-design-291.png)
 
-This DAG model uses the MapReduce paradigm. It takes big data and leverages parallel distributed computing to turn it into regular-sized data.
+此 DAG 模型使用了 MapReduce 范式。它通过并行分布式计算将大数据转换为常规大小的数据。
 
-In the DAG model, intermediate data is stored in-memory and different nodes communicate with each other using TCP or shared memory.
+在 DAG 模型中，临时数据存储在内存中，不同节点之间使用 TCP 或共享内存进行通信。
 
-Let's explore how this model can now help us to achieve our various use-cases.
+现在让我们探索一下这个模型如何帮助我们实现各种用例。
 
-Use-case 1 - aggregate the number of clicks:
+用例 1 - 聚合点击次数：
 
 ![use-case-1](../image/system-design-292.png)
 
-- Ads are partitioned using`ad_id % 3`
+- 广告通过`ad_id % 3`进行分区
 
-Use-case 2 - return top N most clicked ads:
+用例 2 - 返回点击次数最多的前 N 个广告：
 
 ![use-case-2](../image/system-design-293.png)
 
-- In this case, we're aggregating the top 3 ads, but this can be extended to top N ads easily
-- Each node maintains a heap data structure for fast retrieval of top N ads
+- 在这个案例中，我们聚合了前 3 个广告，但这可以轻松扩展到前 N 个广告
+- 每个节点维护一个堆数据结构，以便快速检索前 N 个广告
 
-Use-case 3 - data filtering:
-To support fast data filtering, we can predefine filtering criterias and pre-aggregate based on it:
+用例 3 - 数据过滤：
+为了支持快速的数据过滤，我们可以预定义过滤标准，并基于此进行预聚合：
+
+<!-- prettier-ignore -->
 | ad_id | click_minute | country | count |
 |-------|--------------|---------|-------|
 | ad001 | 202101010001 | USA | 100 |
@@ -255,265 +273,268 @@ To support fast data filtering, we can predefine filtering criterias and pre-agg
 | ad002 | 202101010001 | GPB | 25 |
 | ad002 | 202101010001 | others | 12 |
 
-This technique is called thestar schemaand is widely used in data warehouses.
-The filtering fields are calleddimensions.
+这种技术称为星型模式（star schema），广泛应用于数据仓库中。
+过滤字段被称为维度。
 
-This approach has the following benefits:
+这种方法的好处包括：
 
-- Simple to undertand and build
-- Current aggregation service can be reused to create more dimensions in the star schema.
-- Accessing data based on filtering criteria is fast as results are pre-calculated
+- 易于理解和构建
+- 当前的聚合服务可以重用，以创建更多的维度
+- 基于过滤条件访问数据非常快速，因为结果是预计算的
 
-A limitation of this approach is that it creates many more buckets and records, especially when we have lots of filtering criterias.
+这种方法的一个限制是，它会创建更多的分区和记录，尤其是在有许多过滤条件时。
 
-## Step 3 - Design Deep Dive
+## 第三步：设计深入分析
 
-Let's dive deeper into some of the more interesting topics.
+让我们深入探讨一些更有趣的话题。
 
-### Streaming vs. Batching
+### 流处理 vs. 批处理
 
-The high-level architecture we proposed is a type of stream processing system.
-Here's a comparison between three types of systems:
-| | Services (Online system) | Batch system (offline system) | Streaming system (near real-time system) |
-|-------------------------|-------------------------------|--------------------------------------------------------|----------------------------------------------|
-| Responsiveness | Respond to the client quickly | No response to the client needed | No response to the client needed |
-| Input | User requests | Bounded input with finite size. A large amount of data | Input has no boundary (infinite streams) |
-| Output | Responses to clients | Materialized views, aggregated metrics, etc. | Materialized views, aggregated metrics, etc. |
-| Performance measurement | Availability, latency | Throughput | Throughput, latency |
-| Example | Online shopping | MapReduce | Flink [13] |
+我们提出的高层架构是一种流处理系统。
+以下是三种系统类型的比较：
 
-In our design, we used a mixture of batching and streaming.
+|          | 在线系统（服务） | 批处理系统（离线系统）       | 流处理系统（近实时系统） |
+| -------- | ---------------- | ---------------------------- | ------------------------ |
+| 响应性   | 快速响应客户端   | 不需要响应客户端             | 不需要响应客户端         |
+| 输入     | 用户请求         | 有限大小的有界输入，大量数据 | 输入没有边界（无限流）   |
+| 输出     | 客户端响应       | 物化视图、聚合指标等         | 物化视图、聚合指标等     |
+| 性能衡量 | 可用性、延迟     | 吞吐量                       | 吞吐量、延迟             |
+| 示例     | 在线购物         | MapReduce                    | Flink [13]               |
 
-We used streaming for processing data as it arrives and generates aggregated results in near real-time.
-We used batching, on the other hand, for historical data backup.
+在我们的设计中，我们结合使用了批处理和流处理。
 
-A system which contains two processing paths - batch and streaming, simultaneously, this architecture is called lambda.
-A disadvantage is that you have two processing paths with two different codebases to maintain.
+我们使用流处理来处理到达的数据，并生成近实时的聚合结果。
+另一方面，我们使用批处理来进行历史数据备份。
 
-Kappa is an alternative architecture, which combines batch and stream processing in one processing path.
-The key idea is to use a single stream processing engine.
+包含两个处理路径——批处理和流处理的系统称为 Lambda 架构。
+其缺点是，你需要维护两个不同代码库的处理路径。
 
-Lambda architecture:
+Kappa 架构是一种替代架构，它将批处理和流处理合并到一个处理路径中。
+关键思想是使用单一的流处理引擎。
+
+Lambda 架构：
 
 ![lambda-architecture](../image/system-design-294.png)
 
-Kappa architecture:
+Kappa 架构：
 
 ![kappa-architecture](../image/system-design-295.png)
 
-Our high-level design uses Kappa architecture as reprocessing of historical data also goes through the aggregation service.
+我们的高层设计使用了 Kappa 架构，因为历史数据的重新处理也会通过聚合服务。
 
-Whenever we have to recalculate aggregated data due to eg a major bug in aggregation logic, we can recalculate the aggregation from the raw data we store.
+每当由于聚合逻辑中的重大错误需要重新计算聚合数据时，我们可以从存储的原始数据中重新计算聚合。
 
-- Recalculation service retrieves data from raw storage. This is a batch job.
-- Retrieved data is sent to a dedicated aggregation service, so that the real-time processing aggregation service is not impacted.
-- Aggregated results are sent to the second message queue, after which we update the results in the aggregation database.
+- 重新计算服务从原始存储中检索数据。这是一个批处理作业。
+- 检索到的数据被发送到专门的聚合服务，这样实时处理聚合服务就不会受到影响。
+- 聚合结果被发送到第二个消息队列，然后我们在聚合数据库中更新结果。
 
 ![recalculation-example](../image/system-design-296.png)
 
-### Time
+### 时间
 
-We need a timestamp to perform aggregation. It can be generated in two places:
+我们需要时间戳来进行聚合。它可以在两个地方生成：
 
-- event time - when ad click occurs
-- Processing time - system time when the server processes the event
+- 事件时间 - 广告点击发生的时间
+- 处理时间 - 系统处理事件时的时间
 
-Due to the usage of async processing (message queues) and network delays, there can be significant difference between event time and processing time.
+由于使用了异步处理（消息队列）和网络延迟，事件时间和处理时间之间可能存在显著差异。
 
-- If we use processing time, aggregation results can be inaccurate
-- If we use event time, we have to deal with delayed events
+- 如果我们使用处理时间，聚合结果可能不准确。
+- 如果我们使用事件时间，我们必须处理延迟事件。
 
-There is no perfect solution, we need to consider trade-offs:
-| | Pros | Cons |
+没有完美的解决方案，我们需要权衡：
+| | 优点 | 缺点 |
 |-----------------|---------------------------------------|--------------------------------------------------------------------------------------|
-| Event time | Aggregation results are more accurate | Clients might have the wrong time or timestamp might be generated by malicious users |
-| Processing time | Server timestamp is more reliable | The timestamp is not accurate if event is late |
+| 事件时间 | 聚合结果更准确 | 客户端可能有错误的时间，或时间戳可能由恶意用户生成 |
+| 处理时间 | 服务器时间戳更可靠 | 如果事件延迟，时间戳就不准确 |
 
-Since data accuracy is important, we'll use the event time for aggregation.
+由于数据准确性非常重要，我们将使用事件时间进行聚合。
 
-To mitigate the issue of delayed events, a technique called "watermark" can be leveraged.
+为了缓解延迟事件的问题，可以利用一种叫做“水印”的技术。
 
-In the example below, event 2 misses the window where it needs to be aggregated:
+在下面的示例中，事件 2 错过了需要聚合的时间窗口：
 
 ![watermark-technique](../image/system-design-297.png)
 
-However, if we purposefully extend the aggregation window, we can reduce the likelihood of missed events.
-The extended part of a window is called a "watermark":
+然而，如果我们故意扩展聚合窗口，就可以减少错过事件的可能性。
+窗口扩展部分被称为“水印”：
 
 ![watermark-2](../image/system-design-298.png)
 
-- Short watermark increases likelihood of missed events, but reduces latency
-- Longer watermark reduces likelihood of missed events, but increases latency
+- 短水印增加错过事件的可能性，但减少延迟。
+- 长水印减少错过事件的可能性，但增加延迟。
 
-There is always likelihood of missed events, regardless of the watermark's size. But there is no use in optimizing for such low-probability events.
+无论水印的大小如何，总是有错过事件的可能性。但对于这些低概率事件进行优化是没有意义的。
 
-We can instead resolve such inconsistencies by doing end-of-day reconciliation.
+我们可以通过做每日结束时的对账来解决这些不一致问题。
 
-### Aggregation window
+### 聚合窗口
 
-There are four types of window functions:
+有四种窗口函数：
 
-- Tumbling (fixed) window
-- Hopping window
-- Sliding window
-- Session window
+- 固定窗口（Tumbling Window）
+- 滑动窗口（Hopping Window）
+- 滑动窗口（Sliding Window）
+- 会话窗口（Session Window）
 
-In our design, we leverage a tumbling window for ad click aggregations:
+在我们的设计中，我们使用固定窗口（Tumbling Window）来进行广告点击聚合：
 
 ![tumbling-window](../image/system-design-299.png)
 
-As well as a sliding window for the top N clicked ads in M minutes aggregation:
+以及使用滑动窗口来进行前 N 个点击广告的 M 分钟聚合：
 
 ![sliding-window](../image/system-design-300.png)
 
-### Delivery guarantees
+### 投递保证
 
-Since the data we're aggregating is going to be used for billing, data accuracy is a priority.
+由于我们正在聚合的数据将用于计费，数据准确性是优先考虑的。
 
-Hence, we need to discuss:
+因此，我们需要讨论：
 
-- How to avoid processing duplicate events
-- How to ensure all events are processed
+- 如何避免处理重复事件
+- 如何确保所有事件都已处理
 
-There are three delivery guarantees we can use - at-most-once, at-least-once and exactly once.
+我们可以使用三种投递保证——至多一次（at-most-once），至少一次（at-least-once）和精确一次（exactly-once）。
 
-In most circumstances, at-least-once is sufficient when a small amount of duplicates is acceptable.
-This is not the case for our system, though, as a difference in small percent can result in millions of dollars of discrepancy.
-Hence, we'll need to use exactly-once delivery semantics.
+在大多数情况下，如果少量重复是可以接受的，至少一次（at-least-once）就足够了。
+但在我们的系统中，这种情况不适用，因为即使是小的差异也可能导致数百万美元的差距。
+因此，我们需要使用精确一次的投递语义。
 
-### Data deduplication
+### 数据去重
 
-One of the most common data quality issues is duplicated data.
+最常见的数据质量问题之一是重复数据。
 
-It can come from a wide range of sources:
+重复数据可能来自多种来源：
 
-- Client-side - a client might resend the same event multiple times. Duplicated events sent with malicious intent are best handled by a risk engine.
-- Server outage - An aggregation service node goes down in the middle of aggregation and the upstream service hasn't received an acknowledgment so event is resent.
+- 客户端 - 客户端可能会多次发送相同的事件。带有恶意意图的重复事件最好由风险引擎处理。
+- 服务器故障 - 聚合服务节点在聚合过程中崩溃，且上游服务未收到确认，因此事件被重新发送。
 
-Here's an example of data duplication occurring due to failure to acknowledge an event on the last hop:
+以下是由于未确认事件而发生数据重复的示例：
 
 ![data-duplication-example](../image/system-design-301.png)
 
-In this example, offset 100 will be processed and sent downstream multiple times.
+在这个示例中，偏移量 100 将被多次处理并发送到下游。
 
-One option to try and mitigate this is to store the last seen offset in HDFS/S3, but this risks the result never reaching downstream:
+一种尝试缓解这种情况的方法是将最后看到的偏移量存储在 HDFS/S3 中，但这样有可能导致结果永远无法到达下游：
 
 ![data-duplication-example-2](../image/system-design-302.png)
 
-Finally, we can store the offset while interacting with downstream atomically. To achieve this, we need to implement a distributed transaction:
+最终，我们可以在与下游交互时原子性地存储偏移量。为了实现这一点，我们需要实现分布式事务：
 
 ![data-duplication-example-3](../image/system-design-303.png)
 
-Personal side-note: Alternatively, if the downstream system handles the aggregation result idempotently, there is no need for a distributed transaction.
+个人备注：另外，如果下游系统以幂等方式处理聚合结果，那么就不需要分布式事务。
 
-### Scale the system
+### 扩展系统
 
-Let's discuss how we scale the system as it grows.
+让我们讨论一下系统如何在增长时进行扩展。
 
-We have three independent components - message queue, aggregation service and database.
-Since they are decoupled, we can scale them independently.
+我们有三个独立的组件——消息队列、聚合服务和数据库。
+由于它们是解耦的，我们可以独立扩展它们。
 
-How do we scale the message queue:
+如何扩展消息队列：
 
-- We don't put a limit on producers, so they can be scaled easily
-- Consumers can be scaled by assigning them to consumer groups and increasing the number of consumers.
-- For this to work, we also need to ensure there are enough partitions created preemptively
-- Also, consumer rebalancing can take a while when there are thousands of consumers so it is recommended to do it off peak hours
-- We could also consider partitioning the topic by geography, eg`topic_na`,`topic_eu`, etc.
+- 我们不对生产者设置限制，因此它们可以轻松扩展。
+- 消费者可以通过将其分配到消费者组并增加消费者数量来进行扩展。
+- 为了使其有效，我们还需要确保提前创建足够的分区。
+- 此外，当有成千上万的消费者时，消费者重平衡可能需要一些时间，因此建议在非高峰时段进行。
+- 我们还可以考虑按地理位置对主题进行分区，例如 `topic_na`、`topic_eu` 等。
 
 ![scale-consumers](../image/system-design-304.png)
 
-How do we scale the aggregation service:
+如何扩展聚合服务：
 
 ![aggregation-service-scaling](../image/system-design-305.png)
 
-- The map-reduce nodes can easily be scaled by adding more nodes
-- The throughput of the aggregation service can be scaled by by utilising multi-threading
-- Alternatively, we can leverage resource providers such as Apache YARN to utilize multi-processing
-- Option 1 is easier, but option 2 is more widely used in practice as it's more scalable
-- Here's the multi-threading example:
+- Map-Reduce 节点可以通过增加更多节点轻松扩展。
+- 聚合服务的吞吐量可以通过利用多线程进行扩展。
+- 另外，我们可以利用 Apache YARN 等资源提供商来利用多进程。
+- 选项 1 更简单，但选项 2 在实践中更常用，因为它更具可扩展性。
+- 这是一个多线程示例：
 
 ![multi-threading-example](../image/system-design-306.png)
 
-How do we scale the database:
+如何扩展数据库：
 
-- If we use Cassandra, it natively supports horizontal scaling utilizing consistent hashing
-- If a new node is added to the cluster, data automatically gets rebalanced across all (virtual) nodes
-- With this approach, no manual (re)sharding is required
+- 如果我们使用 Cassandra，它原生支持通过一致性哈希进行水平扩展。
+- 如果向集群中添加新节点，数据会自动在所有（虚拟）节点之间重新平衡。
+- 通过这种方法，无需手动（重新）分片。
 
 ![cassandra-scalability](../image/system-design-307.png)
 
-Another scalability issue to consider is the hotspot issue - what if an ad is more popular and gets more attention than others?
+另一个需要考虑的扩展性问题是热点问题——如果某个广告比其他广告更受欢迎，吸引更多注意力怎么办？
 
 ![hotspot-issue](../image/system-design-308.png)
 
-- In the above example, aggregation service nodes can apply for extra resources via the resource manager
-- The resource manager allocates more resources, so the original node isn't overloaded
-- The original node splits the events into 3 groups and each of the aggregation nodes handles 100 events
-- Result is written back to the original aggregation node
+- 在上述示例中，聚合服务节点可以通过资源管理器申请额外资源。
+- 资源管理器分配更多资源，因此原始节点不会过载。
+- 原始节点将事件分为 3 组，每个聚合节点处理 100 个事件。
+- 结果写回原始聚合节点。
 
-Alternative, more sophisticated ways to handle the hotspot problem:
+另一种更复杂的处理热点问题的方法：
 
-- Global-Local Aggregation
-- Split Distinct Aggregation
+- 全局-局部聚合
+- 分割独立聚合
 
-### Fault Tolerance
+### 故障容错
 
-Within the aggregation nodes, we are processing data in-memory. If a node goes down, the processed data is lost.
+在聚合节点内，我们正在内存中处理数据。如果一个节点宕机，已处理的数据将丢失。
 
-We can leverage consumer offsets in kafka to continue from where we left off once another node picks up the slack.
-However, there is additional intermediary state we need to maintain, as we're aggregating the top N ads in M minutes.
+我们可以利用 Kafka 中的消费者偏移量来在其他节点接管时继续从中断处开始。
+然而，由于我们正在聚合前 N 个广告，可能需要维护额外的中间状态。
 
-We can make snapshots at a particular minute for the on-going aggregation:
+我们可以在特定的分钟时进行快照，以便持续的聚合操作：
 
-![fault-tolerance-example](../image/system-design-309.png)
+![
 
-If a node goes down, the new node can read the latest committed consumer offset, as well as the latest snapshot to continue the job:
+fault-tolerance-example](../image/system-design-309.png)
+
+如果某个节点宕机，新节点可以读取最新的已提交的消费者偏移量和最新的快照，以继续执行任务：
 
 ![fault-tolerance-recovery-example](../image/system-design-310.png)
 
-### Data monitoring and correctness
+### 数据监控和正确性
 
-As the data we're aggregating is critical as it's used for billing, it is very important to have rigorous monitoring in place in order to ensure correctness.
+由于我们正在聚合的数据对于计费至关重要，因此确保正确性非常重要，必须实施严格的监控。
 
-Some metrics we might want to monitor:
+我们可能需要监控的一些指标：
 
-- Latency - Timestamps of different events can be tracked in order to understand the e2e latency of the system
-- Message queue size - If there is a sudden increase in queue size, we need to add more aggregation nodes. As Kafka is implemented via a distributed commit log, we need to keep track of records-lag metrics instead.
-- System resources on aggregation nodes - CPU, disk, JVM, etc.
+- 延迟 - 可以追踪不同事件的时间戳，以了解系统的端到端延迟。
+- 消息队列大小 - 如果队列大小突然增加，我们需要增加更多的聚合节点。由于 Kafka 通过分布式提交日志实现，我们需要跟踪记录滞后指标。
+- 聚合节点上的系统资源 - CPU、磁盘、JVM 等。
 
-We also need to implement a reconciliation flow which is a batch job, running at the end of the day.
-It calculates the aggregated results from the raw data and compares them against the actual data stored in the aggregation database:
+我们还需要实现一个对账流程，这是一个批处理作业，在每天结束时运行。
+它从原始数据计算聚合结果，并与聚合数据库中实际存储的数据进行比较：
 
 ![reconciliation-flow](../image/system-design-311.png)
 
-### Alternative design
+### 替代设计
 
-In a generalist system design interview, you are not expected to know the internals of specialized software used in big data processing.
+在通用的系统设计面试中，你不需要了解大数据处理中的专门软件的内部原理。
 
-Explaining the thought process and discussing trade-offs is more important than knowing specific tools, which is why the chapter covers a generic solution.
+解释思考过程并讨论权衡比了解具体工具更为重要，这也是本章涵盖通用解决方案的原因。
 
-An alternative design, which leverages off-the-shelf tooling, is to store ad click data in Hive with an ElasticSearch layer on top built for faster queries.
+一个替代设计，利用现成的工具，是将广告点击数据存储在 Hive 中，并在其上构建 ElasticSearch 层，以加速查询。
 
-Aggregation is typically done in OLAP databases such as ClickHouse or Druid.
+聚合通常在 OLAP 数据库中进行，如 ClickHouse 或 Druid。
 
 ![alternative-design](../image/system-design-312.png)
 
-## Step 4 - Wrap up
+## 第四步：总结
 
-Things we covered:
+我们覆盖的内容：
 
-- Data model and API Design
-- Using MapReduce to aggregate ad click events
-- Scaling the message queue, aggregation service and database
-- Mitigating the hotspot issue
-- Monitoring the system continuously
-- Using reconciliation to ensure correctness
-- Fault tolerance
+- 数据模型和 API 设计
+- 使用 MapReduce 聚合广告点击事件
+- 扩展消息队列、聚合服务和数据库
+- 缓解热点问题
+- 持续监控系统
+- 使用对账确保正确性
+- 故障容错
 
-The ad click event aggregation is a typical big data processing system.
+广告点击事件聚合是一个典型的大数据处理系统。
 
-It would be easier to understand and design it if you have prior knowledge of related technologies:
+如果你事先了解相关技术，那么理解和设计它将变得更加容易：
 
 - Apache Kafka
 - Apache Spark

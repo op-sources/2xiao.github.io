@@ -1,319 +1,319 @@
-# Stock Exchange
+# 28. 设计股票交易所
 
-We'll design an electronic stock exchange in this chapter.
+在这一章，我们将设计一个电子股票交易所。
 
-Its basic function is to efficiently match buyers and sellers.
+其基本功能是高效地匹配买卖双方。
 
-Major stock exchanges are NYSE, NASDAQ, among others.
+主要的股票交易所有纽约证券交易所（NYSE）、纳斯达克（NASDAQ）等。
 
 ![world-stock-exchanges](../image/system-design-425.png)
 
-## Step 1 - Understand the Problem and Establish Design scope
+## 第一步：理解问题并确定设计范围
 
-- C: Which securities are we going to trade? Stocks, options or futures?
-- I: Only stocks for simplicity
-- C: Which order types are supported - place, cancel, replace? What about limit, market, conditional orders?
-- I: We need to support placing and canceling an order. We need to only consider limit orders for the order type.
-- C: Does the system need to support after hours trading?
-- I: No, just normal trading hours
-- C: Could you describe the exchange's basic functions?
-- I: Clients can place or cancel limit orders and receive matched trades in real-time. They should be able to see the order book in real time.
-- C: What's the scale of the exchange?
-- I: Tens of thousands of users trading at the same time and ~100 symbols. Billions of orders per day. We need to also support risk checks for compliance.
-- C: What kind of risk checks?
-- I: Let's do simple risk checks - eg limiting a user to trade only 1mil apple stocks in a day
-- C: How about user wallet engagement?
-- I: We need to ensure clients have sufficient funds before placing orders. Funds meant for pending orders need to be withheld until order is finalized.
+- **候选人**: 我们将交易哪些证券？股票、期权还是期货？
+- **面试官**: 为了简化起见，只交易股票。
+- **候选人**: 支持哪些订单类型？下单、撤单、替换？限价单、市场单、条件单如何处理？
+- **面试官**: 我们需要支持下单和撤单。订单类型只考虑限价单。
+- **候选人**: 系统需要支持盘后交易吗？
+- **面试官**: 不需要，只支持正常交易时间。
+- **候选人**: 你能描述一下交易所的基本功能吗？
+- **面试官**: 客户可以下单或撤单，并实时接收匹配的交易。他们应该能够实时查看订单簿。
+- **候选人**: 交易所的规模如何？
+- **面试官**: 数万名用户同时交易，约 100 种证券符号。每天数十亿个订单。我们还需要支持风险检查以确保合规性。
+- **候选人**: 需要什么样的风险检查？
+- **面试官**: 做简单的风险检查——例如限制用户每天只能交易 100 万股苹果股票。
+- **候选人**: 用户钱包如何管理？
+- **面试官**: 我们需要确保客户在下单之前有足够的资金。用于挂单的资金需要被暂时扣留，直到订单完成。
 
-### Non-functional requirements
+### 非功能性需求
 
-The scale mentioned by the interviewer hints that we are to design a small to medium scale exchange.
-We need to also ensure flexibility to support more symbols and users in the future.
+面试官提到的规模表明我们要设计一个小到中型的交易所。
+我们还需要确保灵活性，以支持未来更多的证券和用户。
 
-Other non-functional requirements:
+其他非功能性需求：
 
-- Availability - At least 99.99%. Downtime can harm reputation
-- Fault tolerance - fault tolerance and a fast recovery mechanism are needed to limit the impact of a production incident
-- Latency - Round-trip latency should be in the ms level with focus on 99th percentile. Persistently high 99p latency causes bad experience for a handful or users.
-- Security - We should have an account management system. For legal compliance, we need to support KYC to verify user identity. We should also protect against DDoS for public resources.
+- 可用性 - 至少 99.99%。停机时间可能会影响声誉。
+- 容错性 - 需要容错能力和快速恢复机制，以限制生产事件的影响。
+- 延迟 - 往返延迟应控制在毫秒级别，重点关注 99 百分位。如果 99 百分位延迟持续过高，会导致少数用户体验不佳。
+- 安全性 - 我们需要有账户管理系统。为了法律合规，我们需要支持 KYC（了解你的客户）来验证用户身份。我们还应防范 DDoS 攻击以保护公共资源。
 
-### Back-of-the-envelope estimation
+### 初步估算
 
-- 100 symbols, 1bil orders per day
-- Normal trading hours are from 09:30 to 16:00 (6.5h)
-- QPS = 1bil / 6.5 / 3600 = 43000
-- Peak QPS = 5\*QPS = 215000
-- Trading volume is significantly higher when the market opens
+- 100 个证券符号，每天 10 亿个订单
+- 正常交易时间为 09:30 至 16:00（6.5 小时）
+- 每秒查询次数（QPS） = 10 亿 / 6.5 / 3600 = 43000
+- 峰值 QPS = 5 \* QPS = 215000
+- 当市场开盘时，交易量显著增加
 
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层设计并获得批准
 
-### Business Knowledge 101
+### 商业知识基础
 
-Let's discuss some basic concepts, related to an exchange.
+让我们讨论一些与交易所相关的基本概念。
 
-A broker mediates interactions between an exchange and end users - Robinhood, Fidelity, etc.
+经纪人充当交易所与终端用户之间的中介 - 例如 Robinhood、Fidelity 等。
 
-Institutional clients trade in large quantities using specialized trading software. They need specialized treatment.
-Eg order splitting when trading in large volumes to avoid impacting the market.
+机构客户使用专业的交易软件进行大量交易。它们需要专门的处理。
+例如，在大宗交易时进行订单拆分，以避免对市场造成影响。
 
-Types of orders:
+订单类型：
 
-- Limit - buy or sell at a fixed price. It might not find a match immediately or it might be partially matched.
-- Market - doesn't specify a price. Executed at the current market price immediately.
+- 限价单 - 以固定价格买入或卖出。可能无法立即找到匹配的对手单，或者可能部分匹配。
+- 市价单 - 不指定价格。立即以当前市场价格执行。
 
-Prices:
+价格：
 
-- Bid - highest price a buyer is willing to buy a stock
-- Ask - lowest price a seller is willing to sell a stock
+- 买价（Bid） - 买方愿意买入股票的最高价格。
+- 卖价（Ask） - 卖方愿意卖出股票的最低价格。
 
-The US market has three tiers of price quotes - L1, L2, L3.
+美国市场有三级报价 - L1、L2、L3。
 
-L1 market data contains best bid/ask prices and quantities:
+L1 市场数据包含最佳买入/卖出价格和数量：
 
 ![l1-price](../image/system-design-426.png)
 
-L2 includes more price levels:
+L2 包含更多的价格层次：
 
 ![l2-price](../image/system-design-427.png)
 
-L3 shows levels and queued quantity at each level:
+L3 显示每个价格层级的排队数量：
 
 ![l3-price](../image/system-design-428.png)
 
-A candlestick shows the market open and close price, as well as the highest and lowest prices in the given interval:
+蜡烛图显示市场的开盘价和收盘价，以及给定区间内的最高价和最低价：
 
 ![candlestick](../image/system-design-429.png)
 
-FIX is a protocol for exchanging securities transaction information, used by most vendors. Example securities transaction:
+FIX 是用于交换证券交易信息的协议，大多数供应商都使用它。一个证券交易示例：
 
 ```
 8=FIX.4.2 | 9=176 | 35=8 | 49=PHLX | 56=PERS | 52=20071123-05:30:00.000 | 11=ATOMNOCCC9990900 | 20=3 | 150=E | 39=E | 55=MSFT | 167=CS | 54=1 | 38=15 | 40=2 | 44=15 | 58=PHLX EQUITY TESTING | 59=0 | 47=C | 32=0 | 31=0 | 151=15 | 14=0 | 6=0 | 10=128 |
 ```
 
-### High-level design
+### 高层设计
 
 ![high-level-design](../image/system-design-430.png)
 
-Trade flow:
+交易流程：
 
-- Client places order via trading interface
-- Broker sends the order to the exchange
-- Order enters exchange through client gateway, which validates, rate limits, authenticates, etc. Order is forwarded to order manager.
-- Order manager performs risk checks based on rules set by the risk manager
-- After passing risk checks, order manager verifies there are sufficient funds in the wallet for the order
-- Order is sent to matching engine. When match is found, matching engine emits two executions (called fills) for buy and sell. Both orders are sequenced so that they're deterministic.
-- Executions are returned to the client.
+- 客户通过交易界面下单。
+- 经纪人将订单发送到交易所。
+- 订单通过客户端网关进入交易所，网关验证、限流、身份验证等。订单被转发到订单管理器。
+- 订单管理器根据风险经理设置的规则执行风险检查。
+- 风险检查通过后，订单管理器验证客户账户是否有足够的资金来执行该订单。
+- 订单被发送到匹配引擎。当找到匹配时，匹配引擎会为买卖双方发出两个执行（称为“成交”）。两个订单按照确定的顺序排列。
+- 执行结果返回给客户。
 
-Market data flow (M1-M3):
+市场数据流（M1-M3）：
 
-- matching engine generates a stream of executions, sent to the market data publisher
-- Market data publisher constructs the candlestick charts and sends them to the data service
-- Market data is stored in specialized storage for real-time analytics. Brokers connect to the data service for timely market data.
+- 匹配引擎生成执行流，并发送到市场数据发布者。
+- 市场数据发布者构建蜡烛图并将其发送到数据服务。
+- 市场数据存储在专用存储中以供实时分析。经纪人连接到数据服务以获取及时的市场数据。
 
-Reporter flow (R1-R2):
+报告流（R1-R2）：
 
-- reporter collects all necessary reporting fields from orders and executions and writes them to DB
-- reporting fields - client_id, price, quantity, order_type, filled_quantity, remaining_quantity
+- 报告生成器收集订单和执行所需的所有字段，并将其写入数据库。
+- 报告字段包括：client_id、价格、数量、订单类型、已执行数量、剩余数量。
 
-Trading flow is on the critical path, whereas the rest of the flows are not, hence, latency requirements differ between them.
+交易流程在关键路径上，其他流程不在关键路径上，因此它们的延迟要求不同。
 
-### Trading flow
+### 交易流程
 
-The trading flow is on the critical path, hence, it should be highly optimized for low latency.
+交易流程在关键路径上，因此应该针对低延迟进行高度优化。
 
-The matching engine is at its heart, also called the cross engine. Primary responsibilities:
+匹配引擎是核心部分，也叫做交叉引擎。主要职责包括：
 
-- Maintain the order book for each symbol - a list of buy/sell orders for a symbol.
-- Match buy and sell orders - a match results in two executions (fills), with one each for the buy and sell sides. This function must be fast and accurate
-- Distribute the execution stream as market data
-- Matches must be produced in a deterministic order. Foundational for high availability
+- 维护每个证券的订单簿 - 即证券的买卖订单列表。
+- 匹配买卖订单 - 匹配会产生两个执行（成交），分别对应买方和卖方。此功能必须快速且准确。
+- 分发执行流作为市场数据。
+- 匹配必须按确定的顺序生成。这是高可用性的基础。
 
-Next is the sequencer - it is the key component making the matching engine deterministic by stamping each inbound order and outbound fill with a sequence ID.
+接下来是顺序生成器 - 它是使匹配引擎具有确定性的关键组件，通过为每个进站订单和出站成交标记一个序列 ID。
 
 ![sequencer](../image/system-design-431.png)
 
-We stamp inbound orders and outbound fills for several reasons:
+我们为进站订单和出站成交标记序列 ID 的原因有几个：
 
-- timeliness and fairness
-- fast recovery/replay
-- exactly-once guarantee
+- 时效性和公平性
+- 快速恢复/重放
+- 精确一次保证
 
-Conceptually, we could use Kafka as our sequencer since it's effectively an inbound and outbound message queue. However, we're going to implement it ourselves in order to achieve lower latency.
+从概念上讲，我们可以使用 Kafka 作为顺序生成器，因为它本质上是一个进站和出站的消息队列。然而，为了实现更低的延迟，我们将自己实现这个功能。
 
-The order manager manages the orders state. It also interacts with the matching engine - sending orders and receiving fills.
+订单管理器管理订单的状态。它还与匹配引擎交互 - 发送订单并接收成交结果。
 
-The order manager's responsibilities:
+订单管理器的职责：
 
-- Sends orders for risk checks - eg verifying user's trade volume is less than 1mil
-- Checks the order against the user wallet and verifies there are sufficient funds to execute it
-- It sends the order to the sequencer and on to the matching engine. To reduce bandwidth, only necessary order information is passed to the matching engine
-- Executions (fills) are received back from the sequencer, where they are then send to the brokers via the client gateway
+- 发送订单进行风险检查 - 例如验证用户的交易量是否少于 100 万股。
+- 检查订单与用户钱包，并验证是否有足够的资金来执行该订单。
+- 它将订单发送到顺序生成器，并传递到匹配引擎。为了减少带宽消耗，仅传递必要的订单信息给匹配引擎。
+- 执行结果（成交）从顺序生成器返回，然后通过客户端网关发送给经纪人。
 
-The main challenge with implementing the order manager is the state transition management. Event sourcing is one viable solution (discussed in deep dive).
+实现订单管理器的主要挑战是状态转换管理。事件溯源（Event Sourcing）是一种可行的解决方案（将在深度分析中讨论）。
 
-Finally, the client gateway receives orders from users and sends them to the order manager. Its responsibilities:
+最后，客户端网关接收来自用户的订单并将其发送到订单管理器。它的职责是：
 
 ![client-gateway](../image/system-design-432.png)
 
-Since the client gateway is on the critical path, it should stay lightweight.
+由于客户端网关在关键路径上，它应该保持轻量级。
 
-There can be multiple client gateways for different clients. Eg a colo engine is a trading engine server, rented by the broker in the exchange's data center:
+不同客户可能有多个客户端网关。例如，colo 引擎是一个交易引擎服务器，由经纪人在交易所的数据中心租用：
 
 ![client-gateways](../image/system-design-433.png)
 
-### Market data flow
+### 市场数据流
 
-The market data publisher receives executions from the matching engine and builds the order book/candlestick charts from the execution stream.
+市场数据发布者从匹配引擎接收执行流，并根据执行流构建订单簿/蜡烛图。
 
-That data is sent to the data service, which is responsible for showing the aggregated data to subscribers:
+该数据发送到数据服务，数据服务负责将汇总的数据展示给订阅者：
 
 ![market-data](../image/system-design-434.png)
 
-### Reporting flow
+### 报告流
 
-The reporter is not on the critical path, but it is an important component nevertheless.
+报告生成器不在关键路径上，但它仍然是一个重要的组件。
 
 ![reporting-flow](../image/system-design-435.png)
 
-It is responsible for trading history, tax reporting, compliance reporting, settlements, etc.
-Latency is not a critical requirement for the reporting flow. Accuracy and compliance are more important.
+它负责交易历史、税务报告、合规性报告、结算等。
+报告流对延迟的要求不高。准确性和合规性更为重要。
 
-### API Design
+### API 设计
 
-Clients interact with the stock exchange via the brokers to place orders, view executions, market data, download historical data for analysis, etc.
+客户通过经纪人与股票交易所互动，进行下单、查看成交、市场数据、下载历史数据进行分析等操作。
 
-We use a RESTful API for communication between the client gateway and the brokers.
+我们使用 RESTful API 实现客户端网关和经纪人之间的通信。
 
-For institutional clients, a proprietary protocol is used to satisfy their low-latency requirements.
+对于机构客户，我们使用专有协议以满足其低延迟要求。
 
-Create order:
+创建订单：
 
 ```
 POST /v1/order
 ```
 
-Parameters:
+参数：
 
-- symbol - the stock symbol. String
-- side - buy or sell. String
-- price - the price of the limit order. Long
-- orderType - limit or market (we only support limit orders in our design). String
-- quantity - the quantity of the order. Long
+- symbol - 股票符号。字符串
+- side - 买入或卖出。字符串
+- price - 限价单价格。长整型
+- orderType - 限价单或市价单（在我们的设计中仅支持限价单）。字符串
+- quantity - 订单数量。长整型
 
-Response:
+响应：
 
-- id - the ID of the order. Long
-- creationTime - the system creation time of the order. Long
-- filledQuantity - the quantity that has been successfully executed. Long
-- remainingQuantity - the quantity still to be executed. Long
-- status - new/canceled/filled. String
-- rest of the attributes are the same as the input parameters
+- id - 订单 ID。长整型
+- creationTime - 订单的系统创建时间。长整型
+- filledQuantity - 已成功执行的数量。长整型
+- remainingQuantity - 尚未执行的数量。长整型
+- status - 新建/已取消/已完成。字符串
+- 其余属性与输入参数相同
 
-Get execution:
+获取成交：
 
 ```
 GET /execution?symbol={:symbol}&orderId={:orderId}&startTime={:startTime}&endTime={:endTime}
 ```
 
-Parameters:
+参数：
 
-- symbol - the stock symbol. String
-- orderId - the ID of the order. Optional. String
-- startTime - query start time in epoch [11]. Long
-- endTime - query end time in epoch. Long
+- symbol - 股票符号。字符串
+- orderId - 订单 ID。可选。字符串
+- startTime - 查询起始时间（时间戳）。长整型
+- endTime - 查询结束时间（时间戳）。长整型
 
-Response:
+响应：
 
-- executions - array with each execution in scope (see attributes below). Array
-- id - the ID of the execution. Long
-- orderId - the ID of the order. Long
-- symbol - the stock symbol. String
-- side - buy or sell. String
-- price - the price of the execution. Long
-- orderType - limit or market. String
-- quantity - the filled quantity. Long
+- executions - 包含每个成交的数组（见下方属性）。数组
+- id - 成交 ID。长整型
+- orderId - 订单 ID。长整型
+- symbol - 股票符号。字符串
+- side - 买入或卖出。字符串
+- price - 成交价格。长整型
+- orderType - 限价单或市价单。字符串
+- quantity - 已成交数量。长整型
 
-Get order book:
+获取订单簿：
 
 ```
 GET /marketdata/orderBook/L2?symbol={:symbol}&depth={:depth}
 ```
 
-Parameters:
+参数：
 
-- symbol - the stock symbol. String
-- depth - order book depth per side. Int
+- symbol - 股票符号。字符串
+- depth - 订单簿的深度。整数
 
-Response:
+响应：
 
-- bids - array with price and size. Array
-- asks - array with price and size. Array
+- bids - 包含价格和数量的数组。数组
+- asks - 包含价格和数量的数组。数组
 
-get candlesticks:
+获取蜡烛图数据：
 
 ```
 GET /marketdata/candles?symbol={:symbol}&resolution={:resolution}&startTime={:startTime}&endTime={:endTime}
 ```
 
-Parameters:
+参数：
 
-- symbol - the stock symbol. String
-- resolution - window length of the candlestick chart in seconds. Long
-- startTime - start time of the window in epoch. Long
-- endTime - end time of the window in epoch. Long
+- symbol - 股票符号。字符串
+- resolution - 蜡烛图的时间窗口长度（秒）。长整型
+- startTime - 窗口的起始时间（时间戳）。长整型
+- endTime - 窗口的结束时间（时间戳）。长整型
 
-Response:
+响应：
 
-- candles - array with each candlestick data (attributes listed below). Array
-- open - open price of each candlestick. Double
-- close - close price of each candlestick. Double
-- high - high price of each candlestick. Double
-- low - low price of each candlestick. Double
+- candles - 包含每根蜡烛图数据的数组（见下方属性）。数组
+- open - 每根蜡烛图的开盘价。双精度浮点型
+- close - 每根蜡烛图的收盘价。双精度浮点型
+- high - 每根蜡烛图的最高价。双精度浮点型
+- low - 每根蜡烛图的最低价。双精度浮点型
 
-### Data models
+### 数据模型
 
-There are three main types of data in our exchange:
+我们的交易所中有三种主要的数据类型：
 
-- Product, order, execution
-- order book
-- candlestick chart
+- 产品、订单、成交
+- 订单簿
+- 蜡烛图
 
-### Product, order, execution
+### 产品、订单、成交
 
-Products describe the attributes of a traded symbol - product type, trading symbol, UI display symbol, etc.
+产品描述了交易符号的属性——产品类型、交易符号、UI 显示符号等。
 
-This data doesn't change frequently, it is primarily used for rendering in a UI.
+这些数据变化不频繁，主要用于在 UI 中渲染。
 
-An order represents an instruction for a buy/sell order. Executions are outbound matched result.
+订单代表一个买/卖的指令。成交是已匹配的结果。
 
-Here's the data model:
+以下是数据模型：
 
 ![product-order-execution-data-model](../image/system-design-436.png)
 
-We encounter orders and executions in all of our three flows:
+我们在三个流程中都遇到订单和成交：
 
-- in the critical path, they are processed in-memory for high performance. They are stored and recovered from the sequencer.
-- The reporter writes orders and executions to the database for reporting use-cases
-- Executions are forwarded to market data to reconstruct the order book and candlestick chart
+- 在关键路径中，它们在内存中处理以确保高性能。它们被存储并从序列生成器恢复。
+- 报告器将订单和成交写入数据库以供报告使用。
+- 成交会转发到市场数据服务，以重建订单簿和蜡烛图。
 
-### Order book
+### 订单簿
 
-The order book is a list of buy/sell orders for an instrument, organized by price level.
+订单簿是按照价格等级组织的买/卖订单列表。
 
-An efficient data structure for this model, needs to satisfy:
+这个模型的高效数据结构需要满足以下要求：
 
-- constant lookup time - getting volume at price level or between price levels
-- fast add/execute/cancel operations
-- query best bid/ask price
-- iterate through price levels
+- 常数查找时间——获取某个价格等级的成交量或在价格等级之间查询。
+- 快速的添加/执行/撤单操作。
+- 查询最佳买价/卖价。
+- 迭代价格等级。
 
-Example order book execution:
+示例订单簿执行：
 
 ![order-book-execution](../image/system-design-437.png)
 
-After fulfilling this large order, the price increases as the bid/ask spread widens.
+执行这个大订单后，价格上涨，因为买卖价差扩大。
 
-Example order book implementation in pseudo code:
+订单簿实现的伪代码示例：
 
 ```
 class PriceLevel{
@@ -336,19 +336,19 @@ class OrderBook {
 }
 ```
 
-For a more efficient implementation, we can use a doubly-linked list instead of a standard list:
+为了实现更高效的操作，我们可以使用双向链表而不是标准列表：
 
-- Placing a new order is O(1), because we're adding an order to the tail of the list.
-- Matching an order is O(1), because we are deleting an order from the head
-- Canceling an order means deleting an order from the order book. We utilize`orderMap`for O(1) lookup and O(1) delete (due to the`Order`having a reference to the previous element in the list).
+- 下新单的时间是 O(1)，因为我们将订单添加到链表尾部。
+- 匹配订单的时间是 O(1)，因为我们从链表头部删除订单。
+- 撤单意味着从订单簿中删除订单。我们利用 `orderMap` 实现 O(1) 查找和 O(1) 删除（因为 `Order` 中包含对列表前一个元素的引用）。
 
 ![order-book-impl](../image/system-design-438.png)
 
-This data structure is also used in the market data services to reconstruct the order book.
+这个数据结构也用于市场数据服务中，以重建订单簿。
 
-### Candlestick chart
+### 蜡烛图
 
-The candlestick data is calcualated within the market data services based on processing orders in a time interval:
+蜡烛图数据通过市场数据服务在一个时间间隔内基于订单处理来计算：
 
 ```
 class Candlestick {
@@ -366,133 +366,135 @@ class CandlestickChart {
 }
 ```
 
-Some optimizations to avoid consuming too much memory:
+为避免过多占用内存，可以做一些优化：
 
-- Use pre-allocated ring buffers to hold sticks to reduce the allocation number
-- Limit the number of sticks in memory and persist the rest to disk
+- 使用预分配的环形缓冲区来存储蜡烛图数据，减少分配次数。
+- 限制内存中蜡烛图的数量，剩余的持久化存储到磁盘。
 
-We'll use an in-memory columnar database (eg KDB) for real-time analytics. After market close, data is persisted in historical database.
+我们将使用内存中的列式数据库（例如 KDB）进行实时分析。市场收盘后，数据将持久化到历史数据库中。
 
-## Step 3 - Design Deep Dive
+## 第三步：深入设计
 
-One interesting thing to be aware of about modern exchanges is that unlike most other software, they typically run everything on one gigantic server.
+现代交易所有一个有趣的特点——与大多数其他软件不同，它们通常将一切都运行在一个巨大的服务器上。
 
-Let's explore the details.
+让我们深入探索这些细节。
 
-### Performance
+### 性能
 
-For an exchange, it is very important to have good overall latency for all percentiles.
+对于交易所来说，保持所有百分位的良好延迟至关重要。
 
-How can we reduce latency?
+我们如何降低延迟？
 
-- Reduce the number of tasks on the critical path
-- Shorten the time spent on each task by reducing network/disk usage and/or reducing task execution time
+- 减少关键路径上的任务数量。
+- 通过减少网络/磁盘使用和/或缩短任务执行时间来缩短每个任务的时间。
 
-To achieve the first goal, we're stripped the critical path from all extraneous responsibility, even logging is removed to achieve optimal latency.
+为了实现第一个目标，我们将关键路径上的所有多余职责去除，甚至日志记录也被移除以实现最佳延迟。
 
-If we follow the original design, there are several bottlenecks - network latency between services and disk usage of the sequencer.
+如果我们沿用原始设计，可能会有几个瓶颈——服务之间的网络延迟和序列生成器的磁盘使用。
 
-With such a design we can achieve tens of milliseconds end to end latency. We want to achieve tens of microseconds instead.
+通过这样的设计，我们可以实现几十毫秒的端到端延迟。我们希望达到的是几十微秒的延迟。
 
-Hence, we'll put everything on one server and processes are going to communicate via mmap as an event store:
+因此，我们将一切放到一台服务器上，进程之间通过 mmap 进行通信，作为事件存储：
 
 ![mmap-bus](../image/system-design-439.png)
 
-Another optimization is using an application loop (while loop executing mission-critical tasks), pinned to the same CPU to avoid context switching:
+另一种优化方法是使用应用循环（一个执行关键任务的 while 循环），将其固定在同一个 CPU 上，以避免上下文切换：
 
 ![application-loop](../image/system-design-440.png)
 
-Another side effect of using an application loop is that there is no lock contention - multiple threads fighting for the same resource.
+使用应用循环的另一个副作用是没有锁争用——多个线程不再为争夺同一个资源而竞争。
 
-Let's now explore how mmap works - it is a UNIX syscall, which maps a file on disk to an application's memory.
+现在让我们探索 mmap 的工作原理——它是一个 UNIX 系统调用，将磁盘上的文件映射到应用程序的内存中。
 
-One trick we can use is creating the file in`/dev/shm`, which stands for "shared memory". Hence, we have no disk access at all.
+我们可以使用的一个技巧是将文件创建在 `/dev/shm` 中，代表“共享内存”。因此，我们完全不需要磁盘访问。
 
-### Event sourcing
+### 事件溯源
 
-Event sourcing is discussed in-depth in the[digital wallet chapter](./47_digital_wallet.md). Reference it for all the details.
+事件溯源在[数字钱包章节](./47_digital_wallet.md)中有详细讨论。可以参考其中的所有细节。
 
-In a nutshell, instead of storing current states, we store immutable state transitions:
+简而言之，事件溯源不是存储当前状态，而是存储不可变的状态转换：
 
 ![event-sourcing](../image/system-design-441.png)
 
-- On the left - traditional schema
-- On the right - event source schema
+- 左侧 - 传统架构
+- 右侧 - 事件源架构
 
-Here's how our design looks like thus far:
+到目前为止，我们的设计如下：
 
 ![design-so-far](../image/system-design-442.png)
 
-- external domain interacts with our client gateway using the FIX protocol
-- Order manager receives the new order event, validates it and adds it to its internal state. Order is then sent to matching core
-- If order is matched, the`OrderFilledEvent`is generated and sent over mmap
-- Other components subscribe to the event store and do their part of the processing
+- 外部域通过 FIX 协议与我们的客户端网关交互
+- 订单管理器接收新的订单事件，验证并将其添加到内部状态。订单随后被发送到匹配核心
+- 如果订单被匹配，
 
-One additional optimizations - all components hold a copy of the order manager, which is packaged as a library to avoid extra calls for managing orders
+`OrderFilledEvent` 会被生成并通过 mmap 发送
 
-The sequencer in this design, changes to not be an event store, but be a single writer, sequencing events before forwarding them to the event store:
+- 其他组件订阅事件存储并执行他们的处理任务
+
+另一个优化 - 所有组件持有订单管理器的副本，这个副本作为库打包，以避免额外的订单管理调用。
+
+在这个设计中，序列生成器不再是事件存储，而是成为一个单一的写入者，先对事件进行排序，然后将其转发到事件存储：
 
 ![sequencer-deep-dive](../image/system-design-443.png)
 
-### High availability
+### 高可用性
 
-We aim for 99.99% availability - only 8.64s of downtime per day.
+我们的目标是 99.99% 的可用性——每天只有 8.64 秒的停机时间。
 
-To achieve that, we have to identify single-point-of-failures in the exchange architecture:
+为了实现这一目标，我们必须识别交易所架构中的单点故障：
 
-- setup backup instances of critical services (eg matching engine) which are on stand-by
-- aggressively automate failure detection and failover to the backup instance
+- 为关键服务（例如匹配引擎）设置备份实例，并保持待命
+- 积极自动化故障检测，并将故障转移到备份实例
 
-Stateless services such as the client gateway can easily be horizontally scaled by adding more servers.
+像客户端网关这样的无状态服务可以通过增加更多的服务器来水平扩展。
 
-For stateful components, we can process inbound events, but not publish outbound events if we're not the leader:
+对于有状态组件，我们可以处理入站事件，但如果我们不是领导者，则无法发布出站事件：
 
 ![leader-election](../image/system-design-444.png)
 
-To detect the primary replica being down, we can send heartbeats to detect that its non-functional.
+为了检测主副本故障，我们可以通过发送心跳信号来检测它是否不可用。
 
-This mechanism only works within the boundary of a single server.
-If we want to extend it, we can setup an entire server as hot/warm replica and failover in case of failure.
+该机制仅在单台服务器的边界内工作。如果我们希望扩展它，可以将整个服务器设置为热备份/冷备份实例，发生故障时进行故障转移。
 
-To replicate the event store across the replicas, we can use reliable UDP for faster communication.
+为了在多个副本之间复制事件存储，我们可以使用可靠的 UDP 进行更快速的通信。
 
-### Fault tolerance
+### 故障容忍
 
-What if even the warm instances go down? It is a low probability event but we should be ready for it.
+如果即使热备份实例也发生故障怎么办？这是一个低概率事件，但我们应该为此做好准备。
 
-Large tech companies tackle this problem by replicating core data to data centers in multiple cities to mitigate eg natural disasters.
+大型技术公司通过将核心数据复制到多个城市的数据中心来解决这个问题，以应对自然灾害等情况。
 
-Questions to consider:
+需要考虑的问题：
 
-- If the primary instance is down, how and when do we failover to the backup instance?
-- How do we choose the leader among the backup instances?
-- What is the recovery time needed (RTO - recovery time objective)?
-- What functionalities need to be recovered? Can our system operate under degraded conditions?
+- 如果主实例发生故障，我们如何以及何时进行故障转移？
+- 如何在备份实例中选择领导者？
+- 需要多长时间才能恢复（RTO - 恢复时间目标）？
+- 需要恢复哪些功能？我们的系统在降级条件下能否继续运行？
 
-How to address these:
+如何应对这些问题：
 
-- System can be down due to a bug (affecting primary and replicas), we can use chaos engineering to surface edge-cases and disastrous outcomes like these
-- Initially though, we could perform failovers manually until we gather sufficient knowledge about the system's failure modes
-- leader-election can be used (eg Raft) to determine which replica becomes the leader in the event of the primary going down
+- 系统可能由于错误（影响主副本和副本）而停机，我们可以使用混沌工程来发现这些边缘情况和灾难性后果。
+- 起初，我们可以手动执行故障转移，直到我们收集足够的关于系统故障模式的信息。
+- 可以使用领导者选举算法（如 Raft）来确定主副本故障时哪个副本成为领导者。
 
-Example of how replication works across different servers:
+不同服务器间复制的示例：
 
 ![replication-across-servers](../image/system-design-445.png)
 
-Example leader-election terms:
+领导者选举期间的术语示例：
 
 ![leader-election-terms](../image/system-design-446.png)
 
-For details on how Raft works,[check this out](https://thesecretlivesofdata.com/raft/)
+有关 Raft 工作原理的详细信息，[请参阅这里](https://thesecretlivesofdata.com/raft/)
 
-Finally, we need to also consider loss tolerance - how much data can we lose before things get critical?
-This will determine how often we backup our data.
+最后，我们还需要考虑数据丢失容忍度——我们能在数据丢失前丧失多少数据？  
+这将决定我们备份数据的频率。
 
-For a stock exchange, data loss is unacceptable, so we have to backup data often and rely on raft's replication to reduce probability of data loss.
+对于股票交易所来说，数据丢失是不可接受的，因此我们必须频繁备份数据，并依赖 Raft 的复制来减少数据丢失的概率。
 
-### Matching algorithms
+### 匹配算法
 
-Slight detour on how matching works via pseudo code:
+稍微偏离一下，介绍一下匹配是如何通过伪代码工作的：
 
 ```
 Context handleOrder(OrderBook orderBook, OrderEvent orderEvent) {
@@ -547,67 +549,67 @@ Context match(OrderBook book, Order order) {
 }
 ```
 
-This matching algorithm uses the FIFO algorithm for determining which orders at a price level to match.
+该匹配算法使用了 FIFO 算法来确定在某个价格等级下哪些订单进行匹配。
 
-### Determinism
+### 确定性
 
-Functional determinism is guaranteed via the sequencer technique we used.
+通过我们使用的序列生成器技术，功能性确定性得到了保证。
 
-The actual time when the event happens doesn't matter:
+事件发生的实际时间并不重要：
 
 ![determinism](../image/system-design-447.png)
 
-Latency determinism is something we have to track. We can calculate it based on monitoring 99 or 99.99 percentile latency.
+延迟确定性是我们必须追踪的内容。我们可以基于监控 99 或 99.99 百分位的延迟来进行计算。
 
-Things which can cause latency spikes are garbage collector events in eg Java.
+可能导致延迟峰值的因素包括垃圾回收事件，例如 Java 中的垃圾回收。
 
-### Market data publisher optimizations
+### 市场数据发布优化
 
-The market data publisher receives matched results from the matching engine and rebuilds the order book and candlestick charts based on them.
+市场数据发布器接收匹配引擎的匹配结果，并基于这些结果重建订单簿和蜡烛图。
 
-We only keep part of the candlesticks as we don't have infinite memory. Clients can choose how much granular info they want. More granular info might require a higher price:
+由于我们没有无限的内存，我们只保存部分蜡烛图。客户端可以选择所需的粒度信息。更高的粒度可能需要更高的费用：
 
 ![market-data-publisher](../image/system-design-448.png)
 
-A ring buffer (aka circular buffer) is a fixed-size queue with the head connected to the tail. The space is preallocated to avoid allocations. The data structure is also lock-free.
+环形缓冲区（即圆形缓冲区）是一个固定大小的队列，队头连接到队尾。空间是预分配的，以避免分配。该数据结构也是无锁的。
 
-Another technique to optimize the ring buffer is padding, which ensures the sequence number is never in a cache line with anything else.
+优化环形缓冲区的另一种技术是填充，这可以确保序列号永远不会与其他内容处于同一个缓存行中。
 
-### Distribution fairness of market data and multicast
+### 市场数据的分发公平性和多播
 
-We need to ensure subscribers receive the data at the same time since if one receives data before another, that gives them crucial market insight, which they can use to manipulate the market.
+我们需要确保所有订阅者在相同时间接收到数据，因为如果某一个订阅者比其他订阅者先接收到数据，这将给予他们至关重要的市场洞察力，他们可以利用这些洞察力来操纵市场。
 
-To achieve this, we can use multicast using reliable UDP when publishing data to subscribers.
+为了实现这一点，我们可以在向订阅者发布数据时使用多播并采用可靠的 UDP 协议。
 
-Data can be transported via the internet in three ways:
+数据可以通过互联网有三种传输方式：
 
-- Unicast - one source, one destination
-- Broadcast - one source to entire subnetwork
-- Multicast - one source to a set of hosts on different subnetworks
+- 单播 - 一个源，一个目的地
+- 广播 - 一个源到整个子网络
+- 多播 - 一个源到不同子网络上的一组主机
 
-In theory, by using multicast, all subscribers should receive the data at the same time.
+理论上，通过使用多播，所有订阅者应该在相同的时间接收到数据。
 
-UDP, however, is unreliable and the data might not reach everyone. It can be enhanced with retransmissions, however.
+然而，UDP 是不可靠的，数据可能无法到达每个订阅者。但它可以通过重传来增强可靠性。
 
-### Colocation
+### 服务器共址
 
-Exchanges offer brokers the ability to colocate their servers in the same data center as the exchange.
+交易所为经纪人提供了将服务器与交易所放置在同一数据中心的能力。
 
-This reduces the latency drastically and can be considered a VIP service.
+这大大降低了延迟，并且可以视为一种 VIP 服务。
 
-### Network Security
+### 网络安全
 
-DDoS is a challenge for exchanges as there are some internet-facing services. Here's our options:
+DDoS 攻击对交易所来说是一个挑战，因为有些服务是面向互联网的。以下是我们的应对选项：
 
-- Isolate public services and data from private services, so DDoS attacks don't impact the most important clients
-- Use a caching layer to store data which is infrequently updated
-- Harden URLs against DDoS, eg prefer`https://my.website.com/data/recent`vs.`https://my.website.com/data?from=123&to=456`, because the former is more cacheable
-- Effective allowlist/blocklist mechanism is needed.
-- Rate limiting can be used to mitigate DDoS
+- 将公共服务和数据与私有服务隔离，以确保 DDoS 攻击不会影响最重要的客户端
+- 使用缓存层存储更新不频繁的数据
+- 加强 URL 的抗 DDoS 能力，例如偏好使用 `https://my.website.com/data/recent` 而不是 `https://my.website.com/data?from=123&to=456`，因为前者更容易缓存
+- 需要有效的白名单/黑名单机制
+- 使用限速来减轻 DDoS 攻击的影响
 
-## Step 4 - Wrap Up
+## 第四步：总结
 
-Other interesting notes:
+其他有趣的注意事项：
 
-- not all exchanges rely on putting everything on one big server, but some still do
-- modern exchanges rely more on cloud infrastructure and also on automatic market makers (AMM) to avoid maintaining an order book
+- 并非所有交易所都依赖于将所有内容放置在一台大服务器上，但有些交易所依然采用这种方式
+- 现代交易所更多地依赖于云基础设施，并且使用自动化市场制造商（AMM）来避免维护订单簿

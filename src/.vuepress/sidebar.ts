@@ -270,7 +270,25 @@ export default sidebar({
 				'27_design_a_unique_id_generator_in_distributed_systems.md',
 				'28_design_a_url_shortener.md',
 				'29_design_a_web_crawler.md',
-				'30_design_a_notification_system.md'
+				'30_design_a_notification_system.md',
+				'31_design_a_news_feed_system.md',
+				'32_design_a_chat_system.md',
+				'33_design_a_search_autocomplete_system.md',
+				'34_design_youtube.md',
+				'35_design_google_drive.md',
+				'36_proximity_service.md',
+				'37_nearby_friends.md',
+				'38_google_maps.md',
+				'39_distributed_message_queue.md',
+				'40_metrics_monitoring_and_alerting_system.md',
+				'41_ad_click_event_aggregation.md',
+				'42_hotel_reservation_system.md',
+				'43_distributed_email_service.md',
+				'44_s3_like_object_storage.md',
+				'45_real_time_gaming_leaderboard.md',
+				'46_payment_system.md',
+				'47_digital_wallet.md',
+				'48_stock_exchange.md'
 			],
 			collapsible: false
 		}

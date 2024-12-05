@@ -1,128 +1,128 @@
-# S3-like Object Storage
+# 24. 设计类似 S3 的对象存储
 
-In this chapter, we'll be designing an object storage service, similar to Amazon S3.
+在本章中，我们将设计一个类似于亚马逊 S3 的对象存储服务。
 
-Storage systems fall into three broad categories:
+存储系统大致分为三类：
 
-- Block storage
-- File storage
-- Object storage
+- 块存储
+- 文件存储
+- 对象存储
 
-Block storage are devices, which came out in 1960s. HDDs and SSDs are such examples.
-These devices are typically physically attached to a server, although they can also be network-attached via high-speed network protocols.
-Servers can format the raw blocks and use them as a file system or it can hand control of them to servers directly.
+块存储是一种在 1960 年代出现的设备。硬盘（HDD）和固态硬盘（SSD）就是这种存储设备的例子。
+这些设备通常是物理连接到服务器上的，尽管也可以通过高速网络协议将它们连接到网络上。
+服务器可以格式化原始块并将其用作文件系统，或者直接将其交给服务器进行控制。
 
-File storage is built on top of block storage. It provides a higher level of abstraction, making it easier to manage folders and files.
+文件存储是建立在块存储之上的。它提供了更高层次的抽象，使得管理文件夹和文件变得更加容易。
 
-Object storage sacrifices performance for high durability, vast scale and low cost.
-It targets "cold" data and is mainly used for archival and backup.
-There is no hierarchical directory structure, all data is stored as objects in a flat structure.
-It is relatively slow compared to other storage types. Most cloud providers have an object storage offering - Amazon S3, Google GCS, etc.
+对象存储为了高耐用性、大规模和低成本牺牲了性能。
+它主要面向“冷”数据，广泛用于归档和备份。
+没有层级目录结构，所有数据都以对象的形式存储在平面结构中。
+与其他存储类型相比，它的速度较慢。大多数云服务提供商都有对象存储服务——如亚马逊 S3、谷歌 GCS 等。
 
 ![storage-comparison](../image/system-design-344.png)
 
-|                 | Block Storage                    | File Storage                            | Object Storage                 |
-| --------------- | -------------------------------- | --------------------------------------- | ------------------------------ |
-| Mutable Content | Y                                | Y                                       | N (has object versioning）     |
-| Cost            | High                             | Medium to high                          | Low                            |
-| Performance     | Medium to high, very high        | Medium to high                          | Low to medium                  |
-| Consistency     | Strong consistency               | Strong consistency                      | Strong consistency [5]         |
-| Data access     | SAS/iSCSI/FC                     | Standard file access, CIFS/SMB, and NFS | RESTful API                    |
-| Scalability     | Medium scalability               | High scalability                        | Vast scalability               |
-| Good for        | Virtual machines (VM), databases | General-purpose file system access      | Binary data, unstructured data |
+|          | 块存储               | 文件存储                    | 对象存储                 |
+| -------- | -------------------- | --------------------------- | ------------------------ |
+| 可变内容 | 是                   | 是                          | 否（有对象版本控制）     |
+| 成本     | 高                   | 中到高                      | 低                       |
+| 性能     | 中到高，非常高       | 中到高                      | 低到中                   |
+| 一致性   | 强一致性             | 强一致性                    | 强一致性 [5]             |
+| 数据访问 | SAS/iSCSI/FC         | 标准文件访问，CIFS/SMB，NFS | RESTful API              |
+| 可扩展性 | 中等可扩展性         | 高可扩展性                  | 巨大可扩展性             |
+| 适用场景 | 虚拟机（VM），数据库 | 通用文件系统访问            | 二进制数据，非结构化数据 |
 
-Some terminology, related to object storage:
+一些与对象存储相关的术语：
 
-- Bucket - logical container for objects. Name is globally unique.
-- Object - An individual piece of data, stored in a bucket. Contains object data and metadata.
-- Versioning - A feature keeping multiple variants of an object in the same bucket.
-- Uniform Resource Identifier (URI) - each resource is uniquely identified by a URI.
-- Service-level Agreement (SLA) - contract between service provider and client.
+- 桶（Bucket） - 存储对象的逻辑容器，名称是全球唯一的。
+- 对象（Object） - 存储在桶中的单个数据单元，包含对象数据和元数据。
+- 版本控制（Versioning） - 一种特性，可以在同一桶中保留对象的多个变体。
+- 统一资源标识符（URI） - 每个资源通过 URI 唯一标识。
+- 服务级别协议（SLA） - 服务提供商与客户之间的合同。
 
-Amazon S3 Standard-Infrequent Access storage class SLAs:
+亚马逊 S3 标准 - 不常访问存储类（SLA）：
 
-- Durability of 99.999999999% across multiple Availability Zones
-- Data is resilient in the event of entire Availability Zone being destroyed
-- Designed for 99.9% availability
+- 在多个可用区之间的耐用性为 99.999999999%
+- 在整个可用区被销毁时，数据是有弹性的
+- 设计目标为 99.9% 的可用性
 
-## Step 1 - Understand the Problem and Establish Design Scope
+## 第一步：理解问题并确定设计范围
 
-- C: Which features should be included?
-- I: Bucket creation, Object upload/download, versioning, Listing objects in a bucket
-- C: What is the typical data size?
-- I: We need to store both massive objects and small objects efficiently
-- C: How much data do we store in a year?
-- I: 100 petabytes
-- C: Can we assume 6 nines of data durbility (99.9999%) and service availability of 4 nines (99.99%)?
-- I: Yes, sounds reasonable
+- **候选人**: 应该包含哪些功能？
+- **面试官**: 桶创建、对象上传/下载、版本控制、列出桶中的对象
+- **候选人**: 典型的数据大小是多少？
+- **面试官**: 我们需要高效地存储大量对象和小对象
+- **候选人**: 一年存储多少数据？
+- **面试官**: 100 PB
+- **候选人**: 我们能否假设 6 个 9 的数据耐用性（99.9999%）和 4 个 9 的服务可用性（99.99%）？
+- **面试官**: 是的，这听起来合理。
 
-### Non-functional requirements
+### 非功能性需求
 
-- 100 PB of data
-- 6 nines of data durability
-- 4 nines of service availability
-- Storage efficiency. Reduce storage cost while maintaining high reliability and performance
+- 100 PB 的数据
+- 6 个 9 的数据耐用性
+- 4 个 9 的服务可用性
+- 存储效率：在保持高可靠性和性能的同时降低存储成本
 
-### Back-of-the-envelope estimation
+### 粗略估算
 
-Object storage is likely to have bottlenecks in disk capacity or IO per second (IOPS).
+对象存储可能在磁盘容量或每秒 I/O（IOPS）上有瓶颈。
 
-Assumptions:
+假设：
 
-- we have 20% small (less than 1mb), 60% mid-size (1-64mb) and 20% large objects (greater than 64mb),
-- One hard disk (SATA, 7200rpm) is capable of doing 100-150 random seeks per second (100-150 IOPS)
+- 20% 是小对象（小于 1MB），60% 是中型对象（1-64MB），20% 是大对象（大于 64MB）
+- 一块硬盘（SATA，7200rpm）能够每秒执行 100-150 次随机寻址（100-150 IOPS）
 
-Given the assumptions, we can estimate the total number of objects the system can persist.
+根据这些假设，我们可以估算系统能够持久化的对象总数。
 
-- Let's use median size per object type to simplify calculation - 0.5mb for small, 32mb for medium, 200mb for large.
-- Given 100PB of storage (10^11 MB) and 40% of storage usage results in 0.68bil objects
-- If we assume metadata is 1kb, then we need 0.68tb space to store metadata info
+- 为了简化计算，我们使用每种对象类型的中位数大小：小对象 0.5MB，中型对象 32MB，大对象 200MB。
+- 假设有 100PB 存储（10^11 MB），且 40% 的存储被使用，结果是 6.8 亿个对象。
+- 如果假设元数据为 1KB，那么我们需要 0.68TB 的空间来存储元数据信息。
 
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层设计并获得认可
 
-Let's explore some interesting properties of object storage before diving into the design:
+在深入设计之前，我们先来探讨对象存储的一些有趣特性：
 
-- Object immutability - objects in object storage are immutable (not the case in other storage systems). We may delete them or replace them, but no update.
-- Key-value store - an object URI is its key and we can get its contents by making an HTTP call
-- Write once, read many times - data access pattern is writing once and reading many times. According to some Linkedin research, 95% of operations are reads
-- Support both small and large objects
+- 对象不可变性 - 对象存储中的对象是不可变的（在其他存储系统中不是这样）。我们可以删除它们或替换它们，但不能更新它们。
+- 键值存储 - 对象的 URI 是它的键，我们可以通过发出 HTTP 请求来获取其内容。
+- 写一次，读多次 - 数据访问模式是一次写入，多次读取。根据 LinkedIn 的研究，95% 的操作是读取。
+- 支持小对象和大对象。
 
-Design philosophy of object storage is similar to UNIX - when we save a file, it creates the filename in a data structure, called inode and file data is stored in different disk locations.
-The inode contains a list of file block pointers, which point to different locations on disk.
+对象存储的设计理念类似于 UNIX - 当我们保存一个文件时，它会在一个叫做 inode 的数据结构中创建文件名，并将文件数据存储在不同的磁盘位置。
+inode 中包含一个文件块指针列表，这些指针指向磁盘上的不同位置。
 
-When accessing a file, we first fetch its metadata from the inode, prior to fetching the file contents.
+在访问文件时，我们首先从 inode 中获取它的元数据，然后再获取文件内容。
 
-Object storage works similarly - metadata store is used for file information, but contents are stored on disk:
+对象存储的工作方式类似 - 元数据存储用于存储文件信息，但内容存储在磁盘上：
 
 ![object-store-vs-unix](../image/system-design-345.png)
 
-By separating metadata from file contents, we can scale the different stores independently:
+通过将元数据与文件内容分离，我们可以独立地扩展不同的存储：
 
 ![bucket-and-object](../image/system-design-346.png)
 
-### High-level design
+### 高层设计
 
 ![high-level-design](../image/system-design-347.png)
 
-- Load balancer - distributes API requests across service replicas
-- API service - Stateless server, orchestrating calls to metadata and object store, as well as IAM service.
-- Identity and access management (IAM) - central place for auth, authz, access control.
-- Data store - stores and retrieves actual data. Operations are based on object ID (UUID).
-- Metadata store - stores object metadata
+- 负载均衡器 - 将 API 请求分发到服务副本
+- API 服务 - 无状态服务器，协调对元数据存储和对象存储的调用，以及身份和访问管理（IAM）服务的调用
+- 身份和访问管理（IAM） - 集中的身份验证、授权和访问控制服务
+- 数据存储 - 存储和检索实际数据，操作基于对象 ID（UUID）
+- 元数据存储 - 存储对象元数据
 
-### Uploading an object
+### 上传对象
 
 ![uploading-object](../image/system-design-348.png)
 
-- Create a bucket named "bucket-to-share" via HTTP PUT request
-- API service calls IAM to ensure user is authorized and has write permissions
-- API service calls metadata store to create a bucket entry. Once created, success response is returned.
-- After bucket is created, HTTP PUT is sent to create an object named "script.txt"
-- API service verifies user identity and ensures user has write permissions
-- Once validation passes, object payload is sent via HTTP PUT to the data store. Data store persists it and returns a UUID.
-- API service calls metadata store to create a new entry with object_id, bucket_id and bucket_name, among other metadata.
+- 通过 HTTP PUT 请求创建一个名为“bucket-to-share”的桶
+- API 服务调用 IAM 确保用户已授权并具有写权限
+- API 服务调用元数据存储创建桶条目。创建成功后，返回成功响应。
+- 桶创建后，发送 HTTP PUT 请求创建名为“script.txt”的对象
+- API 服务验证用户身份并确保用户具有写权限
+- 一旦验证通过，对象有效负载通过 HTTP PUT 发送到数据存储。数据存储持久化数据并返回一个 UUID。
+- API 服务调用元数据存储创建一个新条目，包含 object_id、bucket_id 和 bucket_name 等其他元数据。
 
-Example object upload request:
+示例对象上传请求：
 
 ```
 PUT /bucket-to-share/script.txt HTTP/1.1
@@ -133,14 +133,14 @@ Content-Type: text/plain
 Content-Length: 4567
 x-amz-meta-author: Alex
 
-[4567 bytes of object data]
+[4567 字节的对象数据]
 ```
 
-### Downloading an object
+### 下载对象
 
-Buckets have no directory hierarchy, buy we can create a logical hierarchy by concatenating bucket name and object name to simulate a folder structure.
+桶没有目录层级结构，但我们可以通过连接桶名和对象名来创建一个逻辑层级结构，模拟文件夹结构。
 
-Example GET request for fetching an object:
+获取对象的示例 GET 请求：
 
 ```
 GET /bucket-to-share/script.txt HTTP/1.1
@@ -151,259 +151,257 @@ Authorization: authorization string
 
 ![download-object](../image/system-design-349.png)
 
-- Client sends an HTTP GET request to the load balancer, ie`GET /bucket-to-share/script.txt`
-- API service queries IAM to verify the user has correct permissions to read the bucket
-- Once validated, UUID of object is retrieved from metadata store
-- Object payload is retrieved from data store based on UUID and returned to the client
+- 客户端向负载均衡器发送 HTTP GET 请求，即 `GET /bucket-to-share/script.txt`
+- API 服务查询 IAM 以验证用户是否具有正确的权限来读取桶
+- 验证通过后，从元数据存储中检索对象的 UUID
+- 根据 UUID 从数据存储中检索对象有效负载，并返回给客户端
 
-// sprint 1
+// Sprint 1
 
-## Step 3 - Design Deep Dive
+## 第三步：深入设计
 
-### Data store
+### 数据存储
 
-Here's how the API service interacts with the data store:
+下面是 API 服务如何与数据存储交互的示意图：
 
 ![data-store-interactions](../image/system-design-350.png)
 
-The data store's main components:
+数据存储的主要组件：
 
-![data-store-main-components](../image/system-design-351.png)
+![data-store-main-components](../image/system
 
-The data routing service provides a RESTful or gRPC API to access the data node cluster.
-It is a stateless service, which scales by adding more servers.
+-design-351.png)
 
-It's main responsibilities are:
+数据路由服务提供 RESTful 或 gRPC API 用于访问数据节点集群。
+它是一个无状态服务，通过添加更多服务器来扩展。
 
-- querying the placement service to get the best data node to store data
-- reading data from data nodes and returning it to the API service
-- Writing data to data nodes
+它的主要职责是：
 
-The placement service determines which data nodes should store an object.
-It maintains a virtual cluster map, which determines the physical topology of a cluster.
+- 查询放置服务以获取最佳数据节点来存储数据
+- 从数据节点读取数据并将其返回给 API 服务
+- 将数据写入数据节点
+
+放置服务决定哪些数据节点应存储对象。
+它维护一个虚拟集群映射，确定集群的物理拓扑。
 
 ![virtual-cluster-map](../image/system-design-352.png)
 
-The service also sends heartbeats to all data nodes to determine if they should be removed from the virtual cluster.
+该服务还会向所有数据节点发送心跳，以确定它们是否应从虚拟集群中移除。
 
-Since this is a critical service, it is recommended to maintain a cluster of 5 or 7 replicas, synchronized via Paxos or Raft consensus algorithms.
-Eg a 7 node cluster can tolerate 3 nodes failing.
+由于这是一个关键服务，建议维护一个由 5 或 7 个副本组成的集群，通过 Paxos 或 Raft 共识算法进行同步。
+例如，7 节点集群可以容忍 3 个节点故障。
 
-Data nodes store the actual object data.
-Reliability and durability is ensured by replicating data to multiple data nodes.
+数据节点存储实际的对象数据。
+通过将数据复制到多个数据节点来确保可靠性和耐用性。
 
-Each data node has a daemon running, which sends heartbeats to the placement service.
+每个数据节点上运行一个守护进程，该进程向放置服务发送心跳。
 
-The heartbeat includes:
+心跳包括：
 
-- How many disk drives (HDD or SSD) does the data node manage?
-- How much data is stored on each drive?
+- 数据节点管理多少块磁盘（HDD 或 SSD）？
+- 每块磁盘上存储了多少数据？
 
-### Data persistence flow
+### 数据持久化流程
 
 ![data-persistence-flow](../image/system-design-353.png)
 
-- API service forwards the object data to data store
-- Data routing service sends the data to the primary data node
-- Primary data node saves the data locally and replicates it to two secondary data nodes. Response is sent after successful replication.
-- The UUID of the object is returned to the API service.
+- API 服务将对象数据转发到数据存储
+- 数据路由服务将数据发送到主数据节点
+- 主数据节点将数据保存在本地，并将其复制到两个辅助数据节点。复制成功后，返回响应。
+- 对象的 UUID 被返回给 API 服务。
 
-Caveats:
+注意事项：
 
-- Given an object UUID, it's replication group is deterministically chosen by using consistent hashing
-- In step 4, the primary data node replicates the object data before returning a response. This favors strong consistency over higher latency.
+- 给定对象 UUID，通过一致性哈希算法确定它的复制组。
+- 在步骤 4 中，主数据节点在返回响应之前会复制对象数据。这种做法偏向于强一致性而不是较高的延迟。
 
 ![consistency-vs-latency](../image/system-design-354.png)
 
-### How data is organized
+### 数据组织方式
 
-One simple approach to managing data is to store each object in a separate file.
+一种简单的管理数据的方法是将每个对象存储在单独的文件中。
 
-This works, but is not performant with many small files in a file system:
+这种方式是可行的，但在文件系统中有许多小文件时，性能不好：
 
-- Data blocks on HDD are wasted, because every file uses the whole block size. Typical block size is 4kb.
-- Many files means many inodes. Operating systems don't deal well with too many inodes and there is also a max inode limit.
+- HDD 上的数据块会浪费，因为每个文件都会使用整个块大小。典型的块大小为 4KB。
+- 许多文件意味着许多 inode。操作系统不擅长处理过多的 inode，并且还有最大 inode 数量限制。
 
-These issues can be addressed by merging many small files into bigger ones via a write-ahead log (WAL). Once the file reaches its capacity (typically a few GB), a new file is created:
+这些问题可以通过将许多小文件合并成更大的文件来解决，方法是使用预写日志（WAL）。一旦文件达到其容量（通常是几个 GB），就会创建一个新文件：
 
 ![wal-optimization](../image/system-design-355.png)
 
-The downside of this approach is that write access to the file needs to be serialized. Multiple cores accessing the same file must wait for each other.
-To fix this, we can confine files to specific cores to avoid lock contention.
+这种方法的缺点是对文件的写访问需要被序列化。多个核心访问同一个文件时必须等待彼此。
+为了解决这个问题，我们可以将文件限制在特定的核心上，以避免锁竞争。
 
-### Object lookup
+### 对象查找
 
-To support storing multiple objects in the same file, we need to maintain a table, which tells the data node:
+为了支持在同一个文件中存储多个对象，我们需要维护一个表格，用来告知数据节点：
 
 - `object_id`
-- `filename`where object is stored
-- `file_offset`where object starts
-- `object_size`
+- `filename` - 对象存储的位置
+- `file_offset` - 对象开始的位置
+- `object_size` - 对象的大小
 
-We can deploy this table in a file-based db like RocksDB or a traditional relational database.
-Since the access pattern is low write+high read, a relational database works better.
+我们可以将这个表格部署在基于文件的数据库（如 RocksDB）或传统的关系型数据库中。由于访问模式是低写高读，关系型数据库更加适合。
 
-How should we deploy it?
-We could deploy the db and scale it separately in a cluster, accessed by all data nodes.
+我们该如何部署它呢？
+我们可以将数据库部署在集群中并单独进行扩展，所有数据节点可以访问它。
 
-Downsides:
+缺点：
 
-- we'd need to aggressively scale the cluster to serve all requests
-- there's additional network latency between data node and db cluster
+- 我们需要积极地扩展集群以服务所有请求
+- 数据节点与数据库集群之间存在额外的网络延迟
 
-An alternative is to take advantage of the fact that data nodes are only interested to data related to them,
-so we can deploy the relational db within the data node itself.
+另一种选择是利用数据节点只对与其相关的数据感兴趣这一点，因此我们可以将关系型数据库部署在数据节点内部。
 
-SQLite is a good option as it's a lightweight file-based relational database.
+SQLite 是一个很好的选择，因为它是一个轻量级的基于文件的关系型数据库。
 
-### Updated data persistence flow
+### 更新的数据持久化流程
 
 ![updated-data-persistence-flow](../image/system-design-356.png)
 
-- API Service sends a request to save a new object
-- Data node service appends the new object at the end of a file, named "/data/c"
-- A new record for the object is inserted into the object mapping table
+- API 服务发送请求保存新对象
+- 数据节点服务将新对象附加到文件末尾，文件名为“/data/c”
+- 对象的新记录插入到对象映射表中
 
-### Durability
+### 持久性
 
-Data durability is an important requirement in our design. In order to achieve 6 nines of durability, every failure case needs to be properly examined.
+数据持久性是我们设计中的一个重要要求。为了实现 6 个 nines 的耐用性，我们需要适当处理每一种故障情况。
 
-First problem to address is hardware failures. We can achieve that by replicating data nodes to minimize probability of failure.
-But in addition to that, we also ought to replicate across different failure domains (cross-rack, cross-dc, separate networks, etc).
-A critical event can cause multiple hardware failures within the same domain:
+首先要解决的问题是硬件故障。我们可以通过复制数据节点来最小化故障的概率。  
+但除了这一点，我们还应该跨不同的故障域进行复制（跨机架、跨数据中心、独立网络等）。  
+一个关键事件可能会导致同一故障域内的多个硬件故障：
 
 ![failure-domain-isolation](../image/system-design-357.png)
 
-Assuming annual failure rate of a typical HDD is 0.81%, making three copies gives us 6 nines of durability.
+假设典型 HDD 的年故障率为 0.81%，通过创建三个副本，我们可以达到 6 个 nines 的耐用性。
 
-Replicating the data nodes like that grants us the durability we want, but we could also leverage erasure coding to reduce storage costs.
+以这种方式复制数据节点可以提供我们想要的耐用性，但我们也可以利用擦除编码来降低存储成本。
 
-Erasure coding enables us to use parity bits, which allow us to reconstruct lost bits in the event of a failure:
+擦除编码使我们能够使用校验位，这允许我们在发生故障时重建丢失的位：
 
 ![erasure-coding](../image/system-design-358.png)
 
-Imagine those bits are data nodes. If two of them go down, they can be recovered using the remaining four ones.
+假设这些位是数据节点。如果其中两个节点宕机，我们可以使用剩下的四个节点来恢复数据。
 
-There are different erasure coding schemes. In our case, we could use 8+4 erasure coding, split across different failure domains to maximize reliability:
+有不同的擦除编码方案。在我们的情况下，我们可以使用 8+4 的擦除编码，跨不同的故障域分布，以最大化可靠性：
 
 ![erasure-coding-across-failure-domains](../image/system-design-359.png)
 
-Erasure coding enables us to achieve a much lower storage cost (50% improvement) at the expense of access speed due to the data routing service having to collect data from multiple locations:
+擦除编码使我们能够实现更低的存储成本（提高了 50%），但由于数据路由服务必须从多个位置收集数据，访问速度会受到影响：
 
 ![erasure-coding-vs-replication](../image/system-design-360.png)
 
-Other caveats:
+其他注意事项：
 
-- Replication requires 200% storage overhead (in case of 3 replicas) vs. 50% via erasure coding
-- Erasure coding[gives us 11 nines of durability](https://github.com/Backblaze/erasure-coding-durability)vs 6 nines via replication
-- Erasure coding requires more computation to calculate and store parities
+- 复制要求 200% 的存储开销（在 3 个副本的情况下），而擦除编码只需要 50%
+- 擦除编码为我们提供 11 个 nines 的耐用性，而复制只能提供 6 个 nines
+- 擦除编码需要更多的计算来计算和存储校验位
 
-In sum, replication is more useful for latency-sensitive applications, whereas erasure coding is attractive for storage cost efficiency and durability.
-Erasure coding is also much harder to implement.
+总的来说，复制对于低延迟敏感的应用更有用，而擦除编码则在存储成本效率和耐用性上更具吸引力。  
+擦除编码的实现也要比复制复杂得多。
 
-### Correctness verification
+### 正确性验证
 
-If a disk fails entirely, then the failure is easy to detect. This is less straightforward in the event part of the disk memory gets corrupted.
+如果硬盘完全故障，故障是容易检测到的。但如果硬盘部分内存损坏，这就不那么直接了。
 
-To detect this, we can use checksums - a hash of the file contents, which can be used to verify the file's integrity.
+为了检测这种情况，我们可以使用校验和——文件内容的哈希值，能够验证文件的完整性。
 
-In our case, we'll store checksums for each file and each object:
+在我们的系统中，我们将为每个文件和每个对象存储校验和：
 
 ![checksums-for-correctness](../image/system-design-361.png)
 
-In the case of erasure coding (8+4), we'll need to fetch each of the 8 pieces of data separately and verify each of their checksums.
+在擦除编码（8+4）的情况下，我们需要分别获取 8 个数据片段，并验证它们的校验和。
 
-// sprint 2
+### 元数据数据模型
 
-### Metadata data model
-
-Table schemas:
+表格模式：
 
 ![metadata-data-model](../image/system-design-362.png)
 
-Queries we need to support:
+我们需要支持的查询：
 
-- Find an object ID by name
-- Insert/delete object based on name
-- List objects in a bucket sharing the same prefix
+- 通过名称查找对象 ID
+- 基于名称插入/删除对象
+- 列出具有相同前缀的桶中的对象
 
-There is usually a limit on the number of buckets a user can create, hence, the size of the buckets table is small and can fit into a single db server.
-But we still need to scale the server for read throughput.
+通常用户可以创建的桶数量有限，因此，桶表的大小较小，可以适配一个单独的数据库服务器。  
+但我们仍然需要为读取吞吐量扩展服务器。
 
-The object table will probably not fit into a single database server, though. Hence, we can scale the table via sharding:
+不过，对象表可能无法适应单个数据库服务器。因此，我们可以通过分片来扩展该表：
 
-- Sharding by bucket_id will lead to hotspot issues as a bucket can have billions of objects
-- Sharding by bucket_id makes the load more evenly distributed, but our queries will be slow
-- We choose sharding by`hash(bucket_name, object_name)`since most queries are based on the object/bucket name.
+- 按 `bucket_id` 分片会导致热点问题，因为一个桶可能包含数十亿个对象
+- 按 `bucket_id` 分片虽然可以更均匀地分配负载，但查询会变慢
+- 我们选择按 `hash(bucket_name, object_name)` 分片，因为大部分查询都基于对象或桶名称。
 
-Even with this sharding scheme, though, listing objects in a bucket will be slow.
+即使使用这个分片方案，列出桶中的对象仍然会很慢。
 
-### Listing objects in a bucket
+### 在桶中列出对象
 
-In a single database, listing an object based on its prefix (looks like a directory) works like this:
+在单个数据库中，通过前缀列出对象（看起来像一个目录）可以像这样工作：
 
 ```
 SELECT * FROM object WHERE bucket_id = "123" AND object_name LIKE `abc/%`
 ```
 
-This is challenging to fulfill when the database is sharded. To achieve it, we can run the query on every shard and aggregate the results in-memory.
-This makes pagination challenging though, since different shards contain a different result size and we need to maintain separate limit/offset for each.
+当数据库被分片时，完成这个查询会变得具有挑战性。为此，我们可以在每个分片上执行查询并在内存中聚合结果。  
+但这样做使得分页变得困难，因为不同分片包含不同数量的结果，我们需要为每个分片维护单独的 limit/offset。
 
-We can leverage the fact that typically object stores are not optimized for listing objects, so we can sacrifice listing performance.
-We can also create a denormalized table for listing objects, sharded by bucket ID.
-That would make our listing query sufficiently fast as it's isolated to a single database instance.
+我们可以利用通常对象存储未优化列出对象的特点，因此我们可以牺牲列出性能。  
+我们还可以为列出对象创建一个去规范化的表，按桶 ID 分片。  
+这样一来，列出查询就会变得足够快速，因为它仅限于单个数据库实例。
 
-### Object versioning
+### 对象版本控制
 
-Versioning works by having another`object_version`column which is of type TIMEUUID, enabling us to sort records based on it.
+版本控制通过添加另一个 `object_version` 列来工作，该列类型为 TIMEUUID，允许我们按版本对记录进行排序。
 
-Each new version produces a new`object_id`:
+每个新版本都会产生一个新的 `object_id`：
 
 ![object-versioning](../image/system-design-363.png)
 
-Deleting an object creates a new version with a special`object_id`indicating that the object was deleted. Queries for it return 404:
+删除对象时，会创建一个新的版本，并使用特殊的 `object_id` 表示该对象已被删除。查询该对象时返回 404：
 
 ![deleting-versioned-object](../image/system-design-364.png)
 
-### Optimizing uploads of large files
+### 优化大文件的上传
 
-Uploading large files can be optimized by using multipart uploads - splitting a big file into several chunks, uploaded independently:
+上传大文件可以通过使用分片上传进行优化——将一个大文件拆分为多个块，独立上传：
 
 ![multipart-upload](../image/system-design-365.png)
 
-- Client calls service to initiate a multipart upload
-- Data store returns an upload ID which uniquely identifies the upload
-- Client splits the large file into several chunks, uploaded independently using the upload id
-- When a chunk is uploaded, the data store returns an etag, which is a md5 checksum, identifying that upload chunk
-- After all parts are uploaded, client sends a complete multipart upload request, which includes upload_id, part numbers and all etags
-- Data store reassembles the object from its parts. The process can take a few minutes. After that, success response is returned to the client.
+- 客户端调用服务以启动分片上传
+- 数据存储返回一个上传 ID，用来唯一标识这次上传
+- 客户端将大文件拆分为多个块，独立上传，每个块使用上传 ID
+- 上传一个块时，数据存储返回一个 etag（MD5 校验和），标识该上传块
+- 所有部分上传完成后，客户端发送完整的分片上传请求，包含上传 ID、部分号和所有 etag
+- 数据存储从各个部分重新组装对象。此过程可能需要几分钟。完成后，成功响应将返回给客户端。
 
-Old parts, which are no longer useful can be removed at this point. We can introduce a garbage collector to deal with it.
+不再需要的旧部分可以在此时删除。我们可以引入一个垃圾回收器来处理它。
 
-### Garbage collection
+### 垃圾回收
 
-Garbage collection is the process of reclaiming storage space, which is no longer used. There are a few ways data becomes garbage:
+垃圾回收是回收不再使用的存储空间的过程。数据变成垃圾的方式有几种：
 
-- lazy object deletion - object is marked as deleted without actually getting deleted
-- orphan data - eg an upload failed mid-flight and old parts need to be deleted
-- corrupted data - data which failed checksum verification
+- 延迟对象删除——对象标记为已删除，但实际上并没有被删除
+- 孤立数据——例如上传中途失败，需要删除旧部分
+- 损坏的数据——数据未通过校验和验证
 
-The garbage collector is also responsible for reclaiming unused space in replicas.
-With replication, data is deleted from both primaries and replicas. With erasure coding (8+4), data is deleted from all 12 nodes.
+垃圾回收器还负责回收副本中未使用的空间。  
+在复制的情况下，数据会从主副本和副本中删除。在擦除编码（8+4）中，数据会从所有 12 个节点中删除。
 
-To facilitate the deletion, we'll use a process called compaction:
+为了便于删除，我们将使用称为“压缩”的过程：
 
-- Garbage collector copies objects which are not deleted from "data/b" to "data/d"
-- `object_mapping`table is updated once copying is complete using a database transaction
-- To avoid making too many small files, compaction is done on files which grow beyond a certain threshold
+- 垃圾回收器将未删除的对象从“data/b”复制到“data/d”
+- 在复制完成后，使用数据库事务更新 `object_mapping` 表
+- 为了避免创建过多小文件，压缩操作只在文件增长到某个阈值时执行
 
 ![compaction](../image/system-design-366.png)
 
-## Step 4 - Wrap Up
+## 第 4 步：总结
 
-Things we covered:
+我们涵盖的内容：
 
-- Designing an S3-like object storage
-- Comparing differences between object, block and file storages
-- Covered uploading, downloading, listing, versioning of objects in a bucket
-- Deep dived in the design - data store and metadata store, replication and erasure coding, multipart uploads, sharding
+- 设计一个类似 S3 的对象存储
+- 比较对象存储、块存储和文件存储的差异
+- 讲解了在桶中上传、下载、列出、版本控制对象的过程
+- 深入探讨了设计：数据存储和元数据存储、复制和擦除编码、分片上传、分片设计

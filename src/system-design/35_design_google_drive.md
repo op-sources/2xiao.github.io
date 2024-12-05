@@ -1,87 +1,87 @@
-# Design Google Drive
+# 15. 设计 Google Drive
 
-Google Drive is a cloud file storage product, which helps you store documents, videos, etc from the cloud.
+Google Drive 是一种云文件存储产品，帮助您将文档、视频等存储在云端。
 
-You can access them from any device and share them with friends and family.
+您可以从任何设备访问它，并与朋友和家人共享。
 
-## Step 1 - Understand the problem and establish design scope
+## 第一步：理解问题并确定设计范围
 
-- C: What are most important features?
-- I: Upload/download files, file sync and notifications
-- C: Mobile or web?
-- I: Both
-- C: What are the supported file formats?
-- I: Any file type
-- C: Do files need to be encrypted?
-- I: Yes, files in storage need to be encrypted
-- C: Is the a file size limit?
-- I: Yes, files need to be 10 gb or smaller
-- C: How many users does the app have?
-- I: 10mil DAU
+- **候选人**：最重要的功能是什么？
+- **面试官**：上传/下载文件、文件同步和通知功能。
+- **候选人**：是移动端还是网页端？
+- **面试官**：两者都需要支持。
+- **候选人**：支持哪些文件格式？
+- **面试官**：支持任何文件类型。
+- **候选人**：文件需要加密吗？
+- **面试官**：是的，存储中的文件需要加密。
+- **候选人**：是否有文件大小限制？
+- **面试官**：是的，文件大小限制为 10 GB。
+- **候选人**：应用的用户量有多少？
+- **面试官**：每天活跃用户（DAU）为 1000 万。
 
-Features we'll focus on:
+我们关注的功能包括：
 
-- Adding files
-- Downloading files
-- Sync files across devices
-- See file revisions
-- Share file with friends
-- Send a notification when file is edited/deleted/shared
+- 上传文件
+- 下载文件
+- 跨设备同步文件
+- 查看文件修订历史
+- 与朋友共享文件
+- 文件被编辑/删除/共享时发送通知
 
-Features not discussed:
+不讨论的功能：
 
-- Collaborative editing
+- 协作编辑
 
-Non-functional requirements:
+非功能性需求：
 
-- Reliability - data loss is unacceptable
-- Fast sync speed
-- Bandwidth usage - users will get unhappy if app consumes too much network traffic or battery
-- Scalability - we need to handle a lot of traffic
-- High availability - users should be able to use the system even when some services are down
+- **可靠性**：数据丢失是不可接受的。
+- **同步速度**：快速的同步速度。
+- **带宽使用**：如果应用消耗过多网络流量或电量，用户会不满。
+- **可扩展性**：需要处理大量流量。
+- **高可用性**：即使部分服务宕机，用户仍然应能使用系统。
 
-### Back of the envelope estimation
+### 粗略估算
 
-- Assume 50mil sign ups and 10mil DAU
-- Users get 10 gb free space
-- Users upload 2 files per day, average size is 500kb
-- 1:1 read-write ratio
-- Total space allocated - 50mil \* 10gb = 500pb
-- QPS for upload API - 10mil \* 2 uploads / 24h / 3600s = ~240
-- Peak QPS = 480
+- 假设有 5000 万注册用户，日活跃用户（DAU）为 1000 万。
+- 用户可获得 10 GB 免费存储空间。
+- 用户每天上传 2 个文件，平均文件大小为 500 KB。
+- 读写比为 1:1。
+- 总分配空间：50M 用户 \* 10GB = 500 PB
+- 上传 API 的每秒请求数（QPS）：1000 万用户 \* 2 文件 / 24 小时 / 3600 秒 ≈ 240
+- 峰值 QPS：480
 
-## Step 2 - propose high-level design and get buy-in
+## 第二步：提出高层设计并获得认可
 
-In this chapter, we'll use a different approach than other ones - we'll start building the design from a single server and scale out from there.
+这次我们将采用不同的方法——从单一服务器开始设计，并逐步扩展。
 
-We'll start from:
+我们将从以下内容开始：
 
-- A web server to upload and download files
-- A database to keep track of metadata - user data, login info, files info, etc
-- Storage system to store the files
+- 一个用于上传和下载文件的 Web 服务器。
+- 一个用于跟踪元数据的数据库，包括用户数据、登录信息、文件信息等。
+- 一个存储系统，用于存储文件。
 
-Example storage we could use:
+示例存储系统如下：
 
 ![storage-example](../image/system-design-163.png)
 
-### APIs
+### 接口设计 (APIs)
 
-Upload file:
+上传文件：
 
 ```
 https://api.example.com/files/upload?uploadType=resumable
 ```
 
-This endpoint is used for uploading files with support for simple upload and resumable upload, which is used for large files.
-Resumable upload is achieved by retrieving an upload URL and uploading the file while monitoring upload state. If disturbed, resume the upload.
+该端点用于上传文件，支持简单上传和断点续传（用于大文件）。  
+断点续传通过获取上传 URL 并监控上传状态实现，如果中断，可以恢复上传。
 
-Download file:
+下载文件：
 
 ```
 https://api.example.com/files/download
 ```
 
-The payload specifies which file to download:
+参数指定要下载的文件：
 
 ```
 {
@@ -89,219 +89,240 @@ The payload specifies which file to download:
 }
 ```
 
-Get file revisions:
+获取文件修订历史：
 
 ```
 https://api.example.com/files/list_revisions
 ```
 
-params:
+参数：
 
-- path to file for which revision history is retrieved
-- maximum number of revisions to return
+- 文件路径，用于检索修订历史。
+- 返回的最大修订数量。
 
-All the APIs require authentication and use HTTPS.
+所有接口需要身份验证，并使用 HTTPS。
 
-### Move away from single server
+---
 
-As more files are uploaded, at some point, you reach your storage's capacity.
+### 从单一服务器扩展
 
-One option to scale your storage server is by implementing sharing - each user's data is stored on separate servers:
+随着文件上传量的增加，存储服务器的容量会被耗尽。
+
+一种扩展存储服务器的方法是实现分片——每个用户的数据存储在单独的服务器上：
 
 ![sharding-example](../image/system-design-164.png)
 
-This solves your issue but you're still worried about potential data loss.
+这解决了存储容量问题，但数据丢失仍然是一个潜在风险。
 
-A good option to address that is to use an off-the-shelf solution like Amazon S3 which offers replication (same-region/cross-region) out of the box:
+一个不错的解决方案是使用现成的解决方案，比如 Amazon S3，它支持同一区域和跨区域的复制：
 
 ![amazon-s3](../image/system-design-165.png)
 
-Other areas you could improve:
+其他改进点：
 
-- Load balancing - this ensures evenly distributed network traffic to your web server replicas.
-- More web servers - with the advent of a load balancer, you can easily scale your web server layer by adding more servers.
-- Metadata database - move the database away from the server to avoid single points of failure. You can also setup replication and sharding to meet scalability requirements.
-- File storage - Amazon S3 for storage. To ensure availability and durability, files are replicated in two separate geographical regions.
+- **负载均衡**：确保将网络流量均匀分配到 Web 服务器副本上。
+- **增加 Web 服务器数量**：有了负载均衡器，可以通过添加更多服务器轻松扩展 Web 服务器层。
+- **元数据数据库**：将数据库从服务器中移出，避免单点故障。可以设置复制和分片以满足可扩展性需求。
+- **文件存储**：使用 Amazon S3 作为存储系统。为确保可用性和耐用性，文件会复制到两个独立的地理区域。
 
-Here's the updated design:
+更新后的设计如下：
 
 ![updated-simple-design](../image/system-design-166.png)
 
-### Sync conflicts
+---
 
-Once the user base grows sufficiently, sync conflicts are unavoidable.
+### 同步冲突
 
-To address this, we can apply a strategy where the first who manages to modify a file first wins:
+当用户量足够大时，同步冲突不可避免。
+
+我们可以应用“先修改者优先”的策略：
 
 ![sync-conflict](../image/system-design-167.png)
 
-What happens once you get a conflict? We generate a second version of the file which represents the alternative file version and it's up to the user to merge it:
+发生冲突时，会生成文件的第二版本，用户可以自行合并：
 
 ![sync-conflict-example](../image/system-design-168.png)
 
-### High-level design
+---
+
+### 高层设计
 
 ![high-level-design](../image/system-design-169.png)
 
-- User uses the application through a browser or a mobile app
-- Block servers upload files to cloud storage. Block storage is a technology which allows you to split a big file in blocks and store the blocks in a backing storage. Dropbox, for example, stores blocks of size 4mb.
-- Cloud storage - a file split into multiple blocks is stored in cloud storage
-- Cold storage - used for storing inactive files, infrequently accessed.
-- Load balancer - evenly distributes requests among API servers.
-- API servers - responsible for anything other than uploading files. Authentication, user profile management, updating file metadata, etc.
-- Metadata database - stores metadata about files uploaded to cloud storage.
-- Metadata cache - some of the metadata is cached for fast retrieval.
-- Notification service - Publisher/subscriber system which notifies users when a file is updated/edited/removed so that they can pull the latest changes.
-- Offline backup queue - used to queue file changes for users who are offline so that they can pull them once they come back online.
+设计细节：
 
-## Step 3 - Design deep dive
+- 用户通过浏览器或移动应用使用系统。
+- **块服务器**：将文件上传到云存储。块存储技术允许将大文件拆分为块并存储在后端存储中。例如，Dropbox 将块大小设置为 4MB。
+- **云存储**：将拆分为多个块的文件存储在云存储中。
+- **冷存储**：存储不活跃文件（不常访问的文件）。
+- **负载均衡器**：将请求均匀分配给 API 服务器。
+- **API 服务器**：负责上传文件以外的所有操作，包括身份验证、用户资料管理和更新文件元数据等。
+- **元数据数据库**：存储上传到云存储的文件的元数据。
+- **元数据缓存**：缓存部分元数据以快速检索。
+- **通知服务**：发布/订阅系统，在文件更新/编辑/删除时通知用户，以便他们拉取最新更改。
+- **离线备份队列**：用于为离线用户排队文件更改，当他们重新上线时可以同步。
 
-Let's explore:
+## 第三步：深入设计
 
-- block servers
-- metadata database
-- upload/download flow
-- notification service
-- saving storage space
-- failure handling
+我们将探讨以下内容：
 
-### Block servers
+- 块服务器
+- 元数据数据库
+- 上传/下载流程
+- 通知服务
+- 节省存储空间
+- 故障处理
 
-For large files, it's infeasible to send the whole file on each update as it consumes a lot of bandwidth.
+### 块服务器
 
-Two optimizations we're going to explore:
+对于大型文件，每次更新时发送整个文件是不现实的，因为会消耗大量带宽。
 
-- Delta sync - once a file is modified, only modified blocks are sent to the block servers instead of the whole file.
-- Compression - applying compression on blocks can significantly reduce data size. Different algorithms are suitable for different file types, eg for text files, we'll use gzip/bzip2.
+我们将探讨两种优化方式：
 
-Apart from splitting files in blocks, the block servers also apply encryption prior to storing files in file storage:
+- **增量同步**：一旦文件被修改，仅将修改的块发送到块服务器，而不是整个文件。
+- **压缩**：对块应用压缩可以显著减少数据大小。不同的文件类型适合不同的算法，例如，对于文本文件，可以使用 gzip/bzip2。
 
-![block-servers-deep-dive](../image/system-design-170.png)
+除了将文件分块，块服务器还在存储文件之前对其进行加密：
 
-Example delta sync:
+![块服务器深度解析](../image/system-design-170.png)
 
-![delta-sync](../image/system-design-171.png)
+增量同步示例：
 
-### High consistency requirement
+![增量同步](../image/system-design-171.png)
 
-Our system requires strong consistency as it's unacceptable to show different versions of a file to different people.
+---
 
-This is mainly problematic when we use caches, in particular the metadata cache in our example.
-To sustain strong consistency, we need to:
+### 高一致性需求
 
-- keep cache master and replicas consistent
-- invalidate caches on database write
+我们的系统需要**强一致性**，因为向不同用户展示文件的不同版本是不可接受的。
 
-For the database, strong consistency is guaranteed as long as we use a relational database, which supports ACID (all typically do).
+这主要在使用缓存时成为问题，尤其是元数据缓存。  
+为了保持强一致性，我们需要：
 
-### Metadata database
+- 确保缓存主节点与副本保持一致。
+- 在数据库写入时使缓存失效。
 
-Here's a simplified table schema for the metadata db (only interesting fields are shown):
+对于数据库，只要使用支持 ACID 的关系型数据库，通常可以保证强一致性。
 
-![metadata-db-deep-dive](../image/system-design-172.png)
+---
 
-- User table contains basic information about the user such as username, email, profile photo, etc.
-- Device table stores device info. Push_id is used for sending push notifications. Users can have multiple devices.
-- Namespace - root directory of a user
-- File table stores everything related to a file
-- File_version stores the version history of a file. Existing fields are read-only to sustain file integrity.
-- Block - stores everything related to a file block. A file version can be reconstructed by joining all blocks in the correct version.
+### 元数据数据库
 
-### Upload flow
+以下是元数据数据库的简化表结构（仅显示关键字段）：
 
-![upload-flow](../image/system-design-173.png)
+![元数据数据库深度解析](../image/system-design-172.png)
 
-In the above flow, two requests are sent in parallel - updating file metadata and uploading the file to cloud storage.
+- **用户表**：包含用户的基本信息，例如用户名、电子邮件、个人资料照片等。
+- **设备表**：存储设备信息。Push_id 用于发送推送通知。每个用户可以有多个设备。
+- **命名空间表**：用户的根目录。
+- **文件表**：存储与文件相关的所有信息。
+- **文件版本表**：存储文件的版本历史。已有字段是只读的，以保持文件完整性。
+- **块表**：存储与文件块相关的所有信息。可以通过连接正确版本的所有块来重建文件版本。
 
-Add file metadata:
+---
 
-- Client 1 sends request to update file metadata
-- New file metadata is stored and upload status is set to "pending"
-- Notify the notification service that a new file is being added.
-- Notification service notifies relevant clients about the file upload.
+### 上传流程
 
-Upload files to cloud storage:
+![上传流程](../image/system-design-173.png)
 
-- Client 1 uploads file contents to block servers
-- Block servers chunk the file in blocks, compresses, encrypts them and uploads to cloud storage
-- Once file is uploaded, upload completion callback is triggered. Request is sent to API servers.
-- File status is changed to "uploaded" in Metadata DB.
-- Notification service is notified of file uploaded event and client 2 is notified about the new file.
+在上述流程中，有两个请求并行发送：更新文件元数据和将文件上传到云存储。
 
-### Download flow
+**添加文件元数据：**
 
-Download flow is triggered when file is added or edited elsewhere. Client is notified via:
+- 客户端 1 发送请求更新文件元数据。
+- 新的文件元数据被存储，并将上传状态设置为“pending”（待定）。
+- 通知服务被告知新文件正在上传。
+- 通知服务通知相关客户端文件上传状态。
 
-- Notification if online
-- New changes are cached until user comes online if offline at the moment
+**将文件上传到云存储：**
 
-Once a client is notified of the changes, it requests the file metadata and then downloads the blocks to reconstruct the file:
+- 客户端 1 将文件内容上传到块服务器。
+- 块服务器将文件分块、压缩、加密并上传到云存储。
+- 文件上传完成后，触发上传完成回调。请求发送到 API 服务器。
+- 在元数据数据库中将文件状态更改为“uploaded”（已上传）。
+- 通知服务收到文件上传事件，并通知客户端 2 新文件已上传。
 
-![download-flow](../image/system-design-174.png)
+---
 
-- Notification service informs client 2 of file changes
-- Client 2 fetches metadata from API servers
-- API servers fetch metadata from metadata DB
-- Client 2 gets the metadata
-- Once client receives the metadata, it sends requests to block servers to download blocks
-- Block servers download blocks from cloud storage and forwards them to the client
+### 下载流程
 
-### Notification service
+当文件在其他地方被添加或编辑时，会触发下载流程。客户端通过以下方式获取通知：
 
-The notification service enables file changes to be communicated to clients as they happen.
+- **在线**时接收通知。
+- **离线**时，变更被缓存，直到用户上线。
 
-Clients can communicate with the notification service via:
+一旦客户端收到变更通知，它会请求文件元数据并下载块以重建文件：
 
-- long polling (eg Dropbox uses this approach)
-- Web sockets - communication is persistent and bidirectional
+![下载流程](../image/system-design-174.png)
 
-Both options work well but we opt for long polling because:
+- 通知服务告知客户端 2 文件变更。
+- 客户端 2 从 API 服务器获取元数据。
+- API 服务器从元数据数据库获取元数据。
+- 客户端 2 收到元数据。
+- 收到元数据后，客户端向块服务器发送请求下载块。
+- 块服务器从云存储下载块并转发给客户端。
 
-- Communication for notification service is not bi-directional. Server sends information to clients, not vice versa.
-- WebSocket is meant for real-time bidirectional communication. For google drive, notifications are sent infrequently.
+---
 
-With long polling, the client sends a request to the server which stays open until a change is received or timeout is reached.
-After that, a subsequent request is sent for next couple of changes.
+### 通知服务
 
-### Save storage space
+通知服务使文件变更能够实时传达给客户端。
 
-To support file version history and ensure reliability, multiple versions of a file are stored across multiple data centers.
+客户端可以通过以下方式与通知服务通信：
 
-Storage space can be filled up quickly. Three techniques can be applied to save storage space:
+- **长轮询**（例如 Dropbox 使用这种方式）。
+- **WebSocket**：通信是持久的、双向的。
 
-- De-duplicate data blocks - if two blocks have the same hash, we can only store them once.
-- Adopt an intelligent backup strategy - set a limit on max version history and aggregate frequent edits into a single version.
-- Move infrequently accessed data to cold storage - eg Amazon S3 glacier is a good option for this, which is much cheaper than Amazon S3.
+这两种方式都很好，但我们选择长轮询，因为：
 
-### Failure handling
+- 通知服务的通信不是双向的。服务器向客户端发送信息，而不是相反。
+- WebSocket 适用于实时双向通信。而对于 Google Drive，通知发送的频率并不高。
 
-Some typical failures and how you could resolve them:
+在长轮询中，客户端向服务器发送请求，请求保持打开状态，直到接收到变更或超时。  
+之后，客户端发送后续请求以获取下一批变更。
 
-- Load balancer failure - If a load balancer fails, a secondary becomes active and picks up the traffic.
-- Block server failure - If a block server fails, other replicas pick up the traffic and finish the job.
-- Cloud storage failure - S3 buckets are replicated across regions. If one region fails, traffic is redirected to the other one.
-- API server failure - Traffic is redirected to other service instances by the load balancer.
-- Metadata cache failure - Metadata cache servers are replicated multiple times. If one goes down, other nodes are still available.
-- Metadata DB failure - if master is down, promote one of the slaves to be master. If slave is down, use another one for read operations.
-- Notification service failure - If long polling connections are lost, clients reconnect to a different service replica, but reconnection of millions of clients will take some time.
-- Offline backup queue failure - Queues are replicated multiple times. If one queue fails, consumers need to resubscribe to the backup queue.
+---
 
-## Step 4 - Wrap up
+### 节省存储空间
 
-Properties of our Google Drive system design in a nutshell:
+为了支持文件版本历史并确保可靠性，多个文件版本会存储在多个数据中心。
 
-- Strongly consistent
-- Low network bandwidth
-- Fast sync
+存储空间可能很快被填满。可以采用以下三种技术节省存储空间：
 
-Our design contains two flows - file upload and file sync.
+- **数据块去重**：如果两个块具有相同的哈希值，只需存储一次。
+- **采用智能备份策略**：对最大版本历史设置限制，并将频繁的编辑合并为单个版本。
+- **将不常访问的数据移动到冷存储**：例如，Amazon S3 Glacier 是一个很好的选择，比 Amazon S3 便宜得多。
 
-If time permits, you could discuss alternative design approaches as there is no perfect design.
-For example, we can upload blocks directly to cloud storage instead of going through block servers.
+---
 
-This is faster than our approach but has drawbacks:
+### 故障处理
 
-- Chunking, compression, encryption need to be implemented on different platforms (Android, iOS, Web).
-- Client can be hacked so implementing encryption client-side is not ideal.
+一些典型的故障及其解决方法：
 
-Another interesting discussion is moving online/offline logic to separate service so that other services can reuse it to implement interesting functionality.
+- **负载均衡器故障**：如果负载均衡器失败，备用负载均衡器会激活并接管流量。
+- **块服务器故障**：如果块服务器失败，其他副本接管流量并完成任务。
+- **云存储故障**：S3 存储桶会在不同区域间复制。如果一个区域失败，流量会重定向到另一个区域。
+- **API 服务器故障**：负载均衡器将流量重定向到其他服务实例。
+- **元数据缓存故障**：元数据缓存服务器有多个副本。如果一个节点宕机，其他节点仍然可用。
+- **元数据数据库故障**：如果主节点宕机，将其中一个从节点提升为主节点。如果从节点宕机，使用其他节点进行读取操作。
+- **通知服务故障**：如果长轮询连接丢失，客户端重新连接到其他服务副本，但数百万客户端的重新连接可能需要一些时间。
+- **离线备份队列故障**：队列有多个副本。如果一个队列失败，消费者需要重新订阅备用队列。
+
+## 第四步：总结
+
+我们的 Google Drive 系统设计的特性一览：
+
+- 强一致性
+- 低网络带宽占用
+- 快速同步
+
+我们的设计包含两种流程——文件上传和文件同步。
+
+如果有时间，还可以讨论替代设计方案，因为没有完美的设计。例如，可以直接将块上传到云存储，而不是通过块服务器。
+
+这种方法比我们的方案更快，但也有一些缺点：
+
+- 分块、压缩、加密需要在不同平台（Android、iOS、Web）上实现。
+- 客户端可能会被黑客攻击，因此在客户端实现加密并不理想。
+
+另一个有趣的讨论是将在线/离线逻辑移到单独的服务中，这样其他服务可以重用它来实现有趣的功能。

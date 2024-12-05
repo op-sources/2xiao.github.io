@@ -1,75 +1,75 @@
-# Payment System
+# 26. 设计支付系统
 
-We'll design a payment system in this chapter, which underpins all of modern e-commerce.
+在本章中，我们将设计一个支付系统，它支撑着现代电子商务的所有运作。
 
-A payment system is used to settle financial transactions, transferring monetary value.
+支付系统用于结算金融交易，转移货币价值。
 
-## Step 1 - Understand the Problem and Establish Design Scope
+## 第一步：理解问题并确定设计范围
 
-- C: What kind of payment system are we building?
-- I: A payment backend for an e-commerce system, similar to Amazon.com. It handles everything related to money movement.
-- C: What payment options are supported - Credit cards, PayPal, bank cards, etc?
-- I: The system should support all these options in real life. For the purposes of the interview, we can use credit card payments.
-- C: Do we handle credit card processing ourselves?
-- I: No, we use a third-party provider like Stripe, Braintree, Square, etc.
-- C: Do we store credit card data in our system?
-- I: Due to compliance reasons, we do not store credit card data directly in our systems. We rely on third-party payment processors.
-- C: Is the application global? Do we need to support different currencies and international payments?
-- I: The application is global, but we assume only one currency is used for the purposes of the interview.
-- C: How many payment transactions per day do we support?
-- I: 1mil transactions per day.
-- C: Do we need to support the payout flow to eg payout to payers each month?
-- I: Yes, we need to support that
-- C: Is there anything else I should pay attention to?
-- I: We need to support reconciliations to fix any inconsistencies in communicating with internal and external systems.
+- **候选人**: 我们要构建什么类型的支付系统？
+- **面试官**: 一个电商系统的支付后端，类似于 Amazon.com。它处理与资金流动相关的一切事务。
+- **候选人**: 支持哪些支付方式？信用卡、PayPal、银行卡等？
+- **面试官**: 系统应支持所有这些支付选项。为了面试的目的，我们可以使用信用卡支付。
+- **候选人**: 我们是否自行处理信用卡处理？
+- **面试官**: 不，我们使用像 Stripe、Braintree、Square 等第三方提供商。
+- **候选人**: 我们是否在系统中存储信用卡数据？
+- **面试官**: 由于合规要求，我们不会直接在系统中存储信用卡数据。我们依赖第三方支付处理方。
+- **候选人**: 该应用程序是全球性的？我们需要支持不同的货币和国际支付吗？
+- **面试官**: 该应用程序是全球性的，但在面试中我们假设只使用一种货币。
+- **候选人**: 我们每天需要支持多少支付交易？
+- **面试官**: 每天 100 万笔交易。
+- **候选人**: 我们是否需要支持支付流程，比如每月向付款人支付款项？
+- **面试官**: 是的，我们需要支持此功能。
+- **候选人**: 还有什么我需要注意的吗？
+- **面试官**: 我们需要支持与内部和外部系统的对账，以修正任何不一致之处。
 
-### Functional requirements
+### 功能需求
 
-- Pay-in flow - payment system receives money from customers on behalf of merchants
-- Pay-out flow - payment system sends money to sellers around the world
+- 收款流程 - 支付系统代表商家接收来自客户的款项
+- 支付流程 - 支付系统向全球的卖家发送款项
 
-### Non-functional requirements
+### 非功能性需求
 
-- Reliability and fault-tolerance. Failed payments need to be carefully handled
-- A reconciliation between internal and external systems needs to be setup.
+- 可靠性和容错性。失败的支付需要谨慎处理。
+- 需要设置内部和外部系统之间的对账机制。
 
-### Back-of-the-envelope estimation
+### 粗略估算
 
-The system needs to process 1mil transactions per day, which is 10 transactions per second.
+系统需要处理每天 100 万笔交易，即每秒 10 笔交易。
 
-This is not a high throughput for any database system, so it's not the focus of this interview.
+这对于任何数据库系统来说并不算高吞吐量，因此并不是本次面试的重点。
 
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层次设计并获得认可
 
-At a high-level, we have three actors, participating in money movement:
+从高层次来看，系统中有三个参与资金流动的角色：
 
 ![high-level-flow](../image/system-design-390.png)
 
-### Pay-in flow
+### 收款流程
 
-Here's the high-level overview of the pay-in flow:
+以下是收款流程的高层次概述：
 
 ![pay-in-flow-high-level](../image/system-design-391.png)
 
-- Payment service - accepts payment events and coordinates the payment process. It typically also does a risk check using a third-party provider for AML violations or criminal activity.
-- Payment executor - executes a single payment order via the Payment Service Provider (PSP). Payment events may contain several payment orders.
-- Payment service provider (PSP) - moves money from one account to another, eg from buyer's credit card account to e-commerce site's bank account.
-- Card schemes - organizations that process credit card operations, eg Visa MasterCard, etc.
-- Ledger - keeps financial record of all payment transactions.
-- Wallet - keeps the account balance for all merchants.
+- 支付服务 - 接收支付事件并协调支付流程。它通常还会使用第三方提供商进行风险检查，以防止反洗钱（AML）违规或犯罪活动。
+- 支付执行者 - 通过支付服务提供商（PSP）执行单笔支付订单。支付事件可能包含多个支付订单。
+- 支付服务提供商（PSP） - 将款项从一个账户转移到另一个账户，例如，从买家的信用卡账户转到电商网站的银行账户。
+- 信用卡组织 - 处理信用卡操作的组织，例如 Visa、MasterCard 等。
+- 分类账 - 记录所有支付交易的财务记录。
+- 钱包 - 记录所有商家的账户余额。
 
-Here's an example pay-in flow:
+以下是一个收款流程示例：
 
-- user clicks "place order" and a payment event is sent to the payment service
-- payment service stores the event in its database
-- payment service calls the payment executor for all payment orders, part of that payment event
-- payment executor stores the payment order in its database
-- payment executor calls external PSP to process the credit card payment
-- After the payment executor processes the payment, the payment service updates the wallet to record how much money the seller has
-- wallet service stores updated balance information in its database
-- payment service calls the ledger to record all money movements
+- 用户点击“下单”并发送支付事件到支付服务。
+- 支付服务将事件存储在其数据库中。
+- 支付服务调用支付执行者来处理该支付事件中的所有支付订单。
+- 支付执行者将支付订单存储在其数据库中。
+- 支付执行者调用外部 PSP 来处理信用卡支付。
+- 支付执行者处理完支付后，支付服务更新钱包以记录卖家拥有的款项。
+- 钱包服务将更新的余额信息存储在其数据库中。
+- 支付服务调用分类账记录所有资金流动。
 
-### APIs for payment service
+### 支付服务 API
 
 ```
 POST /v1/payments
@@ -81,7 +81,7 @@ POST /v1/payments
 }
 ```
 
-Example`payment_order`:
+示例`payment_order`：
 
 ```
 {
@@ -92,250 +92,249 @@ Example`payment_order`:
 }
 ```
 
-Caveats:
+注意事项：
 
-- The`payment_order_id`is forwarded to the PSP to deduplicate payments, ie it is the idempotency key.
-- The amount field is`string`as`double`is not appropriate for representing monetary values.
+- `payment_order_id` 被转发给 PSP 以去重支付，即它是幂等性键。
+- `amount` 字段是`string`，因为`double`不适合表示货币值。
 
 ```
 GET /v1/payments/{:id}
 ```
 
-This endpoint returns the execution status of a single payment, based on the`payment_order_id`.
+此端点返回单个支付的执行状态，基于`payment_order_id`。
 
-### Payment service data model
+### 支付服务数据模型
 
-We need to maintain two tables -`payment_events`and`payment_orders`.
+我们需要维护两个表 - `payment_events` 和 `payment_orders`。
 
-For payments, performance is typically not an important factor. Strong consistency, however, is.
+对于支付，性能通常不是一个重要因素。然而，强一致性很重要。
 
-Other considerations for choosing the database:
+选择数据库时的其他考虑因素：
 
-- Strong market of DBAs to hire to administer the databaseS
-- Proven track-record where the database has been used by other big financial institutions
-- Richness of supporting tools
-- Traditional SQL over NoSQL/NewSQL for its ACID guarantees
+- 强大的数据库管理员市场，可以招聘数据库管理员来管理数据库
+- 已被其他大型金融机构使用的证明记录
+- 丰富的支持工具
+- 传统 SQL 相比 NoSQL/NewSQL 更适合，因为它提供 ACID 保证
 
-Here's what the`payment_events`table contains:
+以下是 `payment_events` 表的内容：
 
-- `checkout_id`- string, primary key
-- `buyer_info`- string (personal note - prob a foreign key to another table is more appropriate)
-- `seller_info`- string (personal note - same remark as above)
-- `credit_card_info`- depends on card provider
-- `is_payment_done`- boolean
+- `checkout_id` - 字符串，主键
+- `buyer_info` - 字符串（个人注释 - 可能更合适的是使用外键链接到另一个表）
+- `seller_info` - 字符串（个人注释 - 同上）
+- `credit_card_info` - 取决于卡提供商
+- `is_payment_done` - 布尔值
 
-Here's what the`payment_orders`table contains:
+以下是 `payment_orders` 表的内容：
 
-- `payment_order_id`- string, primary key
-- `buyer_account`- string
-- `amount`- string
-- `currency`- string
-- `checkout_id`- string, foreign key
-- `payment_order_status`- enum (`NOT_STARTED`,`EXECUTING`,`SUCCESS`,`FAILED`)
-- `ledger_updated`- boolean
-- `wallet_updated`- boolean
+- `payment_order_id` - 字符串，主键
+- `buyer_account` - 字符串
+- `amount` - 字符串
+- `currency` - 字符串
+- `checkout_id` - 字符串，外键
+- `payment_order_status` - 枚举（`NOT_STARTED`、`EXECUTING`、`SUCCESS`、`FAILED`）
+- `ledger_updated` - 布尔值
+- `wallet_updated` - 布尔值
 
-Caveats:
+注意事项：
 
-- there are many payment orders, linked to a given payment event
-- we don't need the`seller_info`for the pay-in flow. That's required on pay-out only
-- `ledger_updated`and`wallet_updated`are updated when the respective service is called to record the result of a payment
-- payment transitions are managed by a background job, which checks updates of in-flight payments and triggers an alert if a payment is not processed in a reasonable timeframe
+- 每个支付事件可能包含多个支付订单。
+- 我们在收款流程中不需要 `seller_info`。它仅在支付流程中需要。
+- `ledger_updated` 和 `wallet_updated` 在相应的服务调用时更新，用于记录支付结果。
+- 支付状态转换由后台作业管理，后台作业检查未完成支付的更新，并在支付未在合理时间内处理时触发警报。
 
-### Double-entry ledger system
+### 双重记账系统
 
-The double-entry accounting mechanism is key to any payment system. It is a mechanism of tracking money movements by always applying money operations to two accounts, where one's account balance increases (credit) and the other decreases (debit):
-| Account | Debit | Credit |
-|---------|-------|--------|
-| buyer | $1 | |
-| seller | | $1 |
+双重记账机制是任何支付系统的核心。它通过始终将资金操作应用于两个账户来追踪资金流动，其中一个账户的余额增加（贷方），另一个账户的余额减少（借方）：
 
-Sum of all transaction entries is always zero. This mechanism provides end-to-end traceability of all money movements within the system.
+| 账户 | 借方 | 贷方 |
+| ---- | ---- | ---- |
+| 买方 | $1   |      |
+| 卖方 |      | $1   |
 
-### Hosted payment page
+所有交易条目的总和始终为零。这个机制提供了系统内所有资金流动的端到端可追溯性。
 
-To avoid storing credit card information and having to comply with various heavy regulations, most companies prefer utilizing a widget, provided by PSPs, which store and handle credit card payments for you:
+### 托管支付页面
+
+为了避免存储信用卡信息并遵守各种严格的规定，大多数公司更倾向于利用由 PSP 提供的小部件，这些小部件会为你存储和处理信用卡支付：
 
 ![hosted-payment-page](../image/system-design-392.png)
 
-### Pay-out flow
+### 支付流程
 
-The components of the pay-out flow are very similar to the pay-in flow.
+支付流程的组件与收款流程非常相似。
 
-Main differences:
+主要区别在于：
 
-- money is moved from e-commerce site's bank account to merchant's bank account
-- we can utilize a third-party account payable provider such as Tipalti
-- There's a lot of bookkeeping and regulatory requirements to handle with regards to pay-outs as well
+- 资金从电商网站的银行账户转移到商家的银行账户
+- 我们可以使用第三方应付账款提供商，如 Tipalti
+- 支付流程还需要处理大量的记账和合规要求
 
-## Step 3 - Design Deep Dive
+## 第三步：深入设计
 
-This section focuses on making the system faster, more robust and secure.
+本节关注于使系统更快、更稳健、更安全。
 
-### PSP Integration
+### PSP 集成
 
-If our system can directly connect to banks or card schemes, payment can be made without a PSP.
-These kinds of connections are very rare and uncommon, typically done at large companies which can justify the investment.
+如果我们的系统可以直接连接到银行或信用卡组织，则可以直接进行支付，而不需要 PSP。
+这种连接非常罕见，通常只有能够证明投资合理性的公司才会采用。
 
-If we go down the traditional route, a PSP can be integrated in one of two ways:
+如果我们选择传统方式，PSP 可以通过以下两种方式集成：
 
-- Through API, if our payment system can collect payment information
-- Through a hosted payment page to avoid dealing with payment information regulations
+- 通过 API，如果我们的支付系统可以收集支付信息
+- 通过托管支付页面，以避免处理支付信息的规定
 
-Here's how the hosted payment page workflow works:
+以下是托管支付页面工作流程：
 
 ![hosted-payment-page-workflow](../image/system-design-393.png)
 
-- User clicks "checkout" button in the browser
-- Client calls the payment service with the payment order information
-- After receiving payment order information, the payment service sends a payment registration request to the PSP.
-- The PSP receives payment info such as currency, amount, expiration, etc, as well as a UUID for idempotency purposes. Typically the UUID of the payment order.
-- The PSP returns a token back which uniquely identifies the payment registration. The token is stored in the payment service database.
-- Once token is stored, the user is served with a PSP-hosted payment page. It is initialized using the token as well as a redirect URL for success/failure.
-- User fills in payment details on the PSP page, PSP processes payment and returns the payment status
-- User is now redirected back to the redirectURL. Example redirect url -`https://your-company.com/?tokenID=JIOUIQ123NSF&payResult=X324FSa`
-- Asynchronously, the PSP calls our payment service via a webhook to inform our backend of the payment result
-- Payment service records the payment result based on the webhook received
+- 用户点击浏览器中的“结账”按钮
+- 客户端将支付订单信息传递给支付服务
+- 在接收到支付订单信息后，支付服务向 PSP 发送支付注册请求。
+- PSP 接收支付信息，如货币、金额、过期时间等，并获取一个用于幂等性目的的 UUID，通常是支付订单的 UUID。
+- PSP 返回一个令牌，唯一标识该支付注册。该令牌存储在支付服务的数据库中。
+- 存储令牌后，用户会被服务于 PSP 托管的支付页面。页面初始化时使用该令牌以及成功/失败的重定向 URL。
+- 用户在 PSP 页面上填写支付信息，PSP 处理支付并返回支付状态。
+- 用户随后被重定向回重定向 URL。例如，重定向 URL 为 `https://your
 
-### Reconciliation
+-company.com/?tokenID=JIOUIQ123NSF&payResult=X324FSa`
 
-The previous section explains the happy path of a payment. Unhappy paths are detected and reconciled using a background reconciliation process.
+- PSP 异步通过 webhook 调用我们的支付服务，通知后端支付结果。
+- 支付服务根据收到的 webhook 记录支付结果。
 
-Every night, the PSP sends a settlement file which our system uses to compare the external system's state against our internal system's state.
+### 对账
+
+上一节解释了支付的正常路径。异常路径通过后台对账过程来检测并解决。
+
+每晚，PSP 会发送结算文件，我们的系统使用该文件将外部系统的状态与我们内部系统的状态进行对比。
 
 ![settlement-report](../image/system-design-394.png)
 
-This process can also be used to detect internal inconsistencies between eg the ledger and the wallet services.
+此过程也可用于检测分类账和钱包服务之间的内部不一致。
 
-Mismatches are handled manually by the finance team. Mismatches are handled as:
+不匹配情况由财务团队手动处理。可以将不匹配情况处理为：
 
-- classifiable, hence, it is a known mismatch which can be adjusted using a standard procedure
-- classifiable, but can't be automated. Manually adjusted by the finance team
-- unclassifiable. Manually investigated and adjusted by the finance team
+- 可分类的，即已知的不匹配情况，可以通过标准程序进行调整
+- 可分类的，但无法自动处理。由财务团队手动调整
+- 无法分类的。由财务团队手动调查并调整
 
-### Handling payment processing delays
+### 处理支付处理延迟
 
-There are cases, where a payment can take hours to complete, although it typically takes seconds.
+有些情况下，支付可能需要几个小时才能完成，尽管通常只需要几秒钟。
 
-This can happen due to:
+这可能是由于以下原因：
 
-- a payment being flagged as high-risk and someone has to manually review it
-- credit card requires extra protection, eg 3D Secure Authentication, which requires extra details from card holder to complete
+- 支付被标记为高风险，需要人工审核
+- 信用卡需要额外的保护措施，例如 3D 安全认证，需要持卡人提供额外信息来完成支付
 
-These situations are handled by:
+这些情况的处理方式包括：
 
-- waiting for the PSP to send us a webhook when a payment is complete or polling its API if the PSP doesn't provide webhooks
-- showing a "pending" status to the user and giving them a page, where they can check-in for payment updates. We could also send them an email once their payment is complete
+- 等待 PSP 发送 Webhook，告知支付已完成，或者如果 PSP 不提供 Webhook，则轮询其 API
+- 显示“待处理”状态给用户，并提供一个页面，用户可以在该页面查看支付更新。支付完成后，我们还可以通过电子邮件通知他们
 
-### Communication among internal services
+### 内部服务间的通信
 
-There are two types of communication patterns services use to communicate with one another - synchronous and asynchronous.
+服务间的通信模式有两种：同步和异步。
 
-Synchronous communication (ie HTTP) works well for small-scale systems, but suffers as scale increases:
+同步通信（即 HTTP）适用于小规模系统，但随着规模的增加，它会出现以下问题：
 
-- low performance - request-response cycle is long as more services get involved in the call chain
-- poor failure isolation - if PSPs or any other service fails, user will not receive a response
-- tight coupling - sender needs to know the receiver
-- hard to scale - not easy to support sudden increase in traffic due to not having a buffer
+- 性能较差 - 请求响应周期较长，因为更多的服务参与到调用链中
+- 失败隔离差 - 如果 PSP 或其他服务出现故障，用户将无法收到响应
+- 紧耦合 - 发送方需要知道接收方
+- 扩展性差 - 由于没有缓冲区，无法轻松应对突发流量的增加
 
-Asynchronous communication can be divided into two categories.
+异步通信可以分为两类。
 
-Single receiver - multiple receivers subscribe to the same topic and messages are processed only once:
+单一接收者 - 多个接收者订阅同一主题，消息仅处理一次：
 
 ![single-receiver](../image/system-design-395.png)
 
-Multiple receivers - multiple receivers subscribe to the same topic, but messages are forwarded to all of them:
+多个接收者 - 多个接收者订阅同一主题，但消息会转发给所有接收者：
 
 ![multiple-receiver](../image/system-design-396.png)
 
-Latter model works well for our payment system as a payment can trigger multiple side effects, handled by different services.
+后一种模型非常适合我们的支付系统，因为支付可以触发多个副作用，这些副作用由不同的服务处理。
 
-In a nutshell, synchronous communication is simpler but doesn't allow services to be autonomous.
-Async communication trades simplicity and consistency for scalability and resilience.
+简而言之，同步通信更简单，但不允许服务自主工作。异步通信则以可扩展性和弹性为代价，牺牲了简单性和一致性。
 
-### Handling failed payments
+### 处理支付失败
 
-Every payment system needs to address failed payments. Here are some of the mechanism we'll use to achieve that:
+每个支付系统都需要处理支付失败的情况。以下是我们将采用的一些机制：
 
-- Tracking payment state - whenever a payment fails, we can determine whether to retry/refund based on the payment state.
-- Retry queue - payments which we'll retry are published to a retry queue
-- Dead-letter queue - payments which have terminally failed are pushed to a dead-letter queue, where the failed payment can be debugged and inspected.
+- 跟踪支付状态 - 每当支付失败时，我们可以根据支付状态决定是否重试或退款。
+- 重试队列 - 我们将重试的支付放入重试队列
+- 死信队列 - 终止失败的支付会被推送到死信队列，在那里可以对失败的支付进行调试和检查。
 
 ![failed-payments](../image/system-design-397.png)
 
-### Exactly-once delivery
+### 精确一次交付
 
-We need to ensure a payment gets processed exactly-once to avoid double-charging a customer.
+我们需要确保支付只被处理一次，以避免对客户进行双重收费。
 
-An operation is executed exactly-once if it is executed at-least-once and at-most-once at the same time.
+当一个操作被执行“至少一次”和“最多一次”时，称该操作为精确一次。
 
-To achieve the at-least-once guarantee, we'll use a retry mechanism:
+为了实现至少一次的保证，我们将使用重试机制：
 
 ![retry-mechanism](../image/system-design-398.png)
 
-Here are some common strategies on deciding the retry intervals:
+以下是一些常见的重试间隔策略：
 
-- immediate retry - client immediately sends another request after failure
-- fixed intervals - wait a fixed amount of time before retrying a payment
-- incremental intervals - incrementally increase retry interval between each retry
-- exponential back-off - double retry interval between subsequent retries
-- cancel - client cancels the request. This happens when the error is terminal or retry threshold is reached
+- 立即重试 - 客户端在失败后立即发送另一个请求
+- 固定间隔 - 等待固定时间后重试支付
+- 增量间隔 - 每次重试之间逐步增加重试间隔
+- 指数回退 - 每次重试之间的间隔加倍
+- 取消 - 客户端取消请求。当错误是终止性错误或达到重试阈值时发生
 
-As a rule of thumb, default to an exponential back-off retry strategy. A good practice is for the server to specify a retry interval using a`Retry-After`header.
+作为经验法则，默认为指数回退重试策略。一个好的实践是，服务器通过`Retry-After`头指定重试间隔。
 
-An issue with retries is that the server can potentially process a payment twice:
+重试的一个问题是，服务器可能会重复处理支付：
 
-- client clicks the "pay button" twice, hence, they are charged twice
-- payment is successfully processed by PSP, but not by downstream services (ledger, wallet). Retry causes the payment to be processed by the PSP again
+- 客户端点击了“支付按钮”两次，因此被收取了两次费用
+- 支付已被 PSP 成功处理，但下游服务（分类账、钱包）未处理。重试会导致 PSP 再次处理支付
 
-To address the double payment problem, we need to use an idempotency mechanism - a property that an operation applied multiple times is processed only once.
+为了解决双重支付问题，我们需要使用幂等性机制——一种操作多次应用时只处理一次的特性。
 
-From an API perspective, clients can make multiple calls which produce the same result.
-Idempotency is managed by a special header in the request (eg`idempotency-key`), which is typically a UUID.
+从 API 的角度来看，客户端可以多次调用，产生相同的结果。幂等性是通过请求中的特殊头（如`idempotency-key`，通常是一个 UUID）来管理的。
 
 ![idempotency-example](../image/system-design-399.png)
 
-Idempotency can be achieved using the database's mechanism of adding unique key constraints:
+幂等性可以通过数据库的唯一键约束机制来实现：
 
-- server attempts to insert a new row in the database
-- the insertion fails due to a unique key constraint violation
-- server detects that error and instead returns the existing object back to the client
+- 服务器尝试在数据库中插入新行
+- 由于唯一键约束冲突，插入失败
+- 服务器检测到错误后，将现有对象返回给客户端
 
-Idempotency is also applied at the PSP side, using the nonce, which was previously discussed. PSPs will take care to not process payments with the same nonce twice.
+幂等性也应用在 PSP 端，使用前面讨论过的 nonce，PSP 会确保不会处理具有相同 nonce 的支付。
 
-### Consistency
+### 一致性
 
-There are several stateful services called throughout a payment's lifecycle - PSP, ledger, wallet, payment service.
+在支付生命周期中，有几个有状态的服务被调用——PSP、分类账、钱包、支付服务。
 
-Communication between any two services can fail.
-We can ensure eventual data consistency between all services by implementing exactly-once processing and reconciliation.
+任何两种服务之间的通信都有可能失败。我们可以通过实现精确一次处理和对账来确保所有服务之间的最终数据一致性。
 
-If we use replication, we'll have to deal with replication lag, which can lead to users observing inconsistent data between primary and replica databases.
+如果我们使用了复制，我们将不得不处理复制延迟，这可能导致用户观察到主数据库和副本数据库之间的数据不一致。
 
-To mitigate that, we can serve all reads and writes from the primary database and only utilize replicas for redundancy and fail-over.
-Alternatively, we can ensure replicas are always in-sync by utilizing a consensus algorithm such as Paxos or Raft.
-We could also use a consensus-based distributed database such as YugabyteDB or CockroachDB.
+为了缓解这一问题，我们可以让所有读取和写入都来自主数据库，仅使用副本来进行冗余和故障转移。或者，我们可以利用共识算法，如 Paxos 或 Raft，确保副本始终同步。我们也可以使用基于共识的分布式数据库，如 YugabyteDB 或 CockroachDB。
 
-### Payment security
+### 支付安全
 
-Here are some mechanisms we can use to ensure payment security:
+以下是我们可以使用的一些机制来确保支付安全：
 
-- Request/response eavesdropping - we can use HTTPS to secure all communication
-- Data tampering - enforce encryption and integrity monitoring
-- Man-in-the-middle attacks - use SSL \w certificate pinning
-- Data loss - replicate data across multiple regions and take data snapshots
-- DDoS attack - implement rate limiting and firewall
-- Card theft - use tokens instead of storing real card information in our system
-- PCI compliance - a security standard for organizations which handle branded credit cards
-- Fraud - address verification, card verification value (CVV), user behavior analysis, etc
+- 请求/响应窃听 - 我们可以使用 HTTPS 来加密所有通信
+- 数据篡改 - 强制加密和完整性监控
+- 中间人攻击 - 使用 SSL 和证书钉扎
+- 数据丢失 - 在多个地区复制数据并进行数据快照
+- DDoS 攻击 - 实施流量限制和防火墙
+- 卡片盗窃 - 使用令牌而不是存储真实的卡片信息
+- PCI 合规性 - 处理品牌信用卡的组织需要遵循的安全标准
+- 欺诈 - 地址验证、卡片验证值（CVV）、用户行为分析等
 
-## Step 4 - Wrap Up
+## 第四步：总结
 
-Other talking points:
+其他讨论点：
 
-- Monitoring and alerting
-- Debugging tools - we need tools which make it easy to understand why a payment has failed
-- Currency exchange - important when designing a payment system for international use
-- Geography - different regions might have different payment methods
-- Cash payment - very common in places like India and Brazil
-- Google/Apple Pay integration
+- 监控与警报
+- 调试工具 - 我们需要能够轻松理解为什么支付失败的工具
+- 货币兑换 - 在设计国际支付系统时很重要
+- 地理位置 - 不同地区可能有不同的支付方式
+- 现金支付 - 在印度和巴西等地非常常见
+- Google/Apple Pay 集成

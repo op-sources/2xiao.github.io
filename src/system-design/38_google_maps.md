@@ -1,160 +1,163 @@
-# Google Maps
+# 18. 设计 Google Maps
 
-We'll design a simple version of Google Maps.
+我们将设计一个简化版本的 Google Maps。
 
-Some facts about google maps:
+关于 Google Maps 的一些事实：
 
-- Started in 2005
-- Provides various services - satellite imagery, street maps, real-time traffic conditions, route planning
-- By 2021, had 1bil daily active users, 99% coverage of the world, 25mil updates daily of real-time location info
+- 启动于 2005 年
+- 提供各种服务：卫星影像、街道地图、实时交通状况、路线规划
+- 到 2021 年，拥有 10 亿日活跃用户，全球覆盖率为 99%，每天更新 2500 万条实时位置信息
 
-## Step 1 - Understand the Problem and Establish Design Scope
+## 第一步：理解问题并确定设计范围
 
-Sample Q&A between candidate and interviewer:
+候选人和面试官之间的问答示例：
 
-- C: How many daily active users are we dealing with?
-- I: 1bil DAU
-- C: What features should we focus on?
-- I: Location update, navigation, ETA, map rendering
-- C: How large is road data? Do we have access to it?
-- I: We obtained road data from various sources, it's TBs of raw data
-- C: Should we take traffic conditions into consideration?
-- I: Yes, we should for accurate time estimations
-- C: How about different travel modes - by foot, biking, driving?
-- I: We should support those
-- C: How about multi-stop directions?
-- I: Let's not focus on that for scope of interview
-- C: Business places and photos?
-- I: Good question, but no need to consider those
+- **候选人**: 我们要处理多少日活跃用户？
+- **面试官**: 10 亿 DAU
+- **候选人**: 我们应该专注于哪些功能？
+- **面试官**: 位置信息更新、导航、预计到达时间 (ETA)、地图渲染
+- **候选人**: 路况数据有多大？我们可以访问吗？
+- **面试官**: 我们从多个来源获得了路况数据，原始数据为 TB 级
+- **候选人**: 我们需要考虑交通状况吗？
+- **面试官**: 是的，考虑交通状况是必要的，以便提供准确的时间估算
+- **候选人**: 那不同的出行方式（步行、骑行、驾车）呢？
+- **面试官**: 我们应该支持这些
+- **候选人**: 多站点的路线规划呢？
+- **面试官**: 这部分我们不考虑，面试范围内不讨论
+- **候选人**: 商业地点和照片呢？
+- **面试官**: 好问题，但不需要考虑这些
 
-We'll focus on three key features - user location update, navigation service including ETA, map rendering.
+我们将专注于三个关键功能：用户位置更新、导航服务（包括 ETA）、地图渲染。
 
-### Non-functional requirements
+### 非功能性需求
 
-- Accuracy - user shouldn't get wrong directions
-- Smooth navigation - Users should experience smooth map rendering
-- Data and battery usage - Client should use as little data and battery as possible. Important for mobile devices.
-- General availability and scalability requirements
+- 准确性：用户不应获得错误的导航路线
+- 平滑导航：用户应该体验到平滑的地图渲染
+- 数据和电池使用：客户端应尽可能少地使用数据和电池，对于移动设备尤为重要。
+- 一般的可用性和可扩展性需求
 
-### Map 101
+### 粗略估算
 
-Before jumping into the design, there are some map-related concepts we should understand.
+对于存储，我们需要存储：
 
-### Positioning system
+- 世界地图：估计为 ~70PB，考虑到所有需要存储的切片，并且对非常相似的切片（例如广阔的沙漠）进行压缩
+- 元数据：大小可以忽略，因此我们不计算
+- 路况信息：以（routing tiles）形式存储
 
-World is a sphere, rotating on its axis. Positiions are defined by latitude (how far north/south you are) and longitude (how far east/west you are):
+估计的导航请求 QPS：
+
+- 10 亿日活跃用户，每周使用 35 分钟 -> 每天 50 亿分钟。
+- 假设 GPS 更新请求是批量处理的，得出 QPS 为 20 万；
+- 峰值负载时 QPS 为 100 万。
+
+---
+
+在进入设计之前，有一些与地图相关的概念我们需要理解。
+
+### 定位系统
+
+地球是一个球体，围绕其轴线旋转。位置由纬度（指示你离赤道的距离）和经度（指示你离本初子午线的距离）来定义：
 
 ![partitioning-system](../image/system-design-206.png)
 
-### Going from 3D to 2D
+### 从 3D 到 2D
 
-The process of translating points from 3D to 2D plane is called "map projection".
+将 3D 坐标转换为 2D 平面的过程称为“地图投影”。
 
-There are different ways to do it and each comes with its pros and cons. Almost all distort the actual geometry.
+有不同的方法来实现这一点，每种方法都有其优缺点。几乎所有的方法都会扭曲实际的几何形状。
 
 ![map-projections](../image/system-design-207.png)
 
-Google maps selected a modified version of Mercator projection called "Web Mercator".
+Google Maps 选择了 Mercator 投影的修改版，称为“Web Mercator”。
 
-### Geocoding
+### 地理编码（Geocoding）
 
-Geocoding is the process of converting addresses to geographic coordinates.
+地理编码是将地址转换为地理坐标的过程。
 
-The reverse process is called "reverse geocoding".
+反向过程称为“反向地理编码”。
 
-One way to achieve this is to use interpolation - leveraging data from different sources (eg GIS-es) where street network is mapped to geo coordinate space.
+实现这一过程的一种方式是使用插值：利用来自不同来源的数据（如 GIS）将街道网络映射到地理坐标空间。
 
-### Geohashing
+### 地理哈希（Geohashing）
 
-Geohashing is an encoding system which encodes a geographic area into a string of letters and digits.
+地理哈希是一种编码系统，它将一个地理区域编码成由字母和数字组成的字符串。
 
-It depicts the world as a flattened surface and recursively sub-divides it into four quadrants:
+它将地球视为一个平坦的表面，并递归地将其划分为四个象限：
 
 ![geohashing](../image/system-design-208.png)
 
-### Map rendering
+### 地图渲染
 
-Map rendering happens via tiling. Instead of rendering entire map as one big custom image, world is broken up into smaller tiles.
+地图渲染通过切片进行，我们没有选择将整个地图作为一张大的自定义图像渲染，而是将世界分解成更小的切片。
 
-Client only downloads relevant tiles and renders them like stitching together a mosaic.
+客户端只下载相关的切片，并像拼接拼图一样进行渲染。
 
-There are different tiles for different zoom levels. Client chooses appropriate tiles based on the client's zoom level.
+不同的缩放级别有不同的切片，客户端根据缩放级别选择合适的切片。
 
-Eg, zooming out the entire world would download only a single 256x256 tile, representing the whole world.
+例如，缩小到全球视图时，只会下载一张 256x256 的切片，代表整个世界。
 
-### Road data processing for navigation algorithms
+### 导航算法中的道路数据处理
 
-In most routing algorithms, intersections are represented as nodes and roads are represented as edges:
+在大多数路径规划算法中，道路被抽象成一个图（graph），交叉点表示为节点，道路表示为边：
 
 ![road-representation](../image/system-design-209.png)
 
-Most navigation algorithms use a modified version of Djikstra or A\* algorithms.
+大多数导航算法使用修改版的 Dijkstra 或 A\* 算法。
 
-Pathfinding performance is sensitive to the size of the graph. To work at scale, we can't represent the whole world as a graph and run the algorithm on it.
+路径寻找性能对图的大小非常敏感，为了支持大规模应用，我们不能将整个世界表示为一个图并在其上运行算法。
 
-Instead, we use a technique similar to tiling - we subdivide the world into smaller and smaller graphs.
+相反，我们采用类似于切片的技术：将世界划分为越来越小的图。
 
-Routing tiles hold references to neighboring tiles and algorithms can stitch together a bigger road graph as it traverses interconnected tiles:
+路由切片（Routing Tiles）持有相邻切片的引用，算法可以在遍历相互连接的切片时，将更大的道路图拼接起来：
 
 ![routing-tiles](../image/system-design-210.png)
 
-This technique enables us to significantly reduce memory bandwidth and only load the tiles we need for the given source/destination pair.
+这种技术使我们能够显著减少内存带宽，只加载我们需要的切片来处理给定的起点/终点对。
 
-However, for larger routes, stitching together small, detailed routing tiles would still be time/memory consuming. Instead, there are routing tiles with different level of detail and the algorithm uses the appropriately-detailed tiles, based on the destination we're headed for:
+然而，对于较长的路线，拼接小而详细的（routing tiles）仍然会消耗时间和内存。为了解决这个问题，我们使用具有不同详细程度的（routing tiles），并根据目的地选择适当详细程度的切片：
 
 ![map-routing-hierarchical](../image/system-design-211.png)
 
-### Back-of-the-envelope estimation
-
-For storage, we need to store:
-
-- map of the world - estimated as ~70pb based on all the tiles we need to store, but factoring in compression of very similar tiles (eg vast desert)
-- metadata - negligible in size, so we can skip it from calculation
-- Road info - stored as routing tiles
-
-Estimated QPS for navigation requests - 1bil DAU at 35min of usage per week -> 5bil minutes per day.
-Assuming gps update requests are batched, we arrive at 200k QPS and 1mil QPS at peak load
-
-## Step 2 - Propose High-Level Design and Get Buy-In
+## 第二步：提出高层设计并获得认可
 
 ![high-level-design](../image/system-design-212.png)
 
-### Location service
+### 位置服务（Location service）
 
 ![location-service](../image/system-design-213.png)
 
-It is responsible for recording a user's location updates:
+位置服务负责记录用户的位置信息更新：
 
-- location updates are sent every`t`seconds
-- location data streams can be used to improve the service over time, eg provide more accurate ETAs, monitor traffic data, detect closed roads, analyze user behavior, etc
+- 每 `t` 秒发送一次位置更新
+- 位置数据流可用于逐步改进服务，例如提供更准确的 ETA、监控交通数据、检测封闭道路、分析用户行为等
 
-Instead of sending location updates to the server all the time, we can batch the updates on the client-side and send batches instead:
+为了避免每次都向服务器发送位置更新，我们可以在客户端批量更新并发送批量数据：
 
 ![location-update-batches](../image/system-design-214.png)
 
-Despite this optimization, for a system of Google Maps scale, load will still be significant. Therefore, we can leverage a database, optimized for heavy writes such as Cassandra.
+尽管进行了优化，但对于像 Google Maps 这样规模的系统，负载仍然会很大。因此，我们可以使用像 Cassandra 这样的数据库，它对高频写入进行了优化。
 
-We can also leverage Kafka for efficient stream processing of location updates, meant for further analysis.
+我们还可以利用 Kafka 来高效处理位置更新流，以便进一步分析。
 
-Example location update request payload:
+位置更新请求示例：
 
 ```
 POST /v1/locations
-Parameters
-  locs: JSON encoded array of (latitude, longitude, timestamp) tuples.
+参数
+  locs: JSON 编码的 (纬度，经度，时间戳) 元组数组。
 ```
 
-### Navigation service
+### 导航服务（Navigation service）
 
-This component is responsible for finding fast routes between A and B in a reasonable time (a little bit of latency is okay). Route need not be the fastest, but accuracy is important.
+导航组件负责在合理的时间内找到 A 和 B 之间的快速路线（少量延迟是可以接受的）。路线不必是最快的，但准确性至关重要。
 
-Example request payload:
+请求负载示例：
 
 ```
 GET /v1/nav?origin=1355+market+street,SF&destination=Disneyland
 ```
 
-Example response:
+响应示例：
 
 ```
 {
@@ -182,124 +185,124 @@ Example response:
 }
 ```
 
-Traffic changes and reroutes are not taken into consideration yet, those will be tackled in the deep dive section.
+交通变化和重新规划路径将在深入分析部分讨论。
 
-### Map rendering
+### 地图渲染
 
-Holding the entire data set of mapping tiles on the client-side is not feasible as it's petabytes in size.
+在客户端存储整个地图数据集是不可行的，因为它的大小是 PB 级的。
 
-They need to be fetched on-demand from the server, based on the client's location and zoom level.
+这些数据需要根据客户端的位置和缩放级别按需从服务器获取。
 
-When should new tiles be fetched - while user is zooming in/out and during navigation, while they're going towards a new tile.
+何时应获取新切片：用户在缩放地图，或导航时向新切片前进时。
 
-How should the map tiles be served to the client?
+如何将地图切片提供给客户端？
 
-- They can be built dynamically, but that puts a huge load on the server and also makes caching hard
-- Map tiles are served statically, based on their geohash, which a client can calculate. They can be statically stored & served from a CDN
+- 可以动态构建，但这会给服务器带来巨大的负载，并且使缓存变得困难
+- 地图切片可以根据地理哈希静态提供，客户端可以计算这些哈希。它们可以
+
+被静态存储，并通过 CDN 提供
 
 ![static-map-tiles](../image/system-design-215.png)
 
-CDNs enable users to fetch map tiles from point-of-presence servers (POP) which are closest to users in order to minimize latency:
+CDN 使得用户可以从最靠近用户的服务节点（POP）获取地图切片，以减少延迟：
 
 ![cdn-vs-no-cdn](../image/system-design-216.png)
 
-Options to consider for determining map tiles:
+决定地图切片的选项：
 
-- geohash for map tile can be calculated on the client-side. If that's the case, we should be careful that we commit to this type of map tile calculation for the long-term as forcing clients to update is hard
-- alternatively, we can have simple API which calculates the map tile URLs on behalf of the clients at the cost of additional API call
+- 地图切片的地理哈希可以在客户端计算。如果是这种方式，我们应该长期支持这种地图切片计算方式，保证应用更新时的后向兼容，因为引导用户更新客户端是困难的。
+- 另外，我们可以提供一个简单的 API，计算地图切片的 URL，并为客户端提供服务，代价是额外的 API 调用
 
 ![map-tile-url-calculation](../image/system-design-217.png)
 
-## Step 3 - Design Deep Dive
+## 第三步：设计深度分析
 
-### Data model
+### 数据模型
 
-Let's discuss how we store the different types of data we're dealing with.
+首先，我们来讨论如何存储系统所处理的不同类型的数据。
 
-### Routing tiles
+#### 路由切片
 
-Initial road data set is obtained from different sources. It is improved over time based on location updates data.
+初始的道路数据集来自不同的来源，随着位置更新数据的不断增加，数据会逐渐得到改进。
 
-The road data is unstructured. We have a periodic offline processing pipeline, which transforms this raw data into the graph-based routing tiles our app needs.
+道路数据是非结构化的。我们有一个周期性的离线处理任务，将这些原始数据转换为我们应用程序需要的基于图的路由切片。
 
-Instead of storing these tiles in a database as we don't need any database features. We can store them in S3 object storage, while caching them agressively.
+我们不需要使用数据库来存储这些切片，因为我们不需要任何数据库的功能。我们可以将它们存储在 S3 对象存储中，并进行积极的缓存。
 
-We can also leverage libraries to compress adjacency lists into binary files efficiently.
+我们还可以利用库将邻接列表有效地压缩成二进制文件。
 
-### User location data
+#### 用户位置数据
 
-User location data is very useful for updaring traffic conditions and doing all sorts of other analysis.
+用户位置数据对更新交通状况和进行各种其他分析非常有用。
 
-We can use Cassandra for storing this kind of data as its nature is to be write-heavy.
+我们可以使用 Cassandra 来存储这类数据，因为它的特点是写入频繁。
 
-Example row:
+示例行：
 
 ![user-location-data-row](../image/system-design-218.png)
 
-### Geocoding database
+#### 地理编码数据库
 
-This database stores a key-value pair of lat/long pairs and places.
+这个数据库存储经纬度对和地点之间的键值对。
 
-We can use Redis for its fast read access speed, as we have frequent read and infrequent writes.
+我们可以使用 Redis，因为它具有快速的读取访问速度，而我们的读取频繁且写入不多。
 
-### Precomputed images of the world map
+#### 预计算的世界地图图像
 
-As we discussed, we will precompute map tiling images and store them in CDN.
+如前所述，我们将预计算地图切片图像并将其存储在 CDN 中。
 
 ![precomputed-map-tile-image](../image/system-design-219.png)
 
-### Services
+### 位置服务
 
-### Location service
-
-Let's focus on the database design and how user location is stored in detail for this service.
+接着，让我们专注于数据库设计，并详细说明如何存储用户位置数据。
 
 ![location-service-diagram](../image/system-design-220.png)
 
-We can use a NoSQL database to facilitate the heavy write load we have on location updates. We prioritize availability over consistency as user location data often changes and becomes stale as new updates arrive.
+我们可以使用 NoSQL 数据库来支持我们在位置更新上的重写负载。我们优先考虑可用性而非一致性，因为用户位置数据经常发生变化，容易过时。
 
-We'll choose Cassandra as our database choice as it nicely fits all our requirements.
+我们将选择 Cassandra 作为我们的数据库选择，因为它很好地满足了我们的所有需求。
 
-Example row we're going to store:
+我们将存储的示例行：
 
 ![user-location-row-example](../image/system-design-221.png)
 
-- `user_id`is the partition key in order to quickly access all location updates for a particular user
-- `timestamp`is the clustering key in order to store the data sorted by the time a location update is received
+- `user_id` 是分区键，用于快速访问特定用户的所有位置更新
+- `timestamp` 是聚类键，用于按位置更新接收的时间对数据进行排序
 
-We also leverage Kafka to stream location updates to various other service which need the location updates for various purposes:
+我们还利用 Kafka 将位置更新流式传输到其他需要位置更新的服务：
 
 ![location-update-streaming](../image/system-design-222.png)
 
-### Rendering map
+### 渲染地图
 
-Map tiles are stored at various zoom levels. At the lowest zoom level, the entire world is represented by a single 256x256 tile.
+地图切片存储在不同的缩放级别下，在最低缩放级别，整个世界由一个 256x256 的切片表示。
 
-As zoom levels increase, the number of map tiles quadruples:
+随着缩放级别的增加，地图切片的数量增加四倍：
 
-![zoom-level-increases](../image/system-design-223.png)
+![zoom-level-increases](../image/system-design-208.png)
 
-One optimization we can use is to not send the entire image information over the network, but instead represent tiles as vectors (paths & polygons) and let the client render the tiles dynamically.
+我们可以使用的一种优化方法是，不通过网络发送整个图像信息，而是将切片表示为向量（路径和多边形），并让客户端动态渲染切片。
 
-This will have substantial bandwidth savings.
+这将大大节省带宽。
 
-### Navigation service
+### 导航服务
 
-This service is responsible for finding the fastest routes:
+导航服务负责找到最快的路线：
 
 ![navigation-service](../image/system-design-224.png)
 
-Let's go through each component in this sub-system.
+让我们逐个查看这个子系统中的每个组件。
 
-First, we have the geocoding service which resolves an address to a location of lat/long pair.
+首先，我们有地理编码服务，它将地址解析为经纬度对的位置。
 
-Example request:
+示例请求：
 
 ```
 https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA
 ```
 
-Example response:
+示例响应：
 
 ```
 {
@@ -335,28 +338,28 @@ Example response:
 }
 ```
 
-The route planner service computes a suggested route, optimized for travel time according to current traffic conditions.
+路线规划服务根据当前的交通状况计算建议路线，优化旅行时间。
 
-The shortest-path service runs a variation of the A\* algorithm against the routing tiles in object storage to compute an optimal path:
+最短路径服务运行一种变种的 A\* 算法，在对象存储中的路由切片上计算最优路径：
 
-- It receives the source/destination pairs, converts them to lat/long pairs and derives the geohashes from those pairs to derive the routing tiles
-- The algorithm starts from the initial routing tile and starts traversing it until a good enough path is found to the destination tile
+- 它接收源/目的地对，将其转换为经纬度对，并从这些对中推导出地理哈希，以确定路由切片
+- 算法从初始路由切片开始，开始遍历直到找到一个到目的地切片的合理路径
 
 ![shortest-path-service](../image/system-design-225.png)
 
-The ETA service is called by the route planner to get estimated time based on machine learning algorithms, predicting ETA based on traffic data.
+ETA 服务被路线规划服务调用，以基于机器学习算法根据交通数据预测 ETA（预计到达时间）。
 
-The ranker service is responsible to rank different possible paths based on filters, passed by the user, ie flags to avoid toll roads or freeways.
+排序服务负责根据用户传递的过滤器对不同的路径进行排序，比如避免收费公路或高速公路等标志。
 
-The updater service asynchronously update some of the important databases to keep them up-to-date.
+更新服务异步更新一些重要的数据库，以保持它们的最新状态。
 
-### Improvement - adaptive ETA and rerouting
+### 改进 - 自适应 ETA 和重新规划路线
 
-One improvement we can do is to adaptively update in-flight routes based on newly available traffic data.
+我们可以进行的一项改进是，根据新获取的交通数据自适应更新正在进行的路线。
 
-One way to implement this is to store users who are currently navigating through a route in the database by storing all the tiles they're supposed to go through.
+一种实现方式是，通过存储用户正在导航的路线中的所有切片，将这些用户存储在数据库中。
 
-Data might look like this:
+数据可能如下所示：
 
 ```
 user_1: r_1, r_2, r_3, …, r_k
@@ -366,9 +369,9 @@ user_3: r_2, r_8, r_9, …, r_m
 user_n: r_2, r_10, r21, ..., r_l
 ```
 
-If a traffic accident happens on some tile, we can identify all users whose path goes through that tile and re-route them.
+如果某个切片发生交通事故，我们可以识别出所有经过该切片的用户，并重新规划他们的路线。
 
-To reduce the amount of tiles we store in the database, we can instead store the origin routing tile and several routing tiles in different resolution levels until the destination tile is also included:
+为了减少我们在数据库中存储的切片数量，我们可以改为存储起始路由切片和几个不同分辨率级别的路由切片，直到目的地切片也被包含在内：
 
 ```
 user_1, r_1, super(r_1), super(super(r_1)), ...
@@ -376,22 +379,22 @@ user_1, r_1, super(r_1), super(super(r_1)), ...
 
 ![adaptive-eta-data-storage](../image/system-design-226.png)
 
-Using this, we only need to check if the final tile of a user includes the traffic accident tile to see if user is impacted.
+通过这种方式，我们只需要检查用户的最终切片是否包含交通事故的切片，从而判断用户是否受到影响。
 
-We can also keep track of all possible routes for a navigating user and notify them if a faster re-route is available.
+我们还可以跟踪正在导航的用户的所有可能路线，并在有更快的重新规划路径时通知他们。
 
-### Delivery protocols
+### 传输协议
 
-We have several options, which enable us to proactively push data to clients from the server:
+我们有几种选择，可以让我们主动从服务器向客户端推送数据：
 
-- Mobile push notifications don't work because payload is limited and it's not available for web apps
-- WebSocket is generally a better option than long-polling as it has less compute footprint on servers
-- We can also use server-sent events (SSE) but lean towards web sockets as they support bi-directional communication which can come in handy for eg a last-mile delivery feature
+- 移动推送通知不适用，因为负载有限，且不适用于 Web 应用
+- WebSocket 通常比长轮询更好，因为它对服务器的计算负担较小
+- 我们还可以使用服务器推送事件（SSE），但更倾向于使用 WebSocket，因为它支持双向通信，这在例如最后一公里配送功能中非常有用
 
-## Step 4 - Wrap Up
+## 第四步：总结
 
-This is our final design:
+这是我们的最终设计：
 
 ![final-design](../image/system-design-227.png)
 
-One additional feature we could provide is multi-stop navigation which can be sold to enterprise customers such as Uber or Lyft in order to determine optimal path for visiting a set of locations.
+我们可以提供的一个附加功能是多站点导航，这可以出售给像 Uber 或 Lyft 这样的企业客户，以确定访问一组位置的最优路径。
