@@ -1,204 +1,220 @@
-# Design A Search Autocomplete System
+# 13. 设计搜索自动补全系统
 
-Search autocomplete is the feature provided by many platforms such as Amazon, Google and others when you put your cursor in your search bar and start typing something you're looking for:
+搜索自动补全是许多平台（如 Amazon、Google 等）提供的功能。当你在搜索栏中输入内容时，它会根据输入建议可能的查询：
 
-![google-search](../image/system-design-123.png)
+![Google 搜索](../image/system-design-123.png)
 
-## Step 1 - Understand the problem and establish design scope
+## 第一步：理解问题并确定设计范围
 
-- C: Is the matching only supported at the beginning of a search term or eg at the middle?
-- I: Only at the beginning
-- C: How many autocompletion suggestions should the system return?
-- I: 5
-- C: Which suggestions should the system choose?
-- I: Determined by popularity based on historical query frequency
-- C: Does system support spell check?
-- I: Spell check or auto-correct is not supported.
-- C: Are search queries in English?
-- I: Yes, if time allows, we can discuss multi-language support
-- C: Is capitalization and special characters supported?
-- I: We assume all queries use lowercase characters
-- C: How many users use the product?
-- I: 10mil DAU
+- **候选人**：匹配是否仅支持搜索词开头？例如中间位置是否支持？
+- **面试官**：仅支持开头匹配。
 
-Summary:
+- **候选人**：系统应该返回多少个自动补全建议？
+- **面试官**：5 个。
 
-- Fast response time. An article about facebook autocomplete reviews that suggestions should be returned with 100ms delay at most to avoid stuttering
-- Relevant - autocomplete suggestions should be relevant to search term
-- Sorted - suggestions should be sorted by popularity
-- Scalable - system can handle high traffic volumes
-- Highly available - system should be up even if parts of the system are unresponsive
+- **候选人**：系统如何选择建议？
+- **面试官**：根据历史查询频率的流行度确定。
 
-## Back of the envelope estimation
+- **候选人**：系统是否支持拼写检查？
+- **面试官**：不支持拼写检查或自动更正。
 
-- Assume we have 10mil DAU
-- On average, person performs 10 searches per day
-- 10mil \* 10 = 100mil searches per day = 100 000 000 / 86400 = 1200 searches.
-- given 4 works of 5 chars search on average -> 1200 \* 20 = 24000 QPS. Peak QPS = 48000 QPS.
-- 20% of daily queries are new -> 100mil _ 0.2 = 20mil new searches _ 20 bytes = 400mb new data per day.
+- **候选人**：搜索查询是英语吗？
+- **面试官**：是，如果有时间，可以讨论多语言支持。
 
-## Step 2 - Propose high-level design and get buy-in
+- **候选人**：是否支持大小写和特殊字符？
+- **面试官**：假设所有查询使用小写字符。
 
-At a high-level, the system has two components:
+- **候选人**：有多少用户使用产品？
+- **面试官**：每日活跃用户为 1000 万（10mil DAU）。
 
-- Data gathering service - gathers user input queries and aggregates them in real-time.
-- Query service - given search query, return topmost 5 suggestions.
+### 非功能性需求
 
-### Data gathering service
+- **快速响应时间**：一篇关于 Facebook 自动补全的文章中提到，建议应在最多 100 毫秒延迟内返回，以避免卡顿。
+- **相关性**：自动补全建议应与搜索词相关。
+- **排序**：建议按流行度排序。
+- **可扩展性**：系统可以处理高流量。
+- **高可用性**：即使系统部分失效，也应保持运行。
 
-This service is responsible for maintaining a frequency table:
+### 粗略估算
 
-![frequency-table](../image/system-design-124.png)
+- 假设我们有 1000 万每日活跃用户。
+- 平均每人每天执行 10 次搜索。  
+  1000 万 × 10 = 1 亿次搜索/天 = `1 亿 ÷ 86400 ≈ 1200` 次搜索/秒。
+- 平均每次搜索由 4 个单词组成，每个单词平均 5 个字符：`1200 × 20 = 24000` QPS（每秒查询次数）。峰值 QPS = 48000。
+- 每天 20% 的查询是新的：1 亿 × 20% = 2000 万新搜索 × 每条 20 字节 = 400 MB 新数据/天。
 
-### Query service
+## 第二步：提出高层设计并获得认可
 
-Given a frequency table like the one above, this service is responsible for returning the top 5 suggestions based on the frequency column:
+从高层来看，系统有两个主要组件：
 
-![query-service-example](../image/system-design-125.png)
+1. **数据收集服务**：收集用户输入查询并实时聚合。
+2. **查询服务**：根据搜索查询返回排名前 5 的建议。
 
-Querying the data set is a matter of running the following SQL query:
+### 数据收集服务
 
-![query-service-sql-query](../image/system-design-126.png)
+数据收集服务负责维护一个频率表：
 
-This is acceptable for small data sets but becomes impractical for large ones.
+![频率表](../image/system-design-124.png)
 
-## Step 3 - Design deep dive
+### 查询服务
 
-In this section, we'll deep dive into several components which will improve the initial high-level design.
+给定如上的频率表，查询服务负责根据频率列返回排名前 5 的建议：
 
-### Trie data structure
+![查询服务示例](../image/system-design-125.png)
 
-We use relational databases in the high-level design, but to achieve a more optimal solution, we'll need to leverage a suitable data structure.
+查询数据集可以通过以下 SQL 查询实现：
 
-We can use tries for fast string prefix retrieval.
+![查询服务 SQL 查询](../image/system-design-126.png)
 
-- It is a tree-like data structure
-- The root represents the empty string
-- Each node has 26 children, representing each of the next possible characters. To save space, we don't store empty links.
-- Each node represents a single word or prefix
-- For this problem, apart from storing the strings, we'll need to store the frequency against each leaf
+这种方法对于小型数据集是可接受的，但对于大型数据集则不切实际。
 
-![trie-example-with-frequency](../image/system-design-127.png)
+## 第三步：深入设计
 
-To implement the algorithm, we need to:
+在这一部分，我们将深入探讨一些组件，以改进初始的高层设计。
 
-- first find the node representing the prefix (time complexity O(p), where p = length of prefix)
-- traverse subtree to find all leafs (time complexity O(c), where c = total children)
-- sort retrieved children by their frequencies (time complexity O(clogc), where c = total children)
+### Trie 数据结构
 
-![trie-algorithm](../image/system-design-128.png)
+我们在高层设计中使用了关系型数据库，但为了实现更优的解决方案，需要使用适合的数据结构。
 
-This algorithm works, but there are ways to optimize it as we'll have to traverse the entire trie in the worst-case scenario.
+我们可以使用 Trie（前缀树）来快速检索字符串前缀。
 
-### Limit the max length of prefix
+- Trie 是一种类树数据结构。
+- 根节点表示空字符串。
+- 每个节点有 26 个子节点，分别代表可能的下一个字符。为了节省空间，不存储空链接。
+- 每个节点表示一个单词或前缀。
+- 对于本问题，除了存储字符串外，还需要在每个叶子节点中存储频率。
 
-We can leverage the fact that users rarely use a very long search term to limit max prefix to 50 chars.
+![带频率的 Trie 示例](../image/system-design-127.png)
 
-This reduces the time complexity from`O(p) + O(c) + O(clogc)`->`O(1) + O(c) + O(clogc)`.
+实现该算法需要：
 
-### Cache top search queries at each node
+1. 首先找到表示前缀的节点（时间复杂度为 `O(p)`，其中 `p` 为前缀长度）。
+2. 遍历子树以找到所有叶子节点（时间复杂度为 `O(c)`，其中 `c` 为总子节点数）。
+3. 按频率对检索到的子节点进行排序（时间复杂度为 `O(c log c)`）。
 
-To avoid traversing the whole trie, we can cache the top k most frequently accessed works in each node:
+![Trie 算法](../image/system-design-128.png)
 
-![caching-top-search-results](../image/system-design-129.png)
+这个算法可行，但在最坏情况下需要遍历整个 Trie，我们可以进一步优化。
 
-This reduces the time complexity to`O(1)`as top K search terms are already cached. The trade-off is that it takes much more space than a traditional trie.
+#### 限制前缀最大长度
 
-### Data gathering service
+我们可以利用用户很少使用非常长的搜索词这一事实，将前缀长度限制为 50 个字符。
 
-In previous design, when user types in search term, data is updated in real-time. This is not practical on a bigger scale due to:
+这可以将时间复杂度从 `O(p) + O(c) + O(c log c)` 降至 `O(1) + O(c) + O(c log c)`。
 
-- billions of queries per day
-- Top suggestions may not change much once trie is built
+#### 在每个节点缓存热门搜索查询
 
-Hence, we'll instead update the trie asynchronously based on analytics data:
+为了避免遍历整个 Trie，可以在每个节点缓存访问频率最高的前 k 个词：
 
-![data-gathering-service](../image/system-design-130.png)
+![缓存热门搜索结果](../image/system-design-129.png)
 
-The analytics logs contain raw rows of data related to search terms \w timestamps:
+这将时间复杂度降为 `O(1)`，因为热门搜索词已被缓存。代价是相比传统 Trie，需要占用更多空间。
 
-![analytics-log](../image/system-design-131.png)
+---
 
-The aggregators' responsibility is to map the analytics data into a suitable format and also aggregate it to lesser records.
+### 数据收集服务
 
-The cadence at which we aggregate depends on the use-case for our auto-complete functionality.
-If we need the data to be relatively fresh & updated real-time (eg twitter search), we can aggregate once every eg 30m.
-If, on the other hand, we don't need the data to be updated real-time (eg google search), we can aggregate once per week.
+在前面的设计中，当用户输入搜索词时，数据会实时更新。然而，在大规模系统中这并不现实，原因包括：
 
-Example weekly aggregated data:
+- 每天有数十亿次查询。
+- 一旦构建了 Trie，热门建议通常不会频繁变化。
 
-![weekly-aggredated-data](../image/system-design-132.png)
+因此，我们改为根据分析数据异步更新 Trie：
 
-The workers are responsible for building the trie data structure, based on aggregated data, and storing it in DB.
+![数据收集服务](../image/system-design-130.png)
 
-The trie cache keeps the trie loaded in-memory for fast read. It takes a weekly snapshot of the DB.
+分析日志包含与搜索词相关的原始数据及时间戳：
 
-The trie DB is the persistent storage. There are two options for this problem:
+![分析日志](../image/system-design-131.png)
 
-- Document store (eg MongoDB) - we can periodically build the trie, serialize it and store it in the DB.
-- Key-value store (eg DynamoDB) - we can also store the trie in hashmap format.
+聚合器的职责是将分析数据映射为合适的格式，并对记录进行聚合。
 
-![trie-as-hashmap](../image/system-design-133.png)
+聚合频率取决于自动补全功能的使用场景：
 
-### Query service
+- 如果需要实时更新数据（如 Twitter 搜索），可每 30 分钟聚合一次。
+- 如果不需要实时更新数据（如 Google 搜索），可以每周聚合一次。
 
-The query service fetches top suggestions from Trie Cache or fallbacks to Trie DB on cache miss:
+每周聚合数据示例：
 
-![query-service-improved](../image/system-design-134.png)
+![每周聚合数据](../image/system-design-132.png)
 
-Some additional optimizations for the Query service:
+Workers 的职责是基于聚合数据构建 Trie 数据结构，并将其存储到数据库中。
 
-- Using AJAX requests on client-side - these prevent the browser from refreshing the page.
-- Data sampling - instead of logging all requests, we can log a sample of them to avoid too many logs.
-- Browser caching - since auto-complete suggestions don't change often, we can leverage the browser cache to avoid extra calls to backend.
+Trie 缓存将 Trie 加载到内存中以实现快速读取，缓存每周从数据库中获取快照。
 
-Example with Google search caching search results on the browser for 1h:
+Trie 数据库是持久化存储，可以有两种实现方案：
 
-![google-browser-caching](../image/system-design-135.png)
+- 文档存储（如 MongoDB）：可以定期构建 Trie，序列化后存储到数据库。
+- 键值存储（如 DynamoDB）：可以将 Trie 存储为哈希表格式。
 
-### Trie operations
+![Trie 作为哈希表存储](../image/system-design-133.png)
 
-Let's briefly describe common trie operations.
+---
 
-### Create
+### 查询服务
 
-The trie is created by workers using aggregated data, collected via analytics logs.
+查询服务从 Trie 缓存中获取热门建议，或者在缓存未命中时从 Trie 数据库中获取：
 
-### Update
+![改进后的查询服务](../image/system-design-134.png)
 
-There are two options to handling updates:
+查询服务的一些附加优化：
 
-- Not updating the trie, but reconstructing it instead. This is acceptable if we don't need real-time suggestions.
-- Updating individual nodes directly - we prefer to avoid it as it's slow. Updating a single node required updating all parent nodes as well due to the cached suggestions:
+- **客户端使用 AJAX 请求**：防止浏览器刷新页面。
+- **数据采样**：避免记录所有请求，可采样部分请求以减少日志量。
+- **浏览器缓存**：由于自动补全建议不常变化，可利用浏览器缓存避免额外的后端调用。
 
-![update-trie](../image/system-design-136.png)
+例如，Google 搜索在浏览器中缓存搜索结果 1 小时：
 
-### Delete
+![Google 浏览器缓存](../image/system-design-135.png)
 
-To avoid showing suggestions including hateful content or any other content we don't want to show, we can add a filter between the trie cache and the API servers:
+---
 
-![filter-layer](../image/system-design-137.png)
+### Trie 操作
 
-The database is asynchronously updated to remove hateful content.
+下面我们简要回顾一下常见的 Trie 操作。
 
-### Scale the storage
+#### 创建
 
-At some point, our trie won't be able to fit on a single server. We need to devise a sharding mechanism.
+Workers 使用分析日志收集的聚合数据创建 Trie。
 
-One option to achieve this is to shard based on the letters of the alphabet - eg`a-m`goes on one shard,`n-z`on the other.
+#### 更新
 
-This doesn't work well as data is unevenly distributed due to eg the letter`a`being much more frequent than`x`.
+对于更新，可以选择以下两种方式：
 
-To mitigate this, we can have a dedicated shard mapper, which is responsible for devising a smart sharding algorithm, which factors in the uneven distribution of search terms:
+1. **不更新 Trie，而是重建它**：如果不需要实时建议，这是可接受的。
+2. **直接更新单个节点**：通常避免此方法，因为速度较慢。更新单个节点需要同时更新所有父节点，以更新缓存的建议：
 
-![sharding](../image/system-design-138.png)
+![更新 Trie](../image/system-design-136.png)
 
-## Step 4 - Wrap up
+#### 删除
 
-Other talking points:
+为了避免展示仇恨内容或其他不希望展示的内容，可以在 Trie 缓存和 API 服务器之间添加过滤层：
 
-- How to support multi-language - we store unicode characters in trie nodes, instead of ASCII.
-- What if top search queries differ across countries - we can build different tries per country and leverage CDNs to improve response time.
-- How can we support trending (real-time) search queries? - current design doesn't support this and improving it to support it is beyond the scope of the book. Some options:- Reduce working data set via sharding
-- Change ranking model to assign more weight to recent search queries
-- Data may come as streams which you filter upon and use map-reduce technologies to process it - Hadoop, Apache Spark, Apache Storm, Apache Kafka, etc.
+![过滤层](../image/system-design-137.png)
+
+数据库会异步更新以移除仇恨内容。
+
+---
+
+### 扩展存储
+
+当 Trie 无法完全存储在单台服务器上时，需要设计分片机制。
+
+一种方法是根据字母表分片，例如：`a-m` 放在一个分片，`n-z` 放在另一个分片。
+
+这种方法分布不均，因为字母 `a` 的使用频率远高于 `x`。
+
+为解决此问题，可以引入专门的分片映射器，该映射器根据搜索词的分布制定智能分片算法：
+
+![分片](../image/system-design-138.png)
+
+## 第四步：总结
+
+其他需要讨论的点：
+
+- **如何支持多语言**：在 Trie 节点中存储 Unicode 字符，而不是 ASCII。
+- **如果不同国家的热门搜索词不同怎么办**：可以为每个国家构建不同的 Trie，并利用 CDN 提升响应速度。
+- **如何支持热门（实时）搜索查询**：当前设计不支持此功能，改进设计以支持该功能超出了本文范围。一些可能的解决方案包括：
+  - 通过分片减少工作数据集。
+  - 修改排序模型，为最近的搜索查询赋予更高权重。
+  - 数据可能以流的形式到达，可以使用过滤器和 MapReduce 技术（如 Hadoop、Apache Spark、Apache Storm、Apache Kafka）进行处理。

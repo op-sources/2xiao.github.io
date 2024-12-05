@@ -61,7 +61,7 @@ headerDepth: 0
 
 - [1. 系统设计面试框架](./21_a_framework_for_system_design_interviews.md)
 - [2. 粗略估算](./22_back_of_the_envelope_estimation.md)
-- [3. 从零到数百万用户的扩展](./23_scale_from_zero_to_millions_of_users.md)
+- [3. 从零扩展到百万用户](./23_scale_from_zero_to_millions_of_users.md)
 - [4. 设计速率限制器](./24_design_a_rate_limiter.md)
 - [5. 设计一致性哈希](./25_design_consistent_hashing.md)
 - [6. 设计键值存储](./26_design_a_key_value_store.md)

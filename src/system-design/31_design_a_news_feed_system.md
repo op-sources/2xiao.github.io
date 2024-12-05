@@ -1,153 +1,143 @@
-# Design a News Feed System
+# 11. 设计新闻推送系统
 
-News feed == constantly updating list of stories on your home page.
+新闻推送系统（News Feed）是一个不断更新的首页故事列表，包括状态更新、照片、视频、链接等内容。
 
-It includes status updates, photos, videos, links, etc.
+类似的面试题有：**设计 Facebook News Feed、Twitter 时间线、Instagram Feed** 等。
 
-Similar interview questions - design facebook news feed, twitter timeline, instagram feed, etc.
+## 第一步：理解问题并明确设计范围
 
-## Step 1 - Understand the problem and establish design scope
+在设计之前，与面试官讨论清楚具体的需求至关重要：
 
-First step is to clarify what the interviewer has in mind exactly:
+- **候选人**：这系统是面向移动端，还是 Web 应用？
+- **面试官**：两者都需要支持。
+- **候选人**：系统的核心功能是什么？
+- **面试官**：用户能够发布帖子，并在新闻推送中查看朋友的帖子。
+- **候选人**：新闻推送是按时间顺序排序，还是基于排名（如优先显示“好友”的帖子）？
+- **面试官**：为了简化问题，按时间逆序排列即可。
+- **候选人**：单个用户的好友数量是否有限制？
+- **面试官**：每个用户最多可以有 5000 个好友。
+- **候选人**：系统需要支持的流量量级是？
+- **面试官**：目标是支持每日活跃用户数（DAU）达到 1000 万。
+- **候选人**：Feed 是否支持富媒体内容？
+- **面试官**：可以，允许图片和视频。
 
-- C: Mobile, web app?
-- I: Both
-- C: What are the important features?
-- I: User can publish posts and see friends' posts on news feed.
-- C: Is news feed sorted in reverse chronological order or based on rank, eg best friends' posts first.
-- I: To keep it simple, let's assume reverse chrono order
-- C: Max number of friends?
-- I: 5000
-- C: Traffic volume?
-- I: 10mil DAU
-- C: Can the feed contain media?
-- I: It can contain images and video
+## 第二步：提出高层设计并获得认可
 
-## Step 2 - Propose high-level design and get buy-in
+设计系统主要包含两个核心流程：
 
-There are two parts to the design:
+1. **帖子发布**：用户发布帖子后，相应数据会写入缓存和数据库，同时推送到好友的新闻推送中。
+2. **新闻推送构建**：通过聚合好友的帖子生成新闻推送。
 
-- Feed publishing- when user publishes a post, corresponding data is written to cache and DB. Post is populated to friends' news feed.
-- Newsfeed building- built by aggregating friends' posts in news feed.
+---
 
-### Newsfeed API
+### 新闻推送 API 设计
 
-The Newsfeed API is the primary gateway for users to the news feed services.
+新闻推送 API 是用户访问新闻的主要入口，以下是主要的 API 端点：
 
-Here's some of the main endpoints.
+- `POST /v1/me/feed`：发布新帖子，需提交 `content` 和 `auth_token`。
+- `GET /v1/me/feed`：获取新闻推送，需提交 `auth_token`。
 
-- `POST /v1/me/feed`- publish a post. Payload includes`content`+`auth_token`.
-- `GET /v1/me/feed`- retrieve news feed. Payload includes`auth_token`.
+---
 
-### Feed publishing
+### 帖子发布流程
 
 ![Image](../image/system-design-100.png)
 
-- Usermakes a new post via API.
-- Load balancer- distributes traffic to web servers.
-- Web servers- redirect traffic to internal services.
-- Post service- persist post in database and cache.
-- Fanout service- push posts to friends' news feeds.
-- Notification service- inform new friends that content is available.
+1. 用户通过 API 提交帖子内容。
+2. **负载均衡器**：将请求分发到 Web 服务器。
+3. **Web 服务器**：将请求路由到内部服务。
+4. **发布服务**：将帖子持久化到数据库并缓存。
+5. **扩散服务**：将帖子推送到好友的新闻推送中。
+6. **通知服务**：通知用户的好友内容已更新。
 
-### Newsfeed building
+---
+
+### 新闻推送构建流程
 
 ![newsfeed-building](../image/system-design-101.png)
 
-- Usersends request to retrieve news feed.
-- Load balancerredirects traffic to web servers.
-- Web servers- route requests to newsfeed service.
-- Newsfeed service- fetch news feed from cache.
-- Newsfeed cache- store pre-computed news feeds for fast retrieval.
+1. 用户发送获取新闻推送的请求。
+2. **负载均衡器**：将请求重定向至 Web 服务器。
+3. **Web 服务器**：将请求转发至新闻推送服务。
+4. **新闻推送服务**：从缓存中提取预计算的新闻推送。
+5. **新闻推送缓存**：保存好友帖子 ID 列表以便快速检索。
 
-## Step 3 - Design deep dive
+## 第三步：深入设计分析
 
-Let's discuss the two flows we covered in more depth.
+接下来深入探讨帖子发布和新闻推送构建这两个核心流程。
 
-### Feed publishing deep dive
+### 帖子发布流程
 
 ![feed-publishing-deep-dive](../image/system-design-102.png)
 
-### Web servers
+Web 服务器，除了路由和身份验证，服务器还需应用限流机制以防垃圾信息泛滥。
 
-besides a gateway to the internal services, these do authentication and apply rate limits, in order to prevent spam.
+#### 扩散服务
 
-### Fanout service
+- 扩散服务的职责是将帖子分发到好友的新闻推送中。
+- 有两种主要策略：
+  1. **写时扩散（Push Model）**：帖子在发布时预先推送到好友的新闻推送中。
+     - **优点**：生成的新闻推送即时可用。
+     - **缺点**：对于好友数目多的用户，推送需要花费很多时间，导致发布帖子速度变慢，会导致热键问题。对于不活跃的用户，预计算推送也是一种浪费。
+  2. **读时扩散（Pull Model）**：帖子在好友请求新闻推送时动态生成。
+     - **优点**：更高效地服务不活跃用户。
+     - **缺点**：每次访问新闻推送都需要额外的计算，速度较慢。
 
-This is the process of delivering posts to friends. There are two types of fanouts - fanout on write (push model) and fanout on read (pull model).
+---
 
-Fanout on write (push model)- posts are pre-computed during post publishing.
-
-Pros:- news feed is generated in real-time and can be delivered instantly to friends' news feed.
-
-- fetching the news feed is fast as it's precomputed
-
-Cons:- if a friend has many friends, generating the news feed takes a lot of time, which slows down post publishing speed. This is the hotkey problem.
-
-- for inactive users, pre-computing the news feed is a waste.
-
-Fanout on read (pull model)- news feed is generated during read time.
-
-Pros:- Works better for inactive users, as news feeds are not generated for them.
-
-- Data is not pushed to friends, hence, no hotkey problem.
-
-Cons:- Fetching the news feed is slow as it's not pre-computed.
-
-### Real world approach
-
-### System diagram of fanout service
+#### 扩散服务架构
 
 ![fanout-service](../image/system-design-103.png)
 
-- Fetch friend IDs from graph database. They're suited for managing friend relationships and recommendations.
-- Get friends info from user cache. Filtering is applied here for eg muted/blocked friends.
-- Send friends list and post ID to the message queue.
-- Fanout workers fetch the messages and store the news feed data in a cache. They store a`<post_id, user_id>`mappings in it which can later be retrieved.
+1. 从图数据库中获取好友 ID 列表，图数据库适合管理朋友关系和推荐。
+2. 从用户缓存中获取朋友信息，此处会进行过滤，例如被屏蔽的朋友。
+3. 将好友列表和帖子 ID 推送至消息队列。
+4. 构建工作进程从消息队列中获取任务，并将新闻推送写入缓存。它们被存储为`<post_id, user_id>`映射，之后可以检索。
 
-### How to save the mapping of post to user
+---
 
-### News feed retrieval deep dive
+### 新闻推送构建流程
 
 ![news-feed-retrieval-deep-dive](../image/system-design-104.png)
 
-- user sends request to retrieve news feed.
-- Load balancer distributes request to a set of web servers.
-- Web servers call news feed service.
-- News feed service gets a list of`post_id`from the news feed cache.
-- Then, the posts in the news feed are hydrated with usernames, content, media files, etc.
-- Fully hydrated news feed is returned as a JSON to the user.
-- Media files are also stored in CDN and fetched from there for better user experience.
+1. 用户发送请求以获取新闻推送。
+2. **负载均衡器**：分配请求到 Web 服务器。
+3. **Web 服务器**：转发请求至新闻推送服务。
+4. **新闻推送服务**：从缓存中获取好友帖子 ID 列表。
+5. **内容加载**：根据帖子 ID 加载对应的帖子内容和用户信息。
+6. **返回结果**：生成的 JSON 数据通过 API 返回客户端。
+7. **媒体文件优化**：图片和视频存储在 CDN 中以提高加载速度。
 
-### Cache architecture
+---
 
-Cache is very important for a news feed service. We divided it into 5 layers:
+### 缓存架构设计
+
+缓存是新闻推送系统的重要组成部分，分为以下五个层次：
 
 ![cache-layer](../image/system-design-105.png)
 
-- news feed - stores ids of news feeds
-- content - stores every post data. Popular content is stored in hot cache.
-- social graph - store user relationship data.
-- action - store info about whether a user liked, replied or took actions on a post.
-- counters - counters for replies, likes, followers, following, etc.
+1. **新闻推送缓存**：保存新闻推送中的帖子 ID 列表。
+2. **内容缓存**：存储每个帖子的详细信息，包括文本、图片等，热门内容存储在热缓存中。
+3. **社交图谱缓存**：保存好友关系和推荐信息。
+4. **操作缓存**：记录用户点赞、评论等操作。
+5. **计数器缓存**：存储帖子点赞数、评论数、关注数等计数器。
 
-## Step 4 - wrap up
+## 第四步：总结与讨论
 
-In this chapter, we designed a news feed system and we covered two main use-cases - feed publishing and feed retrieval.
+我们设计了一个新闻推送，涵盖了两个主要用例：**帖子发布**和**新闻推送构建**。
 
-Talking points, related to scalability:
+### 与扩展性相关的讨论点
 
-- vertical vs. horizontal database scaling
-- SQL vs. NoSQL
-- Master-slave replication
-- Read replicas
-- Consistency models
-- Database sharding
+- 垂直扩展 vs. 水平扩展
+- SQL vs. NoSQL 数据库选择
+- 数据库主从复制与读取副本
+- 数据一致性模型
+- 数据库分片设计
 
-Other talking points:
+### 其他讨论点
 
-- keep web tier stateless
-- cache data as much as possible
-- multiple data center setup
-- Loose coupling components via message queues
-- Monitoring key metrics - QPS and latency.
+- 保持 Web 层无状态。
+- 广泛使用缓存以优化性能。
+- 支持多数据中心部署以提高可靠性。
+- 利用消息队列解耦组件。
+- 监控系统关键指标，如 QPS 和延迟，确保高性能和稳定性。

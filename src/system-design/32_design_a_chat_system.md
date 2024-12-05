@@ -1,302 +1,323 @@
-# Design a Chat System
+# 12. 设计聊天系统
 
-We'll be designing a chat system similar to Messenger, WhatsApp, etc.
+我们将设计一个类似于微信、WhatsApp 的聊天系统。
 
-In this case, it is very important to nail down the exact requirements because chat systems can differ a lot - eg ones focused on group chats vs. one-on-one conversations.
+在这种情况下，明确具体需求非常重要，因为聊天系统可能会有很大差异，例如，专注于群聊的系统与专注于一对一聊天的系统。
 
-## Step 1 - Understand the problem and establish design scope
+## 第一步：理解问题并明确设计范围
 
-- C: What kind of chat app should we design? One-on-one convos or group chat?
-- I: It should support both cases.
-- C: Mobile app, web app, both?
-- I: Both
-- C: What's the app scale? Startup or massive application?
-- I: It should support 50mil DAU
-- C: For group chat, what is the member limit?
-- I: 100 people
-- C: What features are important? Eg attachments?
-- I: 1-on-1 and group chats. Online indicator. Text messages only.
-- C: Is there message size limit?
-- I: Text length is less than 100,000 chars long.
-- C: End-to-end encryption required?
-- I: Not required, but will discuss if time permits.
-- C: How long should chat history be stored?
-- I: Forever
+- **候选人**：我们应该设计什么样的聊天应用？是专注于一对一聊天还是群聊？
+- **面试官**：需要支持这两种情况。
+- **候选人**：移动端应用、Web 应用，还是两者都支持？
+- **面试官**：两者都要支持。
+- **候选人**：系统的规模如何？是初创应用还是大规模应用？
+- **面试官**：应支持 5000 万日活跃用户（DAU）。
+- **候选人**：群聊的成员人数限制是多少？
+- **面试官**：100 人。
+- **候选人**：需要哪些关键功能？例如附件支持？
+- **面试官**：一对一和群聊，在线状态指示，仅支持文本消息。
+- **候选人**：消息长度是否有限制？
+- **面试官**：文本长度小于 10 万字符。
+- **候选人**：是否需要端到端加密？
+- **面试官**：不需要，但有时间可以讨论。
+- **候选人**：聊天历史需要保存多长时间？
+- **面试官**：永久保存。
 
-Summary of features we'll focus on:
+**功能性需求总结如下：**
 
-- One-on-one chat with low delivery latency
-- Small group chats (100 ppl)
-- Online presence
-- Same account can be logged in via multiple devices.
-- Push notifications
-- Scale of 50mil DAU
+- 一对一聊天，低延迟消息传递。
+- 小规模群聊（100 人）。
+- 在线状态指示。
+- 同一账户可在多设备登录。
+- 推送通知。
+- 支持 5000 万日活跃用户的规模。
 
-## Step 2 - Propose high-level design and get buy-in
+## 第二步：提出高层设计并获得认可
 
-Let's understand how clients and servers communicate first.
+首先了解客户端和服务器之间如何通信。
 
-- In this system, clients can be mobile devices or web browsers.
-- They don't connect to each other directly. They are connected to a server.
+- 在此系统中，客户端可以是移动设备或 Web 浏览器。
+- 它们不直接连接到彼此，而是连接到服务器。
 
-Main functions the chat service should support:
+**聊天服务需要支持的主要功能：**
 
-- Receive messages from clients
-- Find the right recipients for a message and relay it
-- If recipient is not online, hold messages for them until they get back online.
+- 接收来自客户端的消息。
+- 找到消息的正确接收者并进行转发。
+- 如果接收者不在线，保存消息，直到其重新上线。
 
-![store-relay-message](../image/system-design-106.png)
+![存储与转发消息](../image/system-design-106.png)
 
-When clients connect to the server, they can do it via one or more network protocols.
-One option is HTTP. That is okay for the sender-side, but not okay for receiver-side.
+当客户端连接到服务器时，可以使用一种或多种网络协议。
 
-There are multiple options to handle a server-initiated message for the client - polling, long-polling, web sockets.
+一种选择是 HTTP，这适合发送方，但对接收方而言并不理想。
 
-### Polling
+服务器发起的消息有多种处理方式，例如轮询、长轮询和 WebSocket。
 
-Polling requires the client to periodically ask the server for status updates:
+#### 轮询（Polling）
 
-![polling](../image/system-design-107.png)
+轮询要求客户端定期向服务器请求状态更新：
 
-This is easy to implement but it can be costly as there are many requests, which often yield no results
+![轮询](../image/system-design-107.png)
 
-### Long polling
+这种方式易于实现，但代价高昂，因为存在大量请求且常常无结果。
 
-![long-polling](../image/system-design-108.png)
+#### 长轮询（Long Polling）
 
-With long polling, clients hold the connection open while waiting for an event to occur on the server-side.
-This still has some wasted requests if users don't chat much, but it is more efficient than polling.
+![长轮询](../image/system-design-108.png)
 
-Other caveats:
+使用长轮询时，客户端在等待服务器端事件发生时保持连接打开。
 
-- Server has no good way to determine if client is disconnected.
-- senders and receivers might be connected to different servers.
+尽管用户聊天频率较低时仍会产生一些无效请求，但比普通轮询更高效。
 
-### WebSocket
+其他注意点：
 
-Most common approach when bidirectional communication is needed:
+- 服务器难以判断客户端是否断开连接。
+- 发送方和接收方可能连接到不同服务器。
 
-![web-sockets](../image/system-design-109.png)
+#### WebSocket
 
-The connection is initiated by the client and starts as HTTP, but can be upgraded after handshake.
-In this setup, both clients and servers can initiate messages.
+这是双向通信时最常用的方法：
 
-One caveat with web sockets is that this is a persistent protocol, making the servers stateful. Efficient connection management is necessary when using it.
+![WebSocket](../image/system-design-109.png)
 
-### High-level design
+连接由客户端发起，最初为 HTTP，但握手后可以升级。
 
-Although we mentioned how web sockets can be useful for exchanging messages, most other standard features of our chat can use the normal request/response protocol over HTTP.
+在这种设置下，客户端和服务器均可发起消息。
 
-Given this remark, our service can be broken down into three parts - stateless API, stateful websocket API and third-party integration for notifications:
+**WebSocket 的一个注意点**：这是一种持久化协议，使得服务器具有状态化。需要高效的连接管理。
 
-![high-level-design](../image/system-design-110.png)
+---
 
-### Stateless Services
+### 高层设计
 
-Traditional public-facing request/response services are used to manage login, signup, user profile, etc.
+虽然 WebSocket 可用于消息交换，但大多数其他标准功能可以通过基于 HTTP 的传统请求/响应协议实现。
 
-These services sit behind a load-balancer, which distributes requests across a set of service replicas.
+基于此，我们可以将服务划分为三部分：**无状态 API**、**有状态 WebSocket API** 和 **第三方推送通知集成**：
 
-The service discovery service, in particular, is interesting and will be discussed more in-depth in the deep dive.
+![高层设计](../image/system-design-110.png)
 
-### Stateful Service
+#### 无状态服务
 
-The only stateful service is our chat service. It is stateful as it maintain a persistent connection with clients which connect to it.
+传统的面向用户的请求/响应服务，用于管理登录、注册、用户资料等。
 
-In this case, a client doesn't switch to other chat services as long as the existing one stays alive.
+这些服务位于负载均衡器后方，负责将请求分配到多个服务副本。
 
-Service discovery coordinates closely with the chat services to avoid overload.
+服务发现模块（Service Discovery）尤为重要，稍后将在详细分析中展开讨论。
 
-### Third-party Integration
+#### 有状态服务
 
-It is important for a chat application to support push notifications in order to get notified when someone sends you a message.
+唯一的有状态服务是聊天服务，因为它维护与客户端的持久连接。
 
-This component won't be discussed extensively as it's already covered in the[Design a notification system chapter](./30_design_a_notification_system.md).
+当客户端连接到某个聊天服务后，在该服务保持存活的情况下不会切换到其他服务。
 
-### Scalability
+服务发现与聊天服务紧密协作以避免过载。
 
-On a small scale, we can fit everything in a single server.
+#### 第三方集成
 
-With 1mil concurrent users, assuming each connection takes up 10k memory, a single server will need to use 10GB of memory to service them all.
+聊天应用需要支持推送通知，以便在收到消息时通知用户。
 
-Despite this, we shouldn't propose a single-server setup as it raises a red flag in the interviewer.
-One big drawback of a single server design is the single point of failure.
+这一部分将不会深入讨论，因为它已在[10. 设计通知系统](./30_design_a_notification_system.md)中详述。
 
-It is fine, however, to start from a single-server design and extend it later as long as you explicitly state that during the interview.
+---
 
-Here's our refined high-level design:
+### 可扩展性
 
-![refined-high-level-design](../image/system-design-111.png)
+在小规模情况下，我们可以将所有内容都部署在单个服务器上。
 
-- clients maintain a persistent web socket connection with a chat server for real-time messaging
-- The chat servers facilitate message sending/receiving
-- Presense servers manage online/offline status
-- API servers handle traditional request/response-based responsibilities - login, sign up, change profile, etc.
-- Notification servers manage push notifications
-- Key-value store is used for storing chat history. When offline user goes online, they will see their chat history and missed messages.
+假设有 100 万并发用户，每个连接占用 10KB 内存，那么单个服务器需要使用 10GB 内存来服务所有用户。
 
-### Storage
+尽管如此，我们不应直接提出单服务器设计，因为这会在面试官心中埋下红旗。
 
-One important decision for the storage/data layer is whether we should go with a SQL or NoSQL database.
+**单服务器设计的一个主要缺点是单点故障。**
 
-To make the decision, we need to examine the read/write access patterns.
+在面试中，可以从单服务器设计开始，并明确表示后续可以扩展。
 
-Traditional data such as user profile, settings, user friends list can be stored in a traditional relational database.
-Replication and sharding are common techniques to meet scalability needs for relational databases.
+以下是我们优化后的高层设计：
 
-Chat history data, on the other hand, is very specific kind of data of chat systems due to its read/write pattern:
+![优化后的高层设计](../image/system-design-111.png)
 
-- Amount of data is enormous,[a study](https://www.theverge.com/2016/4/12/11415198/facebook-messenger-whatsapp-number-messages-vs-sms-f8-2016)revealed that Facebook and WhatsApp process 60bil messages per day.
-- Only recent chats are accessed frequently. Users typically don't go too far back in chat history.
-- Although chat history is accessed infrequently, we should still be able to search within it as users can use a search bar for random access.
-- Read to write ratio is 1:1 on chat apps.
+- 客户端通过 WebSocket 与聊天服务器保持持久连接，以实现实时消息传递。
+- 聊天服务器负责消息的发送和接收。
+- 在线状态服务器管理用户的在线/离线状态。
+- API 服务器处理基于请求/响应的任务，如登录、注册、修改资料等。
+- 通知服务器负责推送通知。
+- 键值存储用于存储聊天历史。当离线用户重新上线时，可以看到聊天历史和未读消息。
 
-Selecting the correct storage system for this kind of data is crucial. Author recommends using a key-value store:
+---
 
-- they allow easy horizontal scaling
-- they provide low latency access to data
-- Relational databases don't handle long-tail (less-frequently accessed but large part of a distribution) of data well. When indexes grow large, random access is expensive.
-- Key-value stores are widely adopted for chat systems. Facebook and Discord both use key-value stores. Facebook uses HBase, Discord uses Cassandra.
+### 存储
 
-### Data models
+存储层的一个重要决策是选择 SQL 数据库还是 NoSQL 数据库。
 
-Let's take a look at the data model for our messages.
+**决策依据：**
 
-Message table for one-on-one chat:
+需要仔细分析读写访问模式。
 
-![one-on-one-chat-table](../image/system-design-112.png)
+- 用户资料、设置、好友列表等传统数据可以存储在关系型数据库中。
+- 聊天历史则是非常特殊的数据，因为其读写模式具有独特特点：
+  - 数据量巨大。[一项研究](https://www.theverge.com/2016/4/12/11415198/facebook-messenger-whatsapp-number-messages-vs-sms-f8-2016)显示，Facebook 和 WhatsApp 每天处理 600 亿条消息。
+  - 只有最近的聊天会被频繁访问，用户通常不会回看太久以前的聊天记录。
+  - 即使聊天历史访问频率较低，仍需要支持全文搜索以满足用户通过搜索栏随机访问的需求。
+  - 聊天应用的读写比通常为 1:1。
 
-One caveat is that we'll use the primary key (message_id) instead of created_at to determine message sequence as messages can be sent at the same time.
+选择合适的存储系统对这种数据至关重要，**推荐使用键值存储（Key-Value Store）：**
 
-Message table for a group chat:
+- 易于横向扩展。
+- 提供低延迟的数据访问。
+- 关系型数据库无法很好地处理“长尾”（访问频率低但占比大的数据分布）。索引变大后，随机访问成本昂贵。
+- 键值存储被广泛应用于聊天系统，Facebook 使用 HBase，Discord 使用 Cassandra。
 
-![group-chat-table](../image/system-design-113.png)
+---
 
-In the above table,`(channel_id, message_id)`is the primary key, while`channel_id`is also the sharding key.
+### 数据模型
 
-One interesting discussion is how should the`message_id`be generated, as it is used for message ordering. It should have two important attributes:
+接下来我们看看消息的数据模型。
 
-- IDs must be unique
-- IDs must be sortable by time
+#### 一对一聊天的消息表
 
-One option is to use the`auto_increment`feature of relational databases. But that's not supported in key-value stores.
-An alternative is to use Snowflake - Twitter's algorithm for generating 64-byte IDs which are globally unique and sortable by time.
+![一对一聊天消息表](../image/system-design-112.png)
 
-Finally, we could also use a local sequence number generator, which is unique only within a group.
-We can afford this because we only need to guarantee message sequence within a chat, but not between different chats.
+**注意：** 我们将使用主键 `message_id` 而不是 `created_at` 来确定消息顺序，因为消息可能在同一时间发送。
 
-## Step 3 - Design deep-dive
+#### 群聊的消息表
 
-In a system design interview, typically you are asked to go deeper into some of the components.
+![群聊消息表](../image/system-design-113.png)
 
-In this case, we'll go deeper into the service discovery component, messaging flows and online/offline indicator.
+在上述表中，`(channel_id, message_id)` 是主键，而 `channel_id` 也是分片键。
 
-### Service discovery
+**一个有趣的问题：`message_id` 应如何生成？**
 
-The primary goal of service discovery is to choose the best server based on some criteria - eg geographic location, server capacity, etc.
+它应具备两个重要属性：
 
-Apache Zookeeper is a popular open-source solution for service discovery. It registers all available chat servers and picks the best one based on a predefined criteria.
+- ID 必须唯一。
+- ID 必须按时间可排序。
 
-![service-discovery](../image/system-design-114.png)
+一种选择是使用关系数据库的 `auto_increment` 功能，但键值存储不支持此功能。
 
-- User A tries to login to the app
-- Load balancer sends request to API servers.
-- After authentication, service discovery chooses the best chat server for user A. In this case, chat server 2 is chosen.
-- User A connects to chat server 2 via web sockets protocol.
+另一种方法是使用 Snowflake 算法（Twitter 开发的生成 64 位唯一 ID 的算法），用于生成全局唯一且可按时间排序的 64 字节 ID。
 
-### Message flows
+最后，我们还可以使用局部序列号生成器，仅在群聊范围内唯一即可。这种方案适用于只需保证单个聊天内部消息顺序，而不需要保证不同聊天之间的消息顺序的情况。
 
-The message flows are an interesting topic to deep dive into. We'll explore one on one chats, message synchronization and group chat.
+以下是文章的翻译，包含所有段落和图片描述：
 
-### 1 on 1 chat flow
+---
 
-![one-on-one-chat-flow](../image/system-design-115.png)
+## 第三步：深入设计
 
-- User A sends a message to chat server 1
-- Chat server 1 obtains a message_id from Id generator
-- Chat server 1 sends the message to the "message sync" queue.
-- Message is stored in a key-value store.
-- If User B is online, message is forwarded to chat server 2, where User B is connected.
-- If offline, push notification is sent via the push notification servers.
-- Chat server 2 forwards the message to user B.
+在系统设计面试中，通常需要对某些组件进行深入探讨。
 
-### Message synchronization across devices
+在本案例中，我们将深入探讨 **服务发现组件**、**消息传递流程** 和 **在线/离线状态指示**。
 
-![message-sync](../image/system-design-116.png)
+### 服务发现
 
-- When user A logs in via phone, a web socket is established for that device with chat server 1.
-- Each device maintains a variable called`cur_max_message_id`, keeping track of latest message received on given device.
-- Messages whose recipient ID is currently logged in (via any device) and whose message_id is greater than`cur_max_message_id`are considered new
+服务发现的主要目标是根据一些标准（例如地理位置、服务器容量等）选择最佳服务器。
 
-### Small group chat flow
+Apache Zookeeper 是一种流行的开源服务发现解决方案。它会注册所有可用的聊天服务器，并根据预定义的标准选择最佳服务器。
 
-Group chats are a bit more complicated:
+![服务发现](../image/system-design-114.png)
 
-![group-chat-flow](../image/system-design-117.png)
+- 用户 A 尝试登录应用程序。
+- 负载均衡器将请求发送到 API 服务器。
+- 经过身份验证后，服务发现为用户 A 选择最佳的聊天服务器。在本例中，选择了聊天服务器 2。
+- 用户 A 通过 WebSocket 协议连接到聊天服务器 2。
 
-Whenever User A sends a message, the message is copied across each message queue of participants in the group (User B and C).
+---
 
-Using one inbox per user is a good choice for small group chats as:
+### 消息传递流程
 
-- it simplifies message sync since each user only need to consult their own queue.
-- storing a message copy in each participant's inbox is feasible for small group chats.
+消息传递流程是一个有趣的话题，我们将深入探讨 **一对一聊天**、**消息同步** 和 **群聊**。
 
-This is not acceptable though, for larger group chats.
+#### 一对一聊天流程
 
-As for the recipient, in their queue, they can receive messages from different group chats:
+![一对一聊天流程](../image/system-design-115.png)
 
-![recipient-group-chat](../image/system-design-118.png)
+- 用户 A 向聊天服务器 1 发送消息。
+- 聊天服务器 1 从 ID 生成器获取一个 `message_id`。
+- 聊天服务器 1 将消息发送到 "消息同步队列"。
+- 消息存储在键值存储中。
+- 如果用户 B 在线，消息会被转发到用户 B 所连接的聊天服务器 2。
+- 如果用户 B 离线，推送通知会通过推送通知服务器发送。
+- 聊天服务器 2 将消息转发给用户 B。
 
-### Online presence
+---
 
-Presence servers manage the online/offline indication in chat applications.
+#### 跨设备的消息同步
 
-Whenever the user logs in, their status is changed to "online":
+![消息同步](../image/system-design-116.png)
 
-![user-login-online](../image/system-design-119.png)
+- 当用户 A 通过手机登录时，设备与聊天服务器 1 建立一个 WebSocket 连接。
+- 每个设备维护一个名为 `cur_max_message_id` 的变量，用于跟踪该设备接收到的最新消息。
+- 当前登录的设备会将 **消息接收者 ID** 和 **`message_id` 大于 `cur_max_message_id`** 的消息视为新消息。
 
-Once the user send a logout message to the presence servers (and subsequently disconnects), their status is changed to "offline":
+---
 
-![user-logout-offline](../image/system-design-120.png)
+#### 小型群聊流程
 
-One caveat is handling user disconnection. A naive approach to handle that is to mark a user as "offline" when they disconnect from the presence server.
-This makes for a poor user experience as a user could frequently disconnect and reconnect to presence servers due to poor internet.
+群聊的消息传递比一对一聊天稍微复杂一些：
 
-To mitigate this, we'll introduce a heartbeat mechanism - clients periodically send a heartbeat to the presence servers to indicate online status.
-If a heartbeat is not received within a given time frame, user is marked offline:
+![群聊流程](../image/system-design-117.png)
 
-![user-heartbeat](../image/system-design-121.png)
+当用户 A 发送消息时，消息会被复制到群组中每个成员（用户 B 和用户 C）的消息队列中。
 
-How does a user's friend find out about a user's presence status though?
+对于小型群聊，每个用户一个独立的消息队列是一个不错的选择，因为：
 
-We'll use a fanout mechanism, where each friend pair have a queue assigned and status changes are sent to the respective queues:
+- 它简化了消息同步，每个用户只需查阅自己的队列即可。
+- 为每个参与者的收件箱存储一份消息副本对于小型群聊是可行的。
 
-![presence-status-fanout](../image/system-design-122.png)
+然而，对于大型群聊，这种方法不可接受。
 
-This is effective for small group chats. WeChat uses a similar approach and its user group is capped to 500 users.
+对于收件人而言，他们的队列中可能包含来自不同群聊的消息：
 
-If we need to support larger groups, a possible mitigation is to fetch presence status only when a user enters a group or refreshes the members list.
+![接收者群聊消息](../image/system-design-118.png)
 
-## Step 4 - Wrap up
+---
 
-We managed to build a chat system which supports both one-on-one and group chats.
+### 在线状态指示
 
-- We used web sockets for real-time communication between clients and servers.
+在线状态服务器管理聊天应用中的在线/离线指示功能。
 
-System components:
+当用户登录时，他们的状态会被设置为“在线”：
 
-- chat servers (real-time messages)
-- presence servers (online/offline status)
-- push notification servers
-- key-value stores for chat history
-- API servers for everything else
+![用户登录为在线](../image/system-design-119.png)
 
-Additional talking points:
+当用户向在线状态服务器发送注销消息（随后断开连接）时，他们的状态会被设置为“离线”：
 
-- Extend chat app to support media - video, images, voice. Compression, cloud storage and thumbnails can be discussed.
-- End-to-end encryption - only sender and receiver can read messages.
-- Caching messages on client-side is effective to reduce server-client data transfer.
-- Improve load time - Slack built a geographically distributed network to cache user data, channels, etc for better load time.
-- Error handling
-- Chat server error - what happens if a chat server goes down. Zookeeper can facilitate a hand off to another chat server.
-- Message resend mechanism - retrying and queueing are common approaches for re-sending messages.
+![用户注销为离线](../image/system-design-120.png)
+
+一个需要注意的问题是如何处理用户断开连接的情况。一个简单的方法是当用户与在线状态服务器断开连接时将其标记为“离线”。  
+然而，这可能导致糟糕的用户体验，因为由于网络不佳，用户可能频繁断开和重新连接。
+
+为了解决这个问题，我们引入了一种心跳机制——客户端定期向在线状态服务器发送心跳，以表示其在线状态。如果在指定时间内未收到心跳，用户会被标记为离线：
+
+![用户心跳](../image/system-design-121.png)
+
+那么用户的好友如何得知其在线状态呢？
+
+我们将使用一种广播机制（fanout），每对好友都会分配一个队列，状态变化会发送到相应的队列：
+
+![在线状态广播](../image/system-design-122.png)
+
+这种方法在小型群聊中非常有效。微信就采用了类似的方法，其用户群组上限为 500 人。
+
+如果需要支持更大的群组，一种可能的解决方案是仅在用户进入群组或刷新成员列表时获取在线状态。
+
+## 第四步：总结
+
+我们构建了一个支持一对一聊天和群聊的聊天系统，使用 WebSocket 实现客户端与服务器之间的实时通信。
+
+### 系统组件
+
+- 聊天服务器（处理实时消息）
+- 在线状态服务器（管理在线/离线状态）
+- 推送通知服务器
+- 用于存储聊天记录的键值存储
+- 处理其他任务的 API 服务器
+
+### 补充讨论点
+
+- **扩展支持媒体功能**：包括视频、图片和语音。可以讨论压缩、云存储和缩略图生成。
+- **端到端加密**：只有发送方和接收方能读取消息。
+- **客户端缓存消息**：减少服务器和客户端之间的数据传输。
+- **提升加载速度**：例如，Slack 构建了一个地理分布式网络，用于缓存用户数据和频道信息，以提高加载速度。
+- **错误处理**：如果聊天服务器宕机会发生什么？可以通过 Zookeeper 处理交接到另一台服务器。
+- **消息重发机制**：常见的重发方法包括重试和排队。
