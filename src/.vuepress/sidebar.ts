@@ -170,7 +170,7 @@ export default sidebar({
 				{
 					text: '系统设计实战',
 					icon: 'launch',
-					link: '/system-design/21_how_to_approach.html',
+					link: '/system-design/21_a_framework_for_system_design_interviews.html',
 					target: '_self'
 				},
 				{
